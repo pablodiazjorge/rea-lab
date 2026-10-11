@@ -8,6 +8,8 @@
   <img src="https://img.shields.io/badge/rea-6.4.0-6f42c1" alt="rea 6.4.0">
   <img src="https://img.shields.io/badge/Ghidra-12.1.4-d32f2f" alt="Ghidra 12.1.4">
   <img src="https://img.shields.io/badge/phase-F1-blue" alt="Current phase: F1">
+  <a href="https://github.com/pablodiazjorge/rea-lab/actions/workflows/check.yml"><img src="https://github.com/pablodiazjorge/rea-lab/actions/workflows/check.yml/badge.svg" alt="Repository checks"></a>
+  <a href="https://github.com/pablodiazjorge/rea-lab/actions/workflows/windows-smoke.yml"><img src="https://github.com/pablodiazjorge/rea-lab/actions/workflows/windows-smoke.yml/badge.svg" alt="Windows smoke test with real Ghidra"></a>
   <img src="https://img.shields.io/badge/code-MIT-green" alt="Code license: MIT">
   <img src="https://img.shields.io/badge/text-CC_BY_4.0-green" alt="Text license: CC BY 4.0">
 </p>
@@ -50,6 +52,7 @@ There are no dates: each phase closes when it meets its exit criteria.
 |---|---|
 | `AGENTS.md` | Instructions for coding agents (`CLAUDE.md` imports it) |
 | `docs/adr/` | Architecture decision records |
+| `docs/guides/` | How-to guides, such as the [portable per-project MCP registration](docs/guides/portable-mcp-registration.md) |
 | `tools.json` | Tool versions, download URLs and SHA-256 hashes |
 | `scripts/setup.mjs` | Downloads, verifies and extracts the tools into `tools/` |
 | `scripts/rea-mcp.mjs`, `.mcp.json` | rea's MCP server, registered for this project only |
