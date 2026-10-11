@@ -53,7 +53,7 @@ There are no dates: each phase closes when it meets its exit criteria.
 | `AGENTS.md` | Instructions for coding agents (`CLAUDE.md` imports it) |
 | `docs/adr/` | Architecture decision records |
 | `docs/guides/` | How-to guides, such as the [portable per-project MCP registration](docs/guides/portable-mcp-registration.md) |
-| [`writeups/`](writeups/2026-10-winhellocpp/README.md) | Investigations with their sanitised Evidence, starting with [WinHelloCPP](writeups/2026-10-winhellocpp/README.md) |
+| `writeups/` | Investigations with their sanitised Evidence: [WinHelloCPP](writeups/2026-10-winhellocpp/README.md), [Wallace v1 against v2](writeups/2026-10-wallace-versions/README.md) |
 | [`challenges/`](challenges/README.md) | Seeded practice challenges with known answers, built reproducibly |
 | `tools.json` | Tool versions, download URLs and SHA-256 hashes |
 | `scripts/setup.mjs` | Downloads, verifies and extracts the tools into `tools/` |

@@ -1,0 +1,28 @@
+{
+  "target": "targets/ghidra-class/VersionTracking/WallaceVersion2.exe",
+  "steps": [
+    { "tool": "binary_overview", "args": {} },
+    { "tool": "list_procedures", "args": {} },
+    { "tool": "search_strings", "args": { "pattern": "Sheep", "mode": "literal", "case_sensitive": false } },
+    { "tool": "find_xrefs_to_name", "args": { "name": "MSVCR100D.DLL::rand" } },
+    { "tool": "xrefs", "args": { "address": "0x416860" } },
+    { "tool": "resolve_containing_procedure", "args": { "address": "0x411969" } },
+    { "tool": "resolve_containing_procedure", "args": { "address": "0x411763" } },
+    { "tool": "analyze_function", "args": { "procedure": "FUN_004117b0" } },
+    { "tool": "analyze_function", "args": { "procedure": "FUN_004118c0" } },
+    { "tool": "analyze_function", "args": { "procedure": "FUN_004116f0" } },
+    { "tool": "compare_functions", "args": {
+      "left": { "$evidence": "build/wallace-src/09-analyze_function.json" },
+      "right": { "$evidence": "build/wallace-version2/08-analyze_function.json" } } },
+    { "tool": "compare_functions", "args": {
+      "left": { "$evidence": "build/wallace-src/10-analyze_function.json" },
+      "right": { "$evidence": "build/wallace-version2/09-analyze_function.json" } } },
+    { "tool": "compare_functions", "args": {
+      "left": { "$evidence": "build/wallace-src/11-analyze_function.json" },
+      "right": { "$evidence": "build/wallace-version2/10-analyze_function.json" } } },
+    { "tool": "find_changed_behavior", "args": { "comparisons": [
+      { "$evidence": "build/wallace-version2/11-compare_functions.json" },
+      { "$evidence": "build/wallace-version2/12-compare_functions.json" },
+      { "$evidence": "build/wallace-version2/13-compare_functions.json" } ] } }
+  ]
+}

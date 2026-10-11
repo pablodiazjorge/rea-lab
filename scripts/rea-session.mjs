@@ -6,6 +6,8 @@
 //
 // Usage: node scripts/rea-session.mjs <plan.json> <out-folder>
 // Plan:  { "target": "targets/x.exe", "steps": [{ "tool": "binary_overview", "args": {} }, ...] }
+// An argument written as { "$evidence": "<path to a saved response>" } is replaced by the Evidence
+// record in that file, so a step can compare records produced by an earlier session.
 
 import { spawn } from 'node:child_process'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
@@ -49,8 +51,21 @@ const request = (method, params) => new Promise((resolveResponse) => {
   server.stdin.write(`${JSON.stringify({ jsonrpc: '2.0', id, method, params })}\n`)
 })
 
+function resolveArguments(value) {
+  if (Array.isArray(value)) return value.map(resolveArguments)
+  if (value && typeof value === 'object') {
+    if (typeof value.$evidence === 'string') {
+      const saved = JSON.parse(readFileSync(resolve(ROOT, value.$evidence), 'utf8'))
+      return saved?.result ?? saved
+    }
+    return Object.fromEntries(Object.entries(value).map(([key, inner]) => [key, resolveArguments(inner)]))
+  }
+  return value
+}
+
 const summary = []
-async function call(index, tool, args) {
+async function call(index, tool, rawArgs) {
+  const args = resolveArguments(rawArgs)
   const started = Date.now()
   const response = await request('tools/call', { name: tool, arguments: args })
   const result = response.result ?? {}
@@ -61,7 +76,7 @@ async function call(index, tool, args) {
   }
   const ok = !(result.isError || response.error)
   const record = payload?.result ?? payload
-  const entry = { step: index, tool, args, ok, seconds: (Date.now() - started) / 1000, evidence_id: record?.evidence_id ?? null }
+  const entry = { step: index, tool, args: rawArgs, ok, seconds: (Date.now() - started) / 1000, evidence_id: record?.evidence_id ?? null }
   summary.push(entry)
   writeFileSync(join(outDir, `${String(index).padStart(2, '0')}-${tool}.json`), `${JSON.stringify(payload ?? response.error ?? null, null, 2)}\n`)
   console.log(`${ok ? 'ok  ' : 'FAIL'} ${String(index).padStart(2, '0')} ${tool} (${entry.seconds.toFixed(1)} s)${entry.evidence_id ? ` ${entry.evidence_id.slice(0, 15)}...` : ''}`)

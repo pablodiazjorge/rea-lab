@@ -1,0 +1,16 @@
+{
+  "target": "targets/ghidra-class/VersionTracking/WallaceSrc.exe",
+  "steps": [
+    { "tool": "binary_overview", "args": {} },
+    { "tool": "list_procedures", "args": {} },
+    { "tool": "search_strings", "args": { "pattern": "Sheep", "mode": "literal", "case_sensitive": false } },
+    { "tool": "find_xrefs_to_name", "args": { "name": "MSVCR100D.DLL::rand" } },
+    { "tool": "xrefs", "args": { "address": "0x416860" } },
+    { "tool": "resolve_containing_procedure", "args": { "address": "0x4117e7" } },
+    { "tool": "resolve_containing_procedure", "args": { "address": "0x411999" } },
+    { "tool": "resolve_containing_procedure", "args": { "address": "0x411773" } },
+    { "tool": "analyze_function", "args": { "procedure": "FUN_004117c0" } },
+    { "tool": "analyze_function", "args": { "procedure": "FUN_004118f0" } },
+    { "tool": "analyze_function", "args": { "procedure": "FUN_00411700" } }
+  ]
+}

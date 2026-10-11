@@ -1,0 +1,29 @@
+{
+  "targets": [
+    {
+      "target": "WallaceSrc.exe",
+      "sha256": "168a175ccf74e80899d2519bbe6e1ae8b0fa2489af70e8cc0720afab1ad8b0ab",
+      "size_bytes": 33792,
+      "format": "PE, x86, console application, Visual C++ 2010 debug build (MSVCR100D)"
+    },
+    {
+      "target": "WallaceVersion2.exe",
+      "sha256": "94510664e6578bec7391d6023af414e2d2d8c4ff58ed3f618dd549ff648015cf",
+      "size_bytes": 33792,
+      "format": "PE, x86, console application, Visual C++ 2010 debug build (MSVCR100D)"
+    }
+  ],
+  "origin": "Ghidra 12.1.4 distribution, docs/GhidraClass/ExerciseFiles/VersionTracking/",
+  "origin_sha256_of_archive": "ddac49f903da9d5bac833e5cc79395098b9c33cfd3279be5f31bd00387d2d4db",
+  "license": "Apache License 2.0, as part of the Ghidra distribution",
+  "source_code": "Shipped next to the binaries in docs/GhidraClass/ExerciseFiles/VersionTracking/Source (Original, Mod1, Mod2)",
+  "redistributed_here": false,
+  "how_to_obtain": "npm run setup, which extracts Ghidra into tools/ and copies the exercise into targets/ghidra-class/",
+  "analysis": {
+    "rea": "6.4.0",
+    "provider": "Ghidra 12.1.4",
+    "jdk": "Temurin 21.0.12.1",
+    "host": "Windows 11 Pro 26H2 x64, non-elevated user",
+    "date": "2026-10-11"
+  }
+}
