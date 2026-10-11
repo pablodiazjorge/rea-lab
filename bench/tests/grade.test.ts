@@ -168,7 +168,9 @@ test('isolation compares what the run loaded with its condition', () => {
   assert.deepEqual(checkIsolation(run, { withRea: true, withSkill: false }).problems, [])
   assert.deepEqual(checkIsolation(run, { withRea: false, withSkill: false }).problems, ['unexpected_mcp_server'])
   assert.deepEqual(checkIsolation(run, { withRea: true, withSkill: true }).problems, ['skill_missing'])
-  const leaky = { ...run, plugins: ['filetree'], skills: ['rea:reverse-engineer-anything'] }
+  const builtin = { ...run, plugins: ['cc-plugin-agents-md@builtin'] }
+  assert.deepEqual(checkIsolation(builtin, { withRea: true, withSkill: false }).problems, [])
+  const leaky = { ...run, plugins: ['filetree@claude-mods'], skills: ['rea:reverse-engineer-anything'] }
   assert.deepEqual(checkIsolation(leaky, { withRea: true, withSkill: false }).problems, ['plugins_loaded', 'skill_leaked'])
 })
 

@@ -38,7 +38,8 @@ export function checkIsolation(run: ClaudeRun, options: { withRea: boolean; with
   const skillOffered = run.skills.some((skill) => skill.endsWith('reverse-engineer-anything'))
   const problems: string[] = []
   if (run.sessionId === null) problems.push('no_init_event')
-  if (run.plugins.length > 0) problems.push('plugins_loaded')
+  // Plugins shipped inside the pinned Claude Code (source "@builtin") are part of the client in every condition.
+  if (run.plugins.some((plugin) => !plugin.endsWith('@builtin'))) problems.push('plugins_loaded')
   const servers = run.mcpServers.map((server) => server.name)
   if (servers.some((name) => name !== 'rea') || (!options.withRea && servers.length > 0)) problems.push('unexpected_mcp_server')
   if (options.withRea && !run.mcpServers.some((server) => server.name === 'rea' && server.status === 'connected')) problems.push('rea_not_connected')

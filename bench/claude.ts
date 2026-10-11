@@ -39,7 +39,7 @@ export type ClaudeRun = {
   claudeCodeVersion: string | null
   tools: string[]
   mcpServers: Array<{ name: string; status: string }>
-  /** Plugins and skills loaded at start, used to prove that nothing from the user's setup leaked in. */
+  /** Plugins (as name@source, for example "x@builtin") and skills loaded at start, to prove nothing leaked in. */
   plugins: string[]
   skills: string[]
   permissionMode: string | null
@@ -120,7 +120,7 @@ export function parseStreamJson(lines: Iterable<string>): ClaudeRun {
       run.model = stringOrNull(event.model)
       run.claudeCodeVersion = stringOrNull(event.claude_code_version)
       run.tools = Array.isArray(event.tools) ? event.tools.filter((tool): tool is string => typeof tool === 'string') : []
-      run.plugins = Array.isArray(event.plugins) ? event.plugins.filter(isObject).map((plugin) => String(plugin.name)) : []
+      run.plugins = Array.isArray(event.plugins) ? event.plugins.filter(isObject).map((plugin) => String(plugin.source ?? plugin.name)) : []
       run.skills = Array.isArray(event.skills) ? event.skills.filter((skill): skill is string => typeof skill === 'string') : []
       run.permissionMode = stringOrNull(event.permissionMode)
       run.mcpServers = Array.isArray(event.mcp_servers)
