@@ -12,6 +12,8 @@ A lab for reverse engineering with AI agents on Windows, using [rea](https://git
 |---|---|---|
 | `README.md`, `README.es.md` | Project overview, English and Spanish | yes |
 | `docs/adr/` | Architecture decision records | yes |
+| `writeups/` | One folder per investigation: README EN/ES, sanitised evidence, provenance, session plan | yes |
+| `scripts/rea-session.mjs`, `scripts/sanitize.mjs` | Scripted rea sessions over MCP; sanitise and re-authenticate Evidence before publishing | yes |
 | `challenges/` | Seeded challenge generator, reproducible build, answer check, public manifest | yes |
 | `build/` | Generated challenge sources and binaries | no |
 | `tools.json` | Single source of tool versions, URLs and SHA-256 hashes | yes |

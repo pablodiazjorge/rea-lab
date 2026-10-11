@@ -1,0 +1,23 @@
+{
+  "target": "targets/ghidra-class/WinhelloCPP/WinHelloCPP.exe",
+  "steps": [
+    { "tool": "binary_overview", "args": {} },
+    { "tool": "list_procedures", "args": {} },
+    { "tool": "search_strings", "args": { "pattern": "hello", "mode": "literal", "case_sensitive": false } },
+    { "tool": "find_xrefs_to_name", "args": { "name": "USER32.DLL::RegisterClassExA" } },
+    { "tool": "find_xrefs_to_name", "args": { "name": "USER32.DLL::LoadStringA" } },
+    { "tool": "find_xrefs_to_name", "args": { "name": "USER32.DLL::GetMessageA" } },
+    { "tool": "find_xrefs_to_name", "args": { "name": "USER32.DLL::CreateWindowExA" } },
+    { "tool": "find_xrefs_to_name", "args": { "name": "USER32.DLL::DefWindowProcA" } },
+    { "tool": "find_xrefs_to_name", "args": { "name": "USER32.DLL::PostQuitMessage" } },
+    { "tool": "find_xrefs_to_name", "args": { "name": "USER32.DLL::DialogBoxParamA" } },
+    { "tool": "xrefs", "args": { "address": "0x40b158" } },
+    { "tool": "resolve_containing_procedure", "args": { "address": "0x401532" } },
+    { "tool": "resolve_containing_procedure", "args": { "address": "0x401070" } },
+    { "tool": "resolve_containing_procedure", "args": { "address": "0x401368" } },
+    { "tool": "procedure_pseudo_code", "args": { "procedure": "FUN_004014e0" } },
+    { "tool": "procedure_pseudo_code", "args": { "procedure": "FUN_00401040" } },
+    { "tool": "procedure_pseudo_code", "args": { "procedure": "FUN_00401240" } },
+    { "tool": "resolve_containing_procedure", "args": { "address": "0x4010a0" } }
+  ]
+}

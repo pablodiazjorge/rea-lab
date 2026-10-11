@@ -1,0 +1,19 @@
+{
+  "target": "WinHelloCPP.exe",
+  "sha256": "7a98a934de5f578c3a547af873221b221d037bafa87ceee71dd4f089dd228202",
+  "size_bytes": 110592,
+  "format": "PE, x86, Win32 GUI application (ANSI)",
+  "origin": "Ghidra 12.1.4 distribution, docs/GhidraClass/ExerciseFiles/WinhelloCPP/WinHelloCPP.exe",
+  "origin_sha256_of_archive": "ddac49f903da9d5bac833e5cc79395098b9c33cfd3279be5f31bd00387d2d4db",
+  "license": "Apache License 2.0, as part of the Ghidra distribution",
+  "source_code": "Shipped next to the binary in docs/GhidraClass/ExerciseFiles/WinhelloCPP/source",
+  "redistributed_here": false,
+  "how_to_obtain": "npm run setup, which extracts Ghidra into tools/ and copies the exercise into targets/ghidra-class/",
+  "analysis": {
+    "rea": "6.4.0",
+    "provider": "Ghidra 12.1.4",
+    "jdk": "Temurin 21.0.12.1",
+    "host": "Windows 11 Pro 26H2 x64, non-elevated user",
+    "date": "2026-10-11"
+  }
+}

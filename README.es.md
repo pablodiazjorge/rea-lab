@@ -53,6 +53,7 @@ No hay fechas: cada fase se cierra cuando cumple sus criterios de salida.
 | `AGENTS.md` | Instrucciones para los agentes (`CLAUDE.md` lo importa) |
 | `docs/adr/` | Registros de decisiones de arquitectura |
 | `docs/guides/` | Guías prácticas, como el [registro MCP portátil y por proyecto](docs/guides/portable-mcp-registration.es.md) |
+| [`writeups/`](writeups/2026-10-winhellocpp/README.es.md) | Investigaciones con su evidencia limpia, empezando por [WinHelloCPP](writeups/2026-10-winhellocpp/README.es.md) |
 | [`challenges/`](challenges/README.es.md) | Retos de práctica con semilla y respuesta conocida, compilados de forma reproducible |
 | `tools.json` | Versiones, URL de descarga y SHA-256 de cada herramienta |
 | `scripts/setup.mjs` | Descarga, verifica y descomprime las herramientas en `tools/` |
