@@ -1,0 +1,12 @@
+{
+  "target": "build/challenges/bin/c02-xor/c02-xor-x64-O0-strip.exe",
+  "steps": [
+    { "tool": "binary_overview", "args": {} },
+    { "tool": "search_strings", "args": { "pattern": "ACCESS GRANTED", "mode": "literal", "case_sensitive": true } },
+    { "tool": "xrefs", "args": { "address": "0x14000307b" } },
+    { "tool": "resolve_containing_procedure", "args": { "address": "0x1400014e3" } },
+    { "tool": "procedure_pseudo_code", "args": { "procedure": "FUN_140001470" } },
+    { "tool": "procedure_callees", "args": { "procedure": "FUN_140001470" } },
+    { "tool": "procedure_pseudo_code", "args": { "procedure": "FUN_140001510" } }
+  ]
+}

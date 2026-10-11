@@ -45,6 +45,7 @@ No hay fechas: cada fase se cierra cuando cumple sus criterios de salida.
 
 - rea 6.4.0 con Ghidra 12.1.4 en Windows 11 26H2 (x64, NTFS, usuario sin elevar): `rea doctor --provider ghidra` pasa todas las comprobaciones, incluida la autoprueba nativa que falla en otros equipos ([morluto/rea#1701](https://github.com/morluto/rea/issues/1701)).
 - Primera sesión real: `WinHelloCPP.exe`, un ejercicio que trae Ghidra, analizado en unos 25 s (6 segmentos, 388 funciones y 254 cadenas), sin procesos ni archivos temporales sueltos.
+- Primera contribución fusionada en el proyecto original: [morluto/rea#1863](https://github.com/morluto/rea/pull/1863) arregla las pruebas reales de Ghidra en Windows, que habían dejado de pasar en cualquier equipo. Con ella pasan las nueve pruebas de Windows.
 
 ## Estructura
 
@@ -53,7 +54,7 @@ No hay fechas: cada fase se cierra cuando cumple sus criterios de salida.
 | `AGENTS.md` | Instrucciones para los agentes (`CLAUDE.md` lo importa) |
 | `docs/adr/` | Registros de decisiones de arquitectura |
 | `docs/guides/` | Guías prácticas, como el [registro MCP portátil y por proyecto](docs/guides/portable-mcp-registration.es.md) |
-| `writeups/` | Investigaciones con su evidencia limpia: [WinHelloCPP](writeups/2026-10-winhellocpp/README.es.md), [Wallace v1 frente a v2](writeups/2026-10-wallace-versions/README.es.md) |
+| `writeups/` | Investigaciones con su evidencia limpia: [WinHelloCPP](writeups/2026-10-winhellocpp/README.es.md), [Wallace v1 frente a v2](writeups/2026-10-wallace-versions/README.es.md), [c02-xor con -O0 y -O2](writeups/2026-10-own-xor/README.es.md) |
 | [`challenges/`](challenges/README.es.md) | Retos de práctica con semilla y respuesta conocida, compilados de forma reproducible |
 | `tools.json` | Versiones, URL de descarga y SHA-256 de cada herramienta |
 | `scripts/setup.mjs` | Descarga, verifica y descomprime las herramientas en `tools/` |

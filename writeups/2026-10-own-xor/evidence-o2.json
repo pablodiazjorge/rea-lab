@@ -1,0 +1,2329 @@
+{
+  "artifacts": [
+    {
+      "architecture": "x86_64",
+      "digest": {
+        "sha256": "4ec8d5c0ccdacb378dd0de8113b6cf9b0b04f3194e346a3d6b1bb41eccc5f25f"
+      },
+      "format": "pe"
+    }
+  ],
+  "captures": [],
+  "environments": [],
+  "providers": [
+    {
+      "id": "ghidra",
+      "name": "Ghidra",
+      "version": "12.1.4"
+    },
+    {
+      "id": "rea-workflow",
+      "name": "REA composed investigation workflow",
+      "version": "1"
+    }
+  ],
+  "records": [
+    {
+      "analysis_profile": {
+        "digest": "249564812a8d83b9b3f461098fc485ccde60c516d4497547a124081c91d654bf",
+        "parameters": {
+          "analyzer_preset": "ghidra-default",
+          "annotation_policy": "atomic-function-entry-metadata-v1",
+          "architecture": "x86_64",
+          "available_architectures": [
+            "x86_64"
+          ],
+          "compiler_spec_id": "auto-default",
+          "decompiler_jump_loads": true,
+          "executable_role": "application",
+          "function_body_evidence": "complete-inclusive-ranges-v1",
+          "function_boundary_observations": "ghidra-terminal-call-limitations-v1",
+          "function_references": "complete-body-and-entry-reference-manager-v2",
+          "import_mode": "ephemeral-source-immutable",
+          "instruction_flow_evidence": "decoded-return-pcode-v1",
+          "jump_table_evidence": "typed-case-default-blocks-v1",
+          "language_id": "auto-from-header",
+          "load_image_observations": "source-mappings-entry-context-v2",
+          "loader": "auto-from-header",
+          "location_resolution": "explicit-address-exact-entry-symbol-first-v3",
+          "managed": false,
+          "native_aot_metadata": {
+            "contract_revision": "rtr-9.1-x64-pe-read-only-v3",
+            "report_bytes": 4194304,
+            "source_bytes": 134217728,
+            "work_units": 67108864,
+            "working_memory_bytes": 67108864
+          },
+          "no_return_repair": "disabled-windows-p0",
+          "process_launch": "official-headless-script-v1",
+          "string_inventory_evidence": "defined-data-coverage-v1",
+          "target_format": "pe",
+          "target_kind": "executable"
+        },
+        "provider": {
+          "id": "ghidra",
+          "name": "Ghidra",
+          "version": "12.1.4"
+        }
+      },
+      "authority": "shipped-artifact",
+      "confidence": "observed",
+      "environment": null,
+      "evidence_id": "ev_1480f92d6971daa7bbedc0413a29c9fc4f54bea5d0097c257d157d27eb488ed3",
+      "evidence_links": [],
+      "limitations": [
+        "The session serves operations only after Ghidra reports default auto-analysis complete; incomplete analysis does not expose partial results.",
+        "The imported Program and temporary project are ephemeral and deleted on close. Annotation operations edit session database metadata; original executable bytes are never written.",
+        "Cancelling an active Ghidra request terminates its ephemeral database and discards session annotations. The selected target remains open; the next provider query imports the original artifact again.",
+        "Default-space addresses use lowercase 0x-prefixed hexadecimal; other address spaces use <percent-encoded-space>:0x<hex>.",
+        "An exact external entry resolves to its observed function identity even when its body is empty. This does not establish mapped executable bytes or containment of nearby external addresses.",
+        "Windows Ghidra P0 accepts approved native x86 and x86-64 PE applications and DLLs; managed, hostile, sensitive, and mutable-path targets are unsupported.",
+        "The Windows bridge uses authenticated IPv4 loopback because Node path-based IPC does not expose Java AF_UNIX sockets; the endpoint file contains no bearer token.",
+        "Windows sessions require the matching packaged Windows x64 native addon, local NTFS targets and runtimes, and Windows 10 or later. Native handles enforce path admission, private DACLs, and Job Object ownership automatically."
+      ],
+      "locations": [],
+      "normalized_result": {
+        "found": true,
+        "procedure": {
+          "address": "0x140001470",
+          "body": {
+            "available": true,
+            "contains_entry": true,
+            "non_contiguous": false,
+            "provenance": "ghidra-function-body-address-set",
+            "ranges": [
+              {
+                "end": "0x140001551",
+                "start": "0x140001470"
+              }
+            ],
+            "span_bytes": 226,
+            "total_bytes": 226
+          },
+          "classification": {
+            "external": false,
+            "provenance": "ghidra-function-manager",
+            "thunk": false,
+            "thunk_target": null
+          },
+          "name": "FUN_140001470"
+        },
+        "query_address": "0x1400014d6"
+      },
+      "operation": "resolve_containing_procedure",
+      "parameters": {
+        "address": "0x1400014d6"
+      },
+      "predicate_type": "rea.analysis",
+      "provider": {
+        "id": "ghidra",
+        "name": "Ghidra",
+        "version": "12.1.4"
+      },
+      "raw_result": {
+        "found": true,
+        "procedure": {
+          "address": "0x140001470",
+          "body": {
+            "available": true,
+            "contains_entry": true,
+            "non_contiguous": false,
+            "provenance": "ghidra-function-body-address-set",
+            "ranges": [
+              {
+                "end": "0x140001551",
+                "start": "0x140001470"
+              }
+            ],
+            "span_bytes": 226,
+            "total_bytes": 226
+          },
+          "classification": {
+            "external": false,
+            "provenance": "ghidra-function-manager",
+            "thunk": false,
+            "thunk_target": null
+          },
+          "name": "FUN_140001470"
+        },
+        "query_address": "0x1400014d6"
+      },
+      "subject": {
+        "architecture": "x86_64",
+        "digest": {
+          "sha256": "4ec8d5c0ccdacb378dd0de8113b6cf9b0b04f3194e346a3d6b1bb41eccc5f25f"
+        },
+        "format": "pe",
+        "local_path": "<target>/c02-xor-x64-O2-strip.exe",
+        "name": "c02-xor-x64-O2-strip.exe"
+      }
+    },
+    {
+      "analysis_profile": {
+        "digest": "249564812a8d83b9b3f461098fc485ccde60c516d4497547a124081c91d654bf",
+        "parameters": {
+          "analyzer_preset": "ghidra-default",
+          "annotation_policy": "atomic-function-entry-metadata-v1",
+          "architecture": "x86_64",
+          "available_architectures": [
+            "x86_64"
+          ],
+          "compiler_spec_id": "auto-default",
+          "decompiler_jump_loads": true,
+          "executable_role": "application",
+          "function_body_evidence": "complete-inclusive-ranges-v1",
+          "function_boundary_observations": "ghidra-terminal-call-limitations-v1",
+          "function_references": "complete-body-and-entry-reference-manager-v2",
+          "import_mode": "ephemeral-source-immutable",
+          "instruction_flow_evidence": "decoded-return-pcode-v1",
+          "jump_table_evidence": "typed-case-default-blocks-v1",
+          "language_id": "auto-from-header",
+          "load_image_observations": "source-mappings-entry-context-v2",
+          "loader": "auto-from-header",
+          "location_resolution": "explicit-address-exact-entry-symbol-first-v3",
+          "managed": false,
+          "native_aot_metadata": {
+            "contract_revision": "rtr-9.1-x64-pe-read-only-v3",
+            "report_bytes": 4194304,
+            "source_bytes": 134217728,
+            "work_units": 67108864,
+            "working_memory_bytes": 67108864
+          },
+          "no_return_repair": "disabled-windows-p0",
+          "process_launch": "official-headless-script-v1",
+          "string_inventory_evidence": "defined-data-coverage-v1",
+          "target_format": "pe",
+          "target_kind": "executable"
+        },
+        "provider": {
+          "id": "ghidra",
+          "name": "Ghidra",
+          "version": "12.1.4"
+        }
+      },
+      "authority": "shipped-artifact",
+      "confidence": "observed",
+      "environment": null,
+      "evidence_id": "ev_62c2c1ae40b5dd850c673a78d8fb7d4cc57828da87e329df1b3dc45ead2f97c5",
+      "evidence_links": [],
+      "limitations": [
+        "The session serves operations only after Ghidra reports default auto-analysis complete; incomplete analysis does not expose partial results.",
+        "The imported Program and temporary project are ephemeral and deleted on close. Annotation operations edit session database metadata; original executable bytes are never written.",
+        "Cancelling an active Ghidra request terminates its ephemeral database and discards session annotations. The selected target remains open; the next provider query imports the original artifact again.",
+        "Default-space addresses use lowercase 0x-prefixed hexadecimal; other address spaces use <percent-encoded-space>:0x<hex>.",
+        "The direct address list projects exact Ghidra references to one address but does not expose their kinds; procedure_references and analyze_function preserve available kind metadata.",
+        "Synthetic Ghidra entry-point references without actionable memory sources are omitted.",
+        "Windows Ghidra P0 accepts approved native x86 and x86-64 PE applications and DLLs; managed, hostile, sensitive, and mutable-path targets are unsupported.",
+        "The Windows bridge uses authenticated IPv4 loopback because Node path-based IPC does not expose Java AF_UNIX sockets; the endpoint file contains no bearer token.",
+        "Windows sessions require the matching packaged Windows x64 native addon, local NTFS targets and runtimes, and Windows 10 or later. Native handles enforce path admission, private DACLs, and Job Object ownership automatically."
+      ],
+      "locations": [],
+      "normalized_result": [
+        "0x1400014d6"
+      ],
+      "operation": "xrefs",
+      "parameters": {
+        "address": "0x1400030a3"
+      },
+      "predicate_type": "rea.analysis",
+      "provider": {
+        "id": "ghidra",
+        "name": "Ghidra",
+        "version": "12.1.4"
+      },
+      "raw_result": [
+        "0x1400014d6"
+      ],
+      "subject": {
+        "architecture": "x86_64",
+        "digest": {
+          "sha256": "4ec8d5c0ccdacb378dd0de8113b6cf9b0b04f3194e346a3d6b1bb41eccc5f25f"
+        },
+        "format": "pe",
+        "local_path": "<target>/c02-xor-x64-O2-strip.exe",
+        "name": "c02-xor-x64-O2-strip.exe"
+      }
+    },
+    {
+      "analysis_profile": {
+        "digest": "ec6aca1849cfc12aa2154a2e5189dcccb474abeb8e43ab15580a5b807e0767c0",
+        "parameters": {
+          "upstream_analysis_profile": {
+            "digest": "249564812a8d83b9b3f461098fc485ccde60c516d4497547a124081c91d654bf",
+            "parameters": {
+              "analyzer_preset": "ghidra-default",
+              "annotation_policy": "atomic-function-entry-metadata-v1",
+              "architecture": "x86_64",
+              "available_architectures": [
+                "x86_64"
+              ],
+              "compiler_spec_id": "auto-default",
+              "decompiler_jump_loads": true,
+              "executable_role": "application",
+              "function_body_evidence": "complete-inclusive-ranges-v1",
+              "function_boundary_observations": "ghidra-terminal-call-limitations-v1",
+              "function_references": "complete-body-and-entry-reference-manager-v2",
+              "import_mode": "ephemeral-source-immutable",
+              "instruction_flow_evidence": "decoded-return-pcode-v1",
+              "jump_table_evidence": "typed-case-default-blocks-v1",
+              "language_id": "auto-from-header",
+              "load_image_observations": "source-mappings-entry-context-v2",
+              "loader": "auto-from-header",
+              "location_resolution": "explicit-address-exact-entry-symbol-first-v3",
+              "managed": false,
+              "native_aot_metadata": {
+                "contract_revision": "rtr-9.1-x64-pe-read-only-v3",
+                "report_bytes": 4194304,
+                "source_bytes": 134217728,
+                "work_units": 67108864,
+                "working_memory_bytes": 67108864
+              },
+              "no_return_repair": "disabled-windows-p0",
+              "process_launch": "official-headless-script-v1",
+              "string_inventory_evidence": "defined-data-coverage-v1",
+              "target_format": "pe",
+              "target_kind": "executable"
+            },
+            "provider": {
+              "id": "ghidra",
+              "name": "Ghidra",
+              "version": "12.1.4"
+            }
+          },
+          "workflow_revision": 2
+        },
+        "provider": {
+          "id": "rea-workflow",
+          "name": "REA composed investigation workflow",
+          "version": "1"
+        }
+      },
+      "authority": "shipped-artifact",
+      "confidence": "derived",
+      "environment": null,
+      "evidence_id": "ev_63c0586c9f6944ee9d30c85e924a8eb5b9105a404d476cb53064ebb98839cad3",
+      "evidence_links": [],
+      "limitations": [
+        "Derived by an REA composed workflow."
+      ],
+      "locations": [],
+      "normalized_result": {
+        "document": "target-4ec8d5c0ccda.exe",
+        "procedure_count": 88,
+        "segment_count": 7,
+        "segments": [
+          {
+            "end": "0x140000400",
+            "length": 1024,
+            "name": "Headers",
+            "start": "0x140000000"
+          },
+          {
+            "end": "0x140002200",
+            "length": 4608,
+            "name": ".text",
+            "start": "0x140001000"
+          },
+          {
+            "end": "0x140003e00",
+            "length": 3584,
+            "name": ".rdata",
+            "start": "0x140003000"
+          },
+          {
+            "end": "0x140004200",
+            "length": 512,
+            "name": ".data",
+            "start": "0x140004000"
+          },
+          {
+            "end": "0x140005200",
+            "length": 512,
+            "name": ".pdata",
+            "start": "0x140005000"
+          },
+          {
+            "end": "0x140006200",
+            "length": 512,
+            "name": ".reloc",
+            "start": "0x140006000"
+          },
+          {
+            "end": "0xff00001850",
+            "length": 6224,
+            "name": "tdb",
+            "start": "0xff00000000"
+          }
+        ],
+        "string_count": 66
+      },
+      "operation": "binary_overview",
+      "parameters": {},
+      "predicate_type": "rea.analysis",
+      "provider": {
+        "id": "rea-workflow",
+        "name": "REA composed investigation workflow",
+        "version": "1"
+      },
+      "raw_result": null,
+      "subject": {
+        "architecture": "x86_64",
+        "digest": {
+          "sha256": "4ec8d5c0ccdacb378dd0de8113b6cf9b0b04f3194e346a3d6b1bb41eccc5f25f"
+        },
+        "format": "pe",
+        "local_path": "<target>/c02-xor-x64-O2-strip.exe",
+        "name": "c02-xor-x64-O2-strip.exe"
+      }
+    },
+    {
+      "analysis_profile": {
+        "digest": "249564812a8d83b9b3f461098fc485ccde60c516d4497547a124081c91d654bf",
+        "parameters": {
+          "analyzer_preset": "ghidra-default",
+          "annotation_policy": "atomic-function-entry-metadata-v1",
+          "architecture": "x86_64",
+          "available_architectures": [
+            "x86_64"
+          ],
+          "compiler_spec_id": "auto-default",
+          "decompiler_jump_loads": true,
+          "executable_role": "application",
+          "function_body_evidence": "complete-inclusive-ranges-v1",
+          "function_boundary_observations": "ghidra-terminal-call-limitations-v1",
+          "function_references": "complete-body-and-entry-reference-manager-v2",
+          "import_mode": "ephemeral-source-immutable",
+          "instruction_flow_evidence": "decoded-return-pcode-v1",
+          "jump_table_evidence": "typed-case-default-blocks-v1",
+          "language_id": "auto-from-header",
+          "load_image_observations": "source-mappings-entry-context-v2",
+          "loader": "auto-from-header",
+          "location_resolution": "explicit-address-exact-entry-symbol-first-v3",
+          "managed": false,
+          "native_aot_metadata": {
+            "contract_revision": "rtr-9.1-x64-pe-read-only-v3",
+            "report_bytes": 4194304,
+            "source_bytes": 134217728,
+            "work_units": 67108864,
+            "working_memory_bytes": 67108864
+          },
+          "no_return_repair": "disabled-windows-p0",
+          "process_launch": "official-headless-script-v1",
+          "string_inventory_evidence": "defined-data-coverage-v1",
+          "target_format": "pe",
+          "target_kind": "executable"
+        },
+        "provider": {
+          "id": "ghidra",
+          "name": "Ghidra",
+          "version": "12.1.4"
+        }
+      },
+      "authority": "shipped-artifact",
+      "confidence": "observed",
+      "environment": null,
+      "evidence_id": "ev_6d738a84a9b1efce5eb58cc28cf1aa45138be67377e01b90c0a920cf393e995f",
+      "evidence_links": [],
+      "limitations": [
+        "The session serves operations only after Ghidra reports default auto-analysis complete; incomplete analysis does not expose partial results.",
+        "The imported Program and temporary project are ephemeral and deleted on close. Annotation operations edit session database metadata; original executable bytes are never written.",
+        "Cancelling an active Ghidra request terminates its ephemeral database and discards session annotations. The selected target remains open; the next provider query imports the original artifact again.",
+        "Default-space addresses use lowercase 0x-prefixed hexadecimal; other address spaces use <percent-encoded-space>:0x<hex>.",
+        "Only Ghidra-defined string Data is observed; packed or undefined string bytes may be absent. Completeness applies to that inventory, and an empty search does not establish that text is absent from the artifact. If an address is known, use read_bytes and xrefs to inspect bytes and references.",
+        "Regex mode uses Java Pattern semantics. Matcher or compiler stack exhaustion returns a resource constraint without closing the session; literal mode avoids regex recursion and returns complete matching values.",
+        "Windows Ghidra P0 accepts approved native x86 and x86-64 PE applications and DLLs; managed, hostile, sensitive, and mutable-path targets are unsupported.",
+        "The Windows bridge uses authenticated IPv4 loopback because Node path-based IPC does not expose Java AF_UNIX sockets; the endpoint file contains no bearer token.",
+        "Windows sessions require the matching packaged Windows x64 native addon, local NTFS targets and runtimes, and Windows 10 or later. Native handles enforce path admission, private DACLs, and Job Object ownership automatically."
+      ],
+      "locations": [],
+      "normalized_result": [
+        {
+          "address": "0x1400030a3",
+          "value": "ACCESS GRANTED"
+        },
+        {
+          "address": "0x1400030b2",
+          "value": "ACCESS DENIED"
+        }
+      ],
+      "operation": "search_strings",
+      "parameters": {
+        "case_sensitive": true,
+        "mode": "literal",
+        "pattern": "ACCESS"
+      },
+      "predicate_type": "rea.analysis",
+      "provider": {
+        "id": "ghidra",
+        "name": "Ghidra",
+        "version": "12.1.4"
+      },
+      "raw_result": [
+        {
+          "address": "0x1400030a3",
+          "value": "ACCESS GRANTED"
+        },
+        {
+          "address": "0x1400030b2",
+          "value": "ACCESS DENIED"
+        }
+      ],
+      "subject": {
+        "architecture": "x86_64",
+        "digest": {
+          "sha256": "4ec8d5c0ccdacb378dd0de8113b6cf9b0b04f3194e346a3d6b1bb41eccc5f25f"
+        },
+        "format": "pe",
+        "local_path": "<target>/c02-xor-x64-O2-strip.exe",
+        "name": "c02-xor-x64-O2-strip.exe"
+      }
+    },
+    {
+      "analysis_profile": {
+        "digest": "249564812a8d83b9b3f461098fc485ccde60c516d4497547a124081c91d654bf",
+        "parameters": {
+          "analyzer_preset": "ghidra-default",
+          "annotation_policy": "atomic-function-entry-metadata-v1",
+          "architecture": "x86_64",
+          "available_architectures": [
+            "x86_64"
+          ],
+          "compiler_spec_id": "auto-default",
+          "decompiler_jump_loads": true,
+          "executable_role": "application",
+          "function_body_evidence": "complete-inclusive-ranges-v1",
+          "function_boundary_observations": "ghidra-terminal-call-limitations-v1",
+          "function_references": "complete-body-and-entry-reference-manager-v2",
+          "import_mode": "ephemeral-source-immutable",
+          "instruction_flow_evidence": "decoded-return-pcode-v1",
+          "jump_table_evidence": "typed-case-default-blocks-v1",
+          "language_id": "auto-from-header",
+          "load_image_observations": "source-mappings-entry-context-v2",
+          "loader": "auto-from-header",
+          "location_resolution": "explicit-address-exact-entry-symbol-first-v3",
+          "managed": false,
+          "native_aot_metadata": {
+            "contract_revision": "rtr-9.1-x64-pe-read-only-v3",
+            "report_bytes": 4194304,
+            "source_bytes": 134217728,
+            "work_units": 67108864,
+            "working_memory_bytes": 67108864
+          },
+          "no_return_repair": "disabled-windows-p0",
+          "process_launch": "official-headless-script-v1",
+          "string_inventory_evidence": "defined-data-coverage-v1",
+          "target_format": "pe",
+          "target_kind": "executable"
+        },
+        "provider": {
+          "id": "ghidra",
+          "name": "Ghidra",
+          "version": "12.1.4"
+        }
+      },
+      "authority": "shipped-artifact",
+      "confidence": "observed",
+      "environment": null,
+      "evidence_id": "ev_bc7dcdc955b1004188679e2760201b047f853b0da364dc466ab7960989f1486f",
+      "evidence_links": [],
+      "limitations": [
+        "The session serves operations only after Ghidra reports default auto-analysis complete; incomplete analysis does not expose partial results.",
+        "The imported Program and temporary project are ephemeral and deleted on close. Annotation operations edit session database metadata; original executable bytes are never written.",
+        "Cancelling an active Ghidra request terminates its ephemeral database and discards session annotations. The selected target remains open; the next provider query imports the original artifact again.",
+        "Default-space addresses use lowercase 0x-prefixed hexadecimal; other address spaces use <percent-encoded-space>:0x<hex>.",
+        "Pseudocode is Ghidra decompiler output, not original source and not text-equivalent to Hopper output.",
+        "External functions and functions without an analyzable body return null; other decompiler failures remain explicit.",
+        "Windows Ghidra P0 accepts approved native x86 and x86-64 PE applications and DLLs; managed, hostile, sensitive, and mutable-path targets are unsupported.",
+        "The Windows bridge uses authenticated IPv4 loopback because Node path-based IPC does not expose Java AF_UNIX sockets; the endpoint file contains no bearer token.",
+        "Windows sessions require the matching packaged Windows x64 native addon, local NTFS targets and runtimes, and Windows 10 or later. Native handles enforce path admission, private DACLs, and Job Object ownership automatically."
+      ],
+      "locations": [],
+      "normalized_result": "\r\nundefined8 FUN_140001470(void)\r\n\r\n{\r\n  undefined1 auVar1 [12];\r\n  undefined1 auVar2 [12];\r\n  undefined1 auVar3 [12];\r\n  FILE *_File;\r\n  char *pcVar4;\r\n  size_t sVar5;\r\n  undefined8 uVar6;\r\n  undefined4 uVar7;\r\n  undefined4 uVar8;\r\n  undefined1 auVar9 [16];\r\n  undefined1 auVar16 [16];\r\n  undefined1 auVar17 [16];\r\n  undefined8 in_XMM2_Qb;\r\n  undefined1 auVar23 [16];\r\n  undefined1 auVar24 [16];\r\n  undefined1 auVar25 [16];\r\n  char local_98 [12];\r\n  char cStack_8c;\r\n  char cStack_8b;\r\n  ushort uStack_8a;\r\n  undefined1 auVar10 [16];\r\n  undefined1 auVar11 [16];\r\n  undefined1 auVar12 [16];\r\n  undefined1 auVar13 [16];\r\n  undefined1 auVar14 [16];\r\n  undefined1 auVar15 [16];\r\n  char cVar18;\r\n  char cVar19;\r\n  char cVar20;\r\n  undefined1 uVar21;\r\n  undefined8 uVar22;\r\n  \r\n  FUN_140001610();\r\n  uVar6 = 0;\r\n  _File = (FILE *)__acrt_iob_func(0);\r\n  pcVar4 = fgets(local_98,0x80,_File);\r\n  if (pcVar4 == (char *)0x0) {\r\n    uVar6 = 1;\r\n  }\r\n  else {\r\n    sVar5 = strcspn(local_98,\"\\r\\n\");\r\n    local_98[sVar5] = '\\0';\r\n    sVar5 = strlen(local_98);\r\n    pcVar4 = \"ACCESS GRANTED\";\r\n    if (cStack_8b != '0') {\r\n      pcVar4 = \"ACCESS DENIED\";\r\n    }\r\n    uVar7 = CONCAT13(-(SUB81(local_98._0_8_,1) == 'r'),\r\n                     CONCAT12(-(SUB81(local_98._0_8_,1) == 'r'),\r\n                              CONCAT11(-((char)local_98._0_8_ == 'g'),-((char)local_98._0_8_ == 'g')\r\n                                      )));\r\n    auVar25._0_8_ =\r\n         CONCAT17(-(SUB81(local_98._0_8_,3) == 'v'),\r\n                  CONCAT16(-(SUB81(local_98._0_8_,3) == 'v'),\r\n                           CONCAT15(-(SUB81(local_98._0_8_,2) == 'o'),\r\n                                    CONCAT14(-(SUB81(local_98._0_8_,2) == 'o'),uVar7))));\r\n    auVar25[8] = -(SUB81(local_98._0_8_,4) == 'e');\r\n    auVar25[9] = -(SUB81(local_98._0_8_,4) == 'e');\r\n    auVar25[10] = -(SUB81(local_98._0_8_,5) == '-');\r\n    auVar25[0xb] = -(SUB81(local_98._0_8_,5) == '-');\r\n    auVar25[0xc] = -(SUB81(local_98._0_8_,6) == 'b');\r\n    auVar25[0xd] = -(SUB81(local_98._0_8_,6) == 'b');\r\n    auVar25[0xe] = -(SUB81(local_98._0_8_,7) == 'i');\r\n    auVar25[0xf] = -(SUB81(local_98._0_8_,7) == 'i');\r\n    uVar21 = (undefined1)(uStack_8a >> 8);\r\n    auVar15._0_14_ = ZEXT214(uStack_8a) << 0x30;\r\n    auVar15[0xe] = uVar21;\r\n    auVar15[0xf] = uVar21;\r\n    auVar14._14_2_ = auVar15._14_2_;\r\n    auVar14._0_13_ = ZEXT213(uStack_8a) << 0x30;\r\n    auVar14[0xd] = (char)uStack_8a;\r\n    auVar13._13_3_ = auVar14._13_3_;\r\n    auVar13._0_12_ = ZEXT212(uStack_8a) << 0x30;\r\n    auVar13[0xc] = (char)uStack_8a;\r\n    auVar12._12_4_ = auVar13._12_4_;\r\n    auVar12._0_11_ = ZEXT211(uStack_8a) << 0x30;\r\n    auVar12[0xb] = cStack_8b;\r\n    auVar11._11_5_ = auVar12._11_5_;\r\n    auVar11._0_10_ = (unkuint10)uStack_8a << 0x30;\r\n    auVar11[10] = cStack_8b;\r\n    auVar10._10_6_ = auVar11._10_6_;\r\n    auVar10._0_9_ = (unkuint9)uStack_8a << 0x30;\r\n    auVar10[9] = cStack_8c;\r\n    cVar20 = SUB41(local_98._8_4_,3);\r\n    uVar22 = (undefined8)(CONCAT73(auVar10._9_7_,CONCAT12(cStack_8c,uStack_8a)) >> 0x10);\r\n    auVar3._4_8_ = uVar22;\r\n    auVar3[3] = cVar20;\r\n    auVar3[2] = cVar20;\r\n    cVar19 = SUB41(local_98._8_4_,2);\r\n    auVar3[1] = cVar19;\r\n    auVar3[0] = cVar19;\r\n    cVar18 = SUB41(local_98._8_4_,1);\r\n    auVar9._4_12_ = auVar3;\r\n    auVar9[3] = cVar18;\r\n    auVar9[2] = cVar18;\r\n    auVar9[0] = (char)local_98._8_4_;\r\n    auVar9[1] = auVar9[0];\r\n    auVar1._4_8_ = uVar22;\r\n    auVar1._0_4_ = auVar3._0_4_;\r\n    auVar16._0_8_ = auVar1._0_8_ << 0x20;\r\n    auVar16._8_4_ = auVar9._0_4_;\r\n    auVar16._12_4_ = auVar3._0_4_;\r\n    auVar17._0_8_ = (longlong)CONCAT81(auVar16._8_8_,-(cVar20 == '-')) << 0x38;\r\n    auVar17[8] = -(auVar9[0] == 'r');\r\n    auVar17[9] = -(auVar9[0] == 'r');\r\n    auVar17[10] = -(cVar18 == 'c');\r\n    auVar17[0xb] = -(cVar18 == 'c');\r\n    auVar17[0xc] = -(cVar19 == 'h');\r\n    auVar17[0xd] = -(cVar19 == 'h');\r\n    auVar17[0xe] = -(cVar20 == '-');\r\n    auVar17[0xf] = -(cVar20 == '-');\r\n    uVar8 = (undefined4)((ulonglong)auVar25._0_8_ >> 0x20);\r\n    auVar2._4_8_ = in_XMM2_Qb;\r\n    auVar2._0_4_ = uVar8;\r\n    auVar23._0_8_ = auVar2._0_8_ << 0x20;\r\n    auVar23._8_4_ = uVar7;\r\n    auVar23._12_4_ = uVar8;\r\n    auVar24._8_8_ = auVar25._8_8_;\r\n    auVar24._0_8_ = auVar23._8_8_ & auVar17._8_8_;\r\n    auVar25 = psllw(auVar24,0xf);\r\n    auVar25 = packsswb(auVar25,auVar25);\r\n    if (sVar5 != 0xe) {\r\n      pcVar4 = \"ACCESS DENIED\";\r\n    }\r\n    if ((byte)(SUB161(auVar25 >> 7,0) & 1 | (SUB161(auVar25 >> 0xf,0) & 1) << 1 |\r\n               (SUB161(auVar25 >> 0x17,0) & 1) << 2 | (SUB161(auVar25 >> 0x1f,0) & 1) << 3 |\r\n               (SUB161(auVar25 >> 0x27,0) & 1) << 4 | (SUB161(auVar25 >> 0x2f,0) & 1) << 5 |\r\n               (SUB161(auVar25 >> 0x37,0) & 1) << 6 | SUB161(auVar25 >> 0x3f,0) << 7) != 0xff ||\r\n        cStack_8c != '9') {\r\n      pcVar4 = \"ACCESS DENIED\";\r\n    }\r\n    puts(pcVar4);\r\n  }\r\n  return uVar6;\r\n}\r\n\r\n",
+      "operation": "procedure_pseudo_code",
+      "parameters": {
+        "procedure": "FUN_140001470"
+      },
+      "predicate_type": "rea.analysis",
+      "provider": {
+        "id": "ghidra",
+        "name": "Ghidra",
+        "version": "12.1.4"
+      },
+      "raw_result": {
+        "limitations": [],
+        "value": "\r\nundefined8 FUN_140001470(void)\r\n\r\n{\r\n  undefined1 auVar1 [12];\r\n  undefined1 auVar2 [12];\r\n  undefined1 auVar3 [12];\r\n  FILE *_File;\r\n  char *pcVar4;\r\n  size_t sVar5;\r\n  undefined8 uVar6;\r\n  undefined4 uVar7;\r\n  undefined4 uVar8;\r\n  undefined1 auVar9 [16];\r\n  undefined1 auVar16 [16];\r\n  undefined1 auVar17 [16];\r\n  undefined8 in_XMM2_Qb;\r\n  undefined1 auVar23 [16];\r\n  undefined1 auVar24 [16];\r\n  undefined1 auVar25 [16];\r\n  char local_98 [12];\r\n  char cStack_8c;\r\n  char cStack_8b;\r\n  ushort uStack_8a;\r\n  undefined1 auVar10 [16];\r\n  undefined1 auVar11 [16];\r\n  undefined1 auVar12 [16];\r\n  undefined1 auVar13 [16];\r\n  undefined1 auVar14 [16];\r\n  undefined1 auVar15 [16];\r\n  char cVar18;\r\n  char cVar19;\r\n  char cVar20;\r\n  undefined1 uVar21;\r\n  undefined8 uVar22;\r\n  \r\n  FUN_140001610();\r\n  uVar6 = 0;\r\n  _File = (FILE *)__acrt_iob_func(0);\r\n  pcVar4 = fgets(local_98,0x80,_File);\r\n  if (pcVar4 == (char *)0x0) {\r\n    uVar6 = 1;\r\n  }\r\n  else {\r\n    sVar5 = strcspn(local_98,\"\\r\\n\");\r\n    local_98[sVar5] = '\\0';\r\n    sVar5 = strlen(local_98);\r\n    pcVar4 = \"ACCESS GRANTED\";\r\n    if (cStack_8b != '0') {\r\n      pcVar4 = \"ACCESS DENIED\";\r\n    }\r\n    uVar7 = CONCAT13(-(SUB81(local_98._0_8_,1) == 'r'),\r\n                     CONCAT12(-(SUB81(local_98._0_8_,1) == 'r'),\r\n                              CONCAT11(-((char)local_98._0_8_ == 'g'),-((char)local_98._0_8_ == 'g')\r\n                                      )));\r\n    auVar25._0_8_ =\r\n         CONCAT17(-(SUB81(local_98._0_8_,3) == 'v'),\r\n                  CONCAT16(-(SUB81(local_98._0_8_,3) == 'v'),\r\n                           CONCAT15(-(SUB81(local_98._0_8_,2) == 'o'),\r\n                                    CONCAT14(-(SUB81(local_98._0_8_,2) == 'o'),uVar7))));\r\n    auVar25[8] = -(SUB81(local_98._0_8_,4) == 'e');\r\n    auVar25[9] = -(SUB81(local_98._0_8_,4) == 'e');\r\n    auVar25[10] = -(SUB81(local_98._0_8_,5) == '-');\r\n    auVar25[0xb] = -(SUB81(local_98._0_8_,5) == '-');\r\n    auVar25[0xc] = -(SUB81(local_98._0_8_,6) == 'b');\r\n    auVar25[0xd] = -(SUB81(local_98._0_8_,6) == 'b');\r\n    auVar25[0xe] = -(SUB81(local_98._0_8_,7) == 'i');\r\n    auVar25[0xf] = -(SUB81(local_98._0_8_,7) == 'i');\r\n    uVar21 = (undefined1)(uStack_8a >> 8);\r\n    auVar15._0_14_ = ZEXT214(uStack_8a) << 0x30;\r\n    auVar15[0xe] = uVar21;\r\n    auVar15[0xf] = uVar21;\r\n    auVar14._14_2_ = auVar15._14_2_;\r\n    auVar14._0_13_ = ZEXT213(uStack_8a) << 0x30;\r\n    auVar14[0xd] = (char)uStack_8a;\r\n    auVar13._13_3_ = auVar14._13_3_;\r\n    auVar13._0_12_ = ZEXT212(uStack_8a) << 0x30;\r\n    auVar13[0xc] = (char)uStack_8a;\r\n    auVar12._12_4_ = auVar13._12_4_;\r\n    auVar12._0_11_ = ZEXT211(uStack_8a) << 0x30;\r\n    auVar12[0xb] = cStack_8b;\r\n    auVar11._11_5_ = auVar12._11_5_;\r\n    auVar11._0_10_ = (unkuint10)uStack_8a << 0x30;\r\n    auVar11[10] = cStack_8b;\r\n    auVar10._10_6_ = auVar11._10_6_;\r\n    auVar10._0_9_ = (unkuint9)uStack_8a << 0x30;\r\n    auVar10[9] = cStack_8c;\r\n    cVar20 = SUB41(local_98._8_4_,3);\r\n    uVar22 = (undefined8)(CONCAT73(auVar10._9_7_,CONCAT12(cStack_8c,uStack_8a)) >> 0x10);\r\n    auVar3._4_8_ = uVar22;\r\n    auVar3[3] = cVar20;\r\n    auVar3[2] = cVar20;\r\n    cVar19 = SUB41(local_98._8_4_,2);\r\n    auVar3[1] = cVar19;\r\n    auVar3[0] = cVar19;\r\n    cVar18 = SUB41(local_98._8_4_,1);\r\n    auVar9._4_12_ = auVar3;\r\n    auVar9[3] = cVar18;\r\n    auVar9[2] = cVar18;\r\n    auVar9[0] = (char)local_98._8_4_;\r\n    auVar9[1] = auVar9[0];\r\n    auVar1._4_8_ = uVar22;\r\n    auVar1._0_4_ = auVar3._0_4_;\r\n    auVar16._0_8_ = auVar1._0_8_ << 0x20;\r\n    auVar16._8_4_ = auVar9._0_4_;\r\n    auVar16._12_4_ = auVar3._0_4_;\r\n    auVar17._0_8_ = (longlong)CONCAT81(auVar16._8_8_,-(cVar20 == '-')) << 0x38;\r\n    auVar17[8] = -(auVar9[0] == 'r');\r\n    auVar17[9] = -(auVar9[0] == 'r');\r\n    auVar17[10] = -(cVar18 == 'c');\r\n    auVar17[0xb] = -(cVar18 == 'c');\r\n    auVar17[0xc] = -(cVar19 == 'h');\r\n    auVar17[0xd] = -(cVar19 == 'h');\r\n    auVar17[0xe] = -(cVar20 == '-');\r\n    auVar17[0xf] = -(cVar20 == '-');\r\n    uVar8 = (undefined4)((ulonglong)auVar25._0_8_ >> 0x20);\r\n    auVar2._4_8_ = in_XMM2_Qb;\r\n    auVar2._0_4_ = uVar8;\r\n    auVar23._0_8_ = auVar2._0_8_ << 0x20;\r\n    auVar23._8_4_ = uVar7;\r\n    auVar23._12_4_ = uVar8;\r\n    auVar24._8_8_ = auVar25._8_8_;\r\n    auVar24._0_8_ = auVar23._8_8_ & auVar17._8_8_;\r\n    auVar25 = psllw(auVar24,0xf);\r\n    auVar25 = packsswb(auVar25,auVar25);\r\n    if (sVar5 != 0xe) {\r\n      pcVar4 = \"ACCESS DENIED\";\r\n    }\r\n    if ((byte)(SUB161(auVar25 >> 7,0) & 1 | (SUB161(auVar25 >> 0xf,0) & 1) << 1 |\r\n               (SUB161(auVar25 >> 0x17,0) & 1) << 2 | (SUB161(auVar25 >> 0x1f,0) & 1) << 3 |\r\n               (SUB161(auVar25 >> 0x27,0) & 1) << 4 | (SUB161(auVar25 >> 0x2f,0) & 1) << 5 |\r\n               (SUB161(auVar25 >> 0x37,0) & 1) << 6 | SUB161(auVar25 >> 0x3f,0) << 7) != 0xff ||\r\n        cStack_8c != '9') {\r\n      pcVar4 = \"ACCESS DENIED\";\r\n    }\r\n    puts(pcVar4);\r\n  }\r\n  return uVar6;\r\n}\r\n\r\n"
+      },
+      "subject": {
+        "architecture": "x86_64",
+        "digest": {
+          "sha256": "4ec8d5c0ccdacb378dd0de8113b6cf9b0b04f3194e346a3d6b1bb41eccc5f25f"
+        },
+        "format": "pe",
+        "local_path": "<target>/c02-xor-x64-O2-strip.exe",
+        "name": "c02-xor-x64-O2-strip.exe"
+      }
+    },
+    {
+      "analysis_profile": {
+        "digest": "249564812a8d83b9b3f461098fc485ccde60c516d4497547a124081c91d654bf",
+        "parameters": {
+          "analyzer_preset": "ghidra-default",
+          "annotation_policy": "atomic-function-entry-metadata-v1",
+          "architecture": "x86_64",
+          "available_architectures": [
+            "x86_64"
+          ],
+          "compiler_spec_id": "auto-default",
+          "decompiler_jump_loads": true,
+          "executable_role": "application",
+          "function_body_evidence": "complete-inclusive-ranges-v1",
+          "function_boundary_observations": "ghidra-terminal-call-limitations-v1",
+          "function_references": "complete-body-and-entry-reference-manager-v2",
+          "import_mode": "ephemeral-source-immutable",
+          "instruction_flow_evidence": "decoded-return-pcode-v1",
+          "jump_table_evidence": "typed-case-default-blocks-v1",
+          "language_id": "auto-from-header",
+          "load_image_observations": "source-mappings-entry-context-v2",
+          "loader": "auto-from-header",
+          "location_resolution": "explicit-address-exact-entry-symbol-first-v3",
+          "managed": false,
+          "native_aot_metadata": {
+            "contract_revision": "rtr-9.1-x64-pe-read-only-v3",
+            "report_bytes": 4194304,
+            "source_bytes": 134217728,
+            "work_units": 67108864,
+            "working_memory_bytes": 67108864
+          },
+          "no_return_repair": "disabled-windows-p0",
+          "process_launch": "official-headless-script-v1",
+          "string_inventory_evidence": "defined-data-coverage-v1",
+          "target_format": "pe",
+          "target_kind": "executable"
+        },
+        "provider": {
+          "id": "ghidra",
+          "name": "Ghidra",
+          "version": "12.1.4"
+        }
+      },
+      "authority": "shipped-artifact",
+      "confidence": "observed",
+      "environment": null,
+      "evidence_id": "ev_c35748bda1fc250ee5ec5cf86448071fda61be8da881bce78a4ac9cfd5c550a1",
+      "evidence_links": [],
+      "limitations": [
+        "The session serves operations only after Ghidra reports default auto-analysis complete; incomplete analysis does not expose partial results.",
+        "The imported Program and temporary project are ephemeral and deleted on close. Annotation operations edit session database metadata; original executable bytes are never written.",
+        "Cancelling an active Ghidra request terminates its ephemeral database and discards session annotations. The selected target remains open; the next provider query imports the original artifact again.",
+        "Default-space addresses use lowercase 0x-prefixed hexadecimal; other address spaces use <percent-encoded-space>:0x<hex>.",
+        "External functions and local thunks are distinct; procedure metadata identifies both and preserves a thunk target when Ghidra resolves one.",
+        "Windows Ghidra P0 accepts approved native x86 and x86-64 PE applications and DLLs; managed, hostile, sensitive, and mutable-path targets are unsupported.",
+        "The Windows bridge uses authenticated IPv4 loopback because Node path-based IPC does not expose Java AF_UNIX sockets; the endpoint file contains no bearer token.",
+        "Windows sessions require the matching packaged Windows x64 native addon, local NTFS targets and runtimes, and Windows 10 or later. Native handles enforce path admission, private DACLs, and Job Object ownership automatically."
+      ],
+      "locations": [],
+      "normalized_result": [
+        {
+          "address": "EXTERNAL:0x1",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-STDIO-L1-1-0.DLL::__acrt_iob_func"
+        },
+        {
+          "address": "EXTERNAL:0x2",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-STDIO-L1-1-0.DLL::__p__commode"
+        },
+        {
+          "address": "EXTERNAL:0x3",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-STDIO-L1-1-0.DLL::__p__fmode"
+        },
+        {
+          "address": "EXTERNAL:0x4",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-STDIO-L1-1-0.DLL::__stdio_common_vfprintf"
+        },
+        {
+          "address": "EXTERNAL:0x6",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-STDIO-L1-1-0.DLL::fgets"
+        },
+        {
+          "address": "EXTERNAL:0x7",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-STDIO-L1-1-0.DLL::puts"
+        },
+        {
+          "address": "EXTERNAL:0x8",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-STDIO-L1-1-0.DLL::setvbuf"
+        },
+        {
+          "address": "EXTERNAL:0x9",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::__p___argc"
+        },
+        {
+          "address": "EXTERNAL:0xa",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::__p___argv"
+        },
+        {
+          "address": "EXTERNAL:0xb",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_cexit"
+        },
+        {
+          "address": "EXTERNAL:0xc",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_configure_narrow_argv"
+        },
+        {
+          "address": "EXTERNAL:0xd",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_crt_atexit"
+        },
+        {
+          "address": "EXTERNAL:0xe",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_exit"
+        },
+        {
+          "address": "EXTERNAL:0xf",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_initialize_narrow_environment"
+        },
+        {
+          "address": "EXTERNAL:0x10",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_initterm"
+        },
+        {
+          "address": "EXTERNAL:0x11",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_initterm_e"
+        },
+        {
+          "address": "EXTERNAL:0x12",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_seh_filter_exe"
+        },
+        {
+          "address": "EXTERNAL:0x13",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_set_app_type"
+        },
+        {
+          "address": "EXTERNAL:0x14",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_set_invalid_parameter_handler"
+        },
+        {
+          "address": "EXTERNAL:0x15",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::abort"
+        },
+        {
+          "address": "EXTERNAL:0x16",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::exit"
+        },
+        {
+          "address": "EXTERNAL:0x17",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-LOCALE-L1-1-0.DLL::_configthreadlocale"
+        },
+        {
+          "address": "EXTERNAL:0x18",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-HEAP-L1-1-0.DLL::_set_new_mode"
+        },
+        {
+          "address": "EXTERNAL:0x19",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-HEAP-L1-1-0.DLL::malloc"
+        },
+        {
+          "address": "EXTERNAL:0x1a",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-PRIVATE-L1-1-0.DLL::memcpy"
+        },
+        {
+          "address": "EXTERNAL:0x1b",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-STRING-L1-1-0.DLL::strcspn"
+        },
+        {
+          "address": "EXTERNAL:0x1c",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-STRING-L1-1-0.DLL::strlen"
+        },
+        {
+          "address": "EXTERNAL:0x1d",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "KERNEL32.DLL::GetLastError"
+        },
+        {
+          "address": "EXTERNAL:0x1e",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "KERNEL32.DLL::SetUnhandledExceptionFilter"
+        },
+        {
+          "address": "EXTERNAL:0x1f",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "KERNEL32.DLL::Sleep"
+        },
+        {
+          "address": "EXTERNAL:0x20",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "KERNEL32.DLL::VirtualProtect"
+        },
+        {
+          "address": "EXTERNAL:0x21",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "KERNEL32.DLL::VirtualQuery"
+        },
+        {
+          "address": "EXTERNAL:0x22",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-MATH-L1-1-0.DLL::__setusermatherr"
+        },
+        {
+          "address": "EXTERNAL:0x23",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-ENVIRONMENT-L1-1-0.DLL::__p__environ"
+        },
+        {
+          "address": "0x140001020",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_140001020"
+        },
+        {
+          "address": "0x1400013b0",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "entry"
+        },
+        {
+          "address": "0x1400013d0",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "0x140001eb0"
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_crt_atexit"
+        },
+        {
+          "address": "0x1400013e0",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_1400013e0"
+        },
+        {
+          "address": "0x140001470",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_140001470"
+        },
+        {
+          "address": "0x140001560",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_140001560"
+        },
+        {
+          "address": "0x1400015a0",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_1400015a0"
+        },
+        {
+          "address": "0x140001610",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_140001610"
+        },
+        {
+          "address": "0x1400016a0",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_1400016a0"
+        },
+        {
+          "address": "0x1400016f0",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_1400016f0"
+        },
+        {
+          "address": "0x140001700",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_140001700"
+        },
+        {
+          "address": "0x140001710",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_140001710"
+        },
+        {
+          "address": "0x140001780",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_140001780"
+        },
+        {
+          "address": "0x140001a90",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_140001a90"
+        },
+        {
+          "address": "0x140001c50",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_140001c50"
+        },
+        {
+          "address": "0x140001cb0",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_140001cb0"
+        },
+        {
+          "address": "0x140001cc0",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "_guard_check_icall"
+        },
+        {
+          "address": "0x140001cd0",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_140001cd0"
+        },
+        {
+          "address": "0x140001d40",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_140001d40"
+        },
+        {
+          "address": "0x140001d50",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_140001d50"
+        },
+        {
+          "address": "0x140001d80",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_140001d80"
+        },
+        {
+          "address": "0x140001dc8",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_140001dc8"
+        },
+        {
+          "address": "0x140001e00",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_140001e00"
+        },
+        {
+          "address": "0x140001e40",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "_guard_dispatch_icall"
+        },
+        {
+          "address": "0x140001e50",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_140001e50"
+        },
+        {
+          "address": "0x140001e60",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x1"
+          },
+          "value": "API-MS-WIN-CRT-STDIO-L1-1-0.DLL::__acrt_iob_func"
+        },
+        {
+          "address": "0x140001e70",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x2"
+          },
+          "value": "API-MS-WIN-CRT-STDIO-L1-1-0.DLL::__p__commode"
+        },
+        {
+          "address": "0x140001e80",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x3"
+          },
+          "value": "API-MS-WIN-CRT-STDIO-L1-1-0.DLL::__p__fmode"
+        },
+        {
+          "address": "0x140001e90",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0xb"
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_cexit"
+        },
+        {
+          "address": "0x140001ea0",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x17"
+          },
+          "value": "API-MS-WIN-CRT-LOCALE-L1-1-0.DLL::_configthreadlocale"
+        },
+        {
+          "address": "0x140001eb0",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0xd"
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_crt_atexit"
+        },
+        {
+          "address": "0x140001ec0",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0xe"
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_exit"
+        },
+        {
+          "address": "0x140001ed0",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x10"
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_initterm"
+        },
+        {
+          "address": "0x140001ee0",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x11"
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_initterm_e"
+        },
+        {
+          "address": "0x140001ef0",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x14"
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_set_invalid_parameter_handler"
+        },
+        {
+          "address": "0x140001f00",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x16"
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::exit"
+        },
+        {
+          "address": "0x140001f20",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x6"
+          },
+          "value": "API-MS-WIN-CRT-STDIO-L1-1-0.DLL::fgets"
+        },
+        {
+          "address": "0x140001f30",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x19"
+          },
+          "value": "API-MS-WIN-CRT-HEAP-L1-1-0.DLL::malloc"
+        },
+        {
+          "address": "0x140001f40",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x1a"
+          },
+          "value": "API-MS-WIN-CRT-PRIVATE-L1-1-0.DLL::memcpy"
+        },
+        {
+          "address": "0x140001f50",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x7"
+          },
+          "value": "API-MS-WIN-CRT-STDIO-L1-1-0.DLL::puts"
+        },
+        {
+          "address": "0x140001f60",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x8"
+          },
+          "value": "API-MS-WIN-CRT-STDIO-L1-1-0.DLL::setvbuf"
+        },
+        {
+          "address": "0x140001f70",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x1b"
+          },
+          "value": "API-MS-WIN-CRT-STRING-L1-1-0.DLL::strcspn"
+        },
+        {
+          "address": "0x140001f80",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x1c"
+          },
+          "value": "API-MS-WIN-CRT-STRING-L1-1-0.DLL::strlen"
+        },
+        {
+          "address": "0x140001fb0",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x22"
+          },
+          "value": "API-MS-WIN-CRT-MATH-L1-1-0.DLL::__setusermatherr"
+        },
+        {
+          "address": "0x140001ff0",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x15"
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::abort"
+        },
+        {
+          "address": "0x140002000",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x12"
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_seh_filter_exe"
+        },
+        {
+          "address": "0x140002010",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0xf"
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_initialize_narrow_environment"
+        },
+        {
+          "address": "0x140002020",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0xc"
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_configure_narrow_argv"
+        },
+        {
+          "address": "0x140002030",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x9"
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::__p___argc"
+        },
+        {
+          "address": "0x140002040",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0xa"
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::__p___argv"
+        },
+        {
+          "address": "0x140002050",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x23"
+          },
+          "value": "API-MS-WIN-CRT-ENVIRONMENT-L1-1-0.DLL::__p__environ"
+        },
+        {
+          "address": "0x140002060",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x18"
+          },
+          "value": "API-MS-WIN-CRT-HEAP-L1-1-0.DLL::_set_new_mode"
+        },
+        {
+          "address": "0x140002070",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x13"
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_set_app_type"
+        },
+        {
+          "address": "0x140002080",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x4"
+          },
+          "value": "API-MS-WIN-CRT-STDIO-L1-1-0.DLL::__stdio_common_vfprintf"
+        }
+      ],
+      "operation": "list_procedures",
+      "parameters": {},
+      "predicate_type": "rea.analysis",
+      "provider": {
+        "id": "ghidra",
+        "name": "Ghidra",
+        "version": "12.1.4"
+      },
+      "raw_result": [
+        {
+          "address": "EXTERNAL:0x1",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-STDIO-L1-1-0.DLL::__acrt_iob_func"
+        },
+        {
+          "address": "EXTERNAL:0x2",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-STDIO-L1-1-0.DLL::__p__commode"
+        },
+        {
+          "address": "EXTERNAL:0x3",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-STDIO-L1-1-0.DLL::__p__fmode"
+        },
+        {
+          "address": "EXTERNAL:0x4",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-STDIO-L1-1-0.DLL::__stdio_common_vfprintf"
+        },
+        {
+          "address": "EXTERNAL:0x6",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-STDIO-L1-1-0.DLL::fgets"
+        },
+        {
+          "address": "EXTERNAL:0x7",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-STDIO-L1-1-0.DLL::puts"
+        },
+        {
+          "address": "EXTERNAL:0x8",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-STDIO-L1-1-0.DLL::setvbuf"
+        },
+        {
+          "address": "EXTERNAL:0x9",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::__p___argc"
+        },
+        {
+          "address": "EXTERNAL:0xa",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::__p___argv"
+        },
+        {
+          "address": "EXTERNAL:0xb",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_cexit"
+        },
+        {
+          "address": "EXTERNAL:0xc",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_configure_narrow_argv"
+        },
+        {
+          "address": "EXTERNAL:0xd",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_crt_atexit"
+        },
+        {
+          "address": "EXTERNAL:0xe",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_exit"
+        },
+        {
+          "address": "EXTERNAL:0xf",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_initialize_narrow_environment"
+        },
+        {
+          "address": "EXTERNAL:0x10",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_initterm"
+        },
+        {
+          "address": "EXTERNAL:0x11",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_initterm_e"
+        },
+        {
+          "address": "EXTERNAL:0x12",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_seh_filter_exe"
+        },
+        {
+          "address": "EXTERNAL:0x13",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_set_app_type"
+        },
+        {
+          "address": "EXTERNAL:0x14",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_set_invalid_parameter_handler"
+        },
+        {
+          "address": "EXTERNAL:0x15",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::abort"
+        },
+        {
+          "address": "EXTERNAL:0x16",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::exit"
+        },
+        {
+          "address": "EXTERNAL:0x17",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-LOCALE-L1-1-0.DLL::_configthreadlocale"
+        },
+        {
+          "address": "EXTERNAL:0x18",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-HEAP-L1-1-0.DLL::_set_new_mode"
+        },
+        {
+          "address": "EXTERNAL:0x19",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-HEAP-L1-1-0.DLL::malloc"
+        },
+        {
+          "address": "EXTERNAL:0x1a",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-PRIVATE-L1-1-0.DLL::memcpy"
+        },
+        {
+          "address": "EXTERNAL:0x1b",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-STRING-L1-1-0.DLL::strcspn"
+        },
+        {
+          "address": "EXTERNAL:0x1c",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-STRING-L1-1-0.DLL::strlen"
+        },
+        {
+          "address": "EXTERNAL:0x1d",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "KERNEL32.DLL::GetLastError"
+        },
+        {
+          "address": "EXTERNAL:0x1e",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "KERNEL32.DLL::SetUnhandledExceptionFilter"
+        },
+        {
+          "address": "EXTERNAL:0x1f",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "KERNEL32.DLL::Sleep"
+        },
+        {
+          "address": "EXTERNAL:0x20",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "KERNEL32.DLL::VirtualProtect"
+        },
+        {
+          "address": "EXTERNAL:0x21",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "KERNEL32.DLL::VirtualQuery"
+        },
+        {
+          "address": "EXTERNAL:0x22",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-MATH-L1-1-0.DLL::__setusermatherr"
+        },
+        {
+          "address": "EXTERNAL:0x23",
+          "procedure": {
+            "external": true,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "API-MS-WIN-CRT-ENVIRONMENT-L1-1-0.DLL::__p__environ"
+        },
+        {
+          "address": "0x140001020",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_140001020"
+        },
+        {
+          "address": "0x1400013b0",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "entry"
+        },
+        {
+          "address": "0x1400013d0",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "0x140001eb0"
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_crt_atexit"
+        },
+        {
+          "address": "0x1400013e0",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_1400013e0"
+        },
+        {
+          "address": "0x140001470",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_140001470"
+        },
+        {
+          "address": "0x140001560",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_140001560"
+        },
+        {
+          "address": "0x1400015a0",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_1400015a0"
+        },
+        {
+          "address": "0x140001610",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_140001610"
+        },
+        {
+          "address": "0x1400016a0",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_1400016a0"
+        },
+        {
+          "address": "0x1400016f0",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_1400016f0"
+        },
+        {
+          "address": "0x140001700",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_140001700"
+        },
+        {
+          "address": "0x140001710",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_140001710"
+        },
+        {
+          "address": "0x140001780",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_140001780"
+        },
+        {
+          "address": "0x140001a90",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_140001a90"
+        },
+        {
+          "address": "0x140001c50",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_140001c50"
+        },
+        {
+          "address": "0x140001cb0",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_140001cb0"
+        },
+        {
+          "address": "0x140001cc0",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "_guard_check_icall"
+        },
+        {
+          "address": "0x140001cd0",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_140001cd0"
+        },
+        {
+          "address": "0x140001d40",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_140001d40"
+        },
+        {
+          "address": "0x140001d50",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_140001d50"
+        },
+        {
+          "address": "0x140001d80",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_140001d80"
+        },
+        {
+          "address": "0x140001dc8",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_140001dc8"
+        },
+        {
+          "address": "0x140001e00",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_140001e00"
+        },
+        {
+          "address": "0x140001e40",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "_guard_dispatch_icall"
+        },
+        {
+          "address": "0x140001e50",
+          "procedure": {
+            "external": false,
+            "thunk": false,
+            "thunk_target": null
+          },
+          "value": "FUN_140001e50"
+        },
+        {
+          "address": "0x140001e60",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x1"
+          },
+          "value": "API-MS-WIN-CRT-STDIO-L1-1-0.DLL::__acrt_iob_func"
+        },
+        {
+          "address": "0x140001e70",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x2"
+          },
+          "value": "API-MS-WIN-CRT-STDIO-L1-1-0.DLL::__p__commode"
+        },
+        {
+          "address": "0x140001e80",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x3"
+          },
+          "value": "API-MS-WIN-CRT-STDIO-L1-1-0.DLL::__p__fmode"
+        },
+        {
+          "address": "0x140001e90",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0xb"
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_cexit"
+        },
+        {
+          "address": "0x140001ea0",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x17"
+          },
+          "value": "API-MS-WIN-CRT-LOCALE-L1-1-0.DLL::_configthreadlocale"
+        },
+        {
+          "address": "0x140001eb0",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0xd"
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_crt_atexit"
+        },
+        {
+          "address": "0x140001ec0",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0xe"
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_exit"
+        },
+        {
+          "address": "0x140001ed0",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x10"
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_initterm"
+        },
+        {
+          "address": "0x140001ee0",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x11"
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_initterm_e"
+        },
+        {
+          "address": "0x140001ef0",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x14"
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_set_invalid_parameter_handler"
+        },
+        {
+          "address": "0x140001f00",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x16"
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::exit"
+        },
+        {
+          "address": "0x140001f20",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x6"
+          },
+          "value": "API-MS-WIN-CRT-STDIO-L1-1-0.DLL::fgets"
+        },
+        {
+          "address": "0x140001f30",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x19"
+          },
+          "value": "API-MS-WIN-CRT-HEAP-L1-1-0.DLL::malloc"
+        },
+        {
+          "address": "0x140001f40",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x1a"
+          },
+          "value": "API-MS-WIN-CRT-PRIVATE-L1-1-0.DLL::memcpy"
+        },
+        {
+          "address": "0x140001f50",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x7"
+          },
+          "value": "API-MS-WIN-CRT-STDIO-L1-1-0.DLL::puts"
+        },
+        {
+          "address": "0x140001f60",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x8"
+          },
+          "value": "API-MS-WIN-CRT-STDIO-L1-1-0.DLL::setvbuf"
+        },
+        {
+          "address": "0x140001f70",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x1b"
+          },
+          "value": "API-MS-WIN-CRT-STRING-L1-1-0.DLL::strcspn"
+        },
+        {
+          "address": "0x140001f80",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x1c"
+          },
+          "value": "API-MS-WIN-CRT-STRING-L1-1-0.DLL::strlen"
+        },
+        {
+          "address": "0x140001fb0",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x22"
+          },
+          "value": "API-MS-WIN-CRT-MATH-L1-1-0.DLL::__setusermatherr"
+        },
+        {
+          "address": "0x140001ff0",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x15"
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::abort"
+        },
+        {
+          "address": "0x140002000",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x12"
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_seh_filter_exe"
+        },
+        {
+          "address": "0x140002010",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0xf"
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_initialize_narrow_environment"
+        },
+        {
+          "address": "0x140002020",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0xc"
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_configure_narrow_argv"
+        },
+        {
+          "address": "0x140002030",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x9"
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::__p___argc"
+        },
+        {
+          "address": "0x140002040",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0xa"
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::__p___argv"
+        },
+        {
+          "address": "0x140002050",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x23"
+          },
+          "value": "API-MS-WIN-CRT-ENVIRONMENT-L1-1-0.DLL::__p__environ"
+        },
+        {
+          "address": "0x140002060",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x18"
+          },
+          "value": "API-MS-WIN-CRT-HEAP-L1-1-0.DLL::_set_new_mode"
+        },
+        {
+          "address": "0x140002070",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x13"
+          },
+          "value": "API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL::_set_app_type"
+        },
+        {
+          "address": "0x140002080",
+          "procedure": {
+            "external": false,
+            "thunk": true,
+            "thunk_target": "EXTERNAL:0x4"
+          },
+          "value": "API-MS-WIN-CRT-STDIO-L1-1-0.DLL::__stdio_common_vfprintf"
+        }
+      ],
+      "subject": {
+        "architecture": "x86_64",
+        "digest": {
+          "sha256": "4ec8d5c0ccdacb378dd0de8113b6cf9b0b04f3194e346a3d6b1bb41eccc5f25f"
+        },
+        "format": "pe",
+        "local_path": "<target>/c02-xor-x64-O2-strip.exe",
+        "name": "c02-xor-x64-O2-strip.exe"
+      }
+    },
+    {
+      "analysis_profile": {
+        "digest": "249564812a8d83b9b3f461098fc485ccde60c516d4497547a124081c91d654bf",
+        "parameters": {
+          "analyzer_preset": "ghidra-default",
+          "annotation_policy": "atomic-function-entry-metadata-v1",
+          "architecture": "x86_64",
+          "available_architectures": [
+            "x86_64"
+          ],
+          "compiler_spec_id": "auto-default",
+          "decompiler_jump_loads": true,
+          "executable_role": "application",
+          "function_body_evidence": "complete-inclusive-ranges-v1",
+          "function_boundary_observations": "ghidra-terminal-call-limitations-v1",
+          "function_references": "complete-body-and-entry-reference-manager-v2",
+          "import_mode": "ephemeral-source-immutable",
+          "instruction_flow_evidence": "decoded-return-pcode-v1",
+          "jump_table_evidence": "typed-case-default-blocks-v1",
+          "language_id": "auto-from-header",
+          "load_image_observations": "source-mappings-entry-context-v2",
+          "loader": "auto-from-header",
+          "location_resolution": "explicit-address-exact-entry-symbol-first-v3",
+          "managed": false,
+          "native_aot_metadata": {
+            "contract_revision": "rtr-9.1-x64-pe-read-only-v3",
+            "report_bytes": 4194304,
+            "source_bytes": 134217728,
+            "work_units": 67108864,
+            "working_memory_bytes": 67108864
+          },
+          "no_return_repair": "disabled-windows-p0",
+          "process_launch": "official-headless-script-v1",
+          "string_inventory_evidence": "defined-data-coverage-v1",
+          "target_format": "pe",
+          "target_kind": "executable"
+        },
+        "provider": {
+          "id": "ghidra",
+          "name": "Ghidra",
+          "version": "12.1.4"
+        }
+      },
+      "authority": "shipped-artifact",
+      "confidence": "observed",
+      "environment": null,
+      "evidence_id": "ev_da4f2dcd99d7714e4406e459e17895390622d151db6b79697b54b64151b8ca56",
+      "evidence_links": [],
+      "limitations": [
+        "The session serves operations only after Ghidra reports default auto-analysis complete; incomplete analysis does not expose partial results.",
+        "The imported Program and temporary project are ephemeral and deleted on close. Annotation operations edit session database metadata; original executable bytes are never written.",
+        "Cancelling an active Ghidra request terminates its ephemeral database and discards session annotations. The selected target remains open; the next provider query imports the original artifact again.",
+        "Default-space addresses use lowercase 0x-prefixed hexadecimal; other address spaces use <percent-encoded-space>:0x<hex>.",
+        "Only resolved Ghidra call references are returned; unresolved computed or indirect calls remain unknown, while function classifications distinguish thunks and externals.",
+        "Windows Ghidra P0 accepts approved native x86 and x86-64 PE applications and DLLs; managed, hostile, sensitive, and mutable-path targets are unsupported.",
+        "The Windows bridge uses authenticated IPv4 loopback because Node path-based IPC does not expose Java AF_UNIX sockets; the endpoint file contains no bearer token.",
+        "Windows sessions require the matching packaged Windows x64 native addon, local NTFS targets and runtimes, and Windows 10 or later. Native handles enforce path admission, private DACLs, and Job Object ownership automatically."
+      ],
+      "locations": [],
+      "normalized_result": [
+        "EXTERNAL:0x1",
+        "0x140001610",
+        "0x140001f20",
+        "0x140001f50",
+        "0x140001f70",
+        "0x140001f80"
+      ],
+      "operation": "procedure_callees",
+      "parameters": {
+        "procedure": "FUN_140001470"
+      },
+      "predicate_type": "rea.analysis",
+      "provider": {
+        "id": "ghidra",
+        "name": "Ghidra",
+        "version": "12.1.4"
+      },
+      "raw_result": [
+        "EXTERNAL:0x1",
+        "0x140001610",
+        "0x140001f20",
+        "0x140001f50",
+        "0x140001f70",
+        "0x140001f80"
+      ],
+      "subject": {
+        "architecture": "x86_64",
+        "digest": {
+          "sha256": "4ec8d5c0ccdacb378dd0de8113b6cf9b0b04f3194e346a3d6b1bb41eccc5f25f"
+        },
+        "format": "pe",
+        "local_path": "<target>/c02-xor-x64-O2-strip.exe",
+        "name": "c02-xor-x64-O2-strip.exe"
+      }
+    }
+  ],
+  "scenarios": [],
+  "unknowns": []
+}

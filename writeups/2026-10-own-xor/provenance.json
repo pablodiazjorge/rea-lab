@@ -1,0 +1,28 @@
+{
+  "targets": [
+    {
+      "target": "c02-xor-x64-O2-strip.exe",
+      "sha256": "4ec8d5c0ccdacb378dd0de8113b6cf9b0b04f3194e346a3d6b1bb41eccc5f25f",
+      "size_bytes": 10752
+    },
+    {
+      "target": "c02-xor-x64-O0-strip.exe",
+      "sha256": "63d3ae96dd7dcb7b62b49534b645c72695a05b71613960abf962e174500dacf4",
+      "size_bytes": 10752
+    }
+  ],
+  "origin": "Built from this repository: challenge c02-xor, public seed 20261011, generator version 1",
+  "toolchain": "llvm-mingw 20261006, -std=c11 -Wall -Wextra -Werror -O0|-O2 -ffile-prefix-map=<src>=. -static -Wl,--no-insert-timestamp -s",
+  "reference_hashes": "challenges/public-manifest.json",
+  "ground_truth": "build/challenges/answers.json after npm run challenges",
+  "license": "MIT, like the rest of the code in this repository",
+  "redistributed_here": false,
+  "how_to_obtain": "npm run setup && npm run challenges",
+  "analysis": {
+    "rea": "6.4.0",
+    "provider": "Ghidra 12.1.4",
+    "jdk": "Temurin 21.0.12.1",
+    "host": "Windows 11 Pro 26H2 x64, non-elevated user",
+    "date": "2026-10-11"
+  }
+}

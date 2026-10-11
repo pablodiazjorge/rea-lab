@@ -1,0 +1,743 @@
+{
+  "artifacts": [
+    {
+      "architecture": "x86_64",
+      "digest": {
+        "sha256": "63d3ae96dd7dcb7b62b49534b645c72695a05b71613960abf962e174500dacf4"
+      },
+      "format": "pe"
+    }
+  ],
+  "captures": [],
+  "environments": [],
+  "providers": [
+    {
+      "id": "ghidra",
+      "name": "Ghidra",
+      "version": "12.1.4"
+    },
+    {
+      "id": "rea-workflow",
+      "name": "REA composed investigation workflow",
+      "version": "1"
+    }
+  ],
+  "records": [
+    {
+      "analysis_profile": {
+        "digest": "249564812a8d83b9b3f461098fc485ccde60c516d4497547a124081c91d654bf",
+        "parameters": {
+          "analyzer_preset": "ghidra-default",
+          "annotation_policy": "atomic-function-entry-metadata-v1",
+          "architecture": "x86_64",
+          "available_architectures": [
+            "x86_64"
+          ],
+          "compiler_spec_id": "auto-default",
+          "decompiler_jump_loads": true,
+          "executable_role": "application",
+          "function_body_evidence": "complete-inclusive-ranges-v1",
+          "function_boundary_observations": "ghidra-terminal-call-limitations-v1",
+          "function_references": "complete-body-and-entry-reference-manager-v2",
+          "import_mode": "ephemeral-source-immutable",
+          "instruction_flow_evidence": "decoded-return-pcode-v1",
+          "jump_table_evidence": "typed-case-default-blocks-v1",
+          "language_id": "auto-from-header",
+          "load_image_observations": "source-mappings-entry-context-v2",
+          "loader": "auto-from-header",
+          "location_resolution": "explicit-address-exact-entry-symbol-first-v3",
+          "managed": false,
+          "native_aot_metadata": {
+            "contract_revision": "rtr-9.1-x64-pe-read-only-v3",
+            "report_bytes": 4194304,
+            "source_bytes": 134217728,
+            "work_units": 67108864,
+            "working_memory_bytes": 67108864
+          },
+          "no_return_repair": "disabled-windows-p0",
+          "process_launch": "official-headless-script-v1",
+          "string_inventory_evidence": "defined-data-coverage-v1",
+          "target_format": "pe",
+          "target_kind": "executable"
+        },
+        "provider": {
+          "id": "ghidra",
+          "name": "Ghidra",
+          "version": "12.1.4"
+        }
+      },
+      "authority": "shipped-artifact",
+      "confidence": "observed",
+      "environment": null,
+      "evidence_id": "ev_0ac6c080aa49665f12fe8ec9dd315e6628540b12e30720689cafc3d9189d9564",
+      "evidence_links": [],
+      "limitations": [
+        "The session serves operations only after Ghidra reports default auto-analysis complete; incomplete analysis does not expose partial results.",
+        "The imported Program and temporary project are ephemeral and deleted on close. Annotation operations edit session database metadata; original executable bytes are never written.",
+        "Cancelling an active Ghidra request terminates its ephemeral database and discards session annotations. The selected target remains open; the next provider query imports the original artifact again.",
+        "Default-space addresses use lowercase 0x-prefixed hexadecimal; other address spaces use <percent-encoded-space>:0x<hex>.",
+        "Only Ghidra-defined string Data is observed; packed or undefined string bytes may be absent. Completeness applies to that inventory, and an empty search does not establish that text is absent from the artifact. If an address is known, use read_bytes and xrefs to inspect bytes and references.",
+        "Regex mode uses Java Pattern semantics. Matcher or compiler stack exhaustion returns a resource constraint without closing the session; literal mode avoids regex recursion and returns complete matching values.",
+        "Windows Ghidra P0 accepts approved native x86 and x86-64 PE applications and DLLs; managed, hostile, sensitive, and mutable-path targets are unsupported.",
+        "The Windows bridge uses authenticated IPv4 loopback because Node path-based IPC does not expose Java AF_UNIX sockets; the endpoint file contains no bearer token.",
+        "Windows sessions require the matching packaged Windows x64 native addon, local NTFS targets and runtimes, and Windows 10 or later. Native handles enforce path admission, private DACLs, and Job Object ownership automatically."
+      ],
+      "locations": [],
+      "normalized_result": [
+        {
+          "address": "0x14000307b",
+          "value": "ACCESS GRANTED"
+        }
+      ],
+      "operation": "search_strings",
+      "parameters": {
+        "case_sensitive": true,
+        "mode": "literal",
+        "pattern": "ACCESS GRANTED"
+      },
+      "predicate_type": "rea.analysis",
+      "provider": {
+        "id": "ghidra",
+        "name": "Ghidra",
+        "version": "12.1.4"
+      },
+      "raw_result": [
+        {
+          "address": "0x14000307b",
+          "value": "ACCESS GRANTED"
+        }
+      ],
+      "subject": {
+        "architecture": "x86_64",
+        "digest": {
+          "sha256": "63d3ae96dd7dcb7b62b49534b645c72695a05b71613960abf962e174500dacf4"
+        },
+        "format": "pe",
+        "local_path": "<target>/c02-xor-x64-O0-strip.exe",
+        "name": "c02-xor-x64-O0-strip.exe"
+      }
+    },
+    {
+      "analysis_profile": {
+        "digest": "249564812a8d83b9b3f461098fc485ccde60c516d4497547a124081c91d654bf",
+        "parameters": {
+          "analyzer_preset": "ghidra-default",
+          "annotation_policy": "atomic-function-entry-metadata-v1",
+          "architecture": "x86_64",
+          "available_architectures": [
+            "x86_64"
+          ],
+          "compiler_spec_id": "auto-default",
+          "decompiler_jump_loads": true,
+          "executable_role": "application",
+          "function_body_evidence": "complete-inclusive-ranges-v1",
+          "function_boundary_observations": "ghidra-terminal-call-limitations-v1",
+          "function_references": "complete-body-and-entry-reference-manager-v2",
+          "import_mode": "ephemeral-source-immutable",
+          "instruction_flow_evidence": "decoded-return-pcode-v1",
+          "jump_table_evidence": "typed-case-default-blocks-v1",
+          "language_id": "auto-from-header",
+          "load_image_observations": "source-mappings-entry-context-v2",
+          "loader": "auto-from-header",
+          "location_resolution": "explicit-address-exact-entry-symbol-first-v3",
+          "managed": false,
+          "native_aot_metadata": {
+            "contract_revision": "rtr-9.1-x64-pe-read-only-v3",
+            "report_bytes": 4194304,
+            "source_bytes": 134217728,
+            "work_units": 67108864,
+            "working_memory_bytes": 67108864
+          },
+          "no_return_repair": "disabled-windows-p0",
+          "process_launch": "official-headless-script-v1",
+          "string_inventory_evidence": "defined-data-coverage-v1",
+          "target_format": "pe",
+          "target_kind": "executable"
+        },
+        "provider": {
+          "id": "ghidra",
+          "name": "Ghidra",
+          "version": "12.1.4"
+        }
+      },
+      "authority": "shipped-artifact",
+      "confidence": "observed",
+      "environment": null,
+      "evidence_id": "ev_549e3c3463e8e8f2de2a4d4f1a19f49e0780159db9e77578f8af71b01b5804f4",
+      "evidence_links": [],
+      "limitations": [
+        "The session serves operations only after Ghidra reports default auto-analysis complete; incomplete analysis does not expose partial results.",
+        "The imported Program and temporary project are ephemeral and deleted on close. Annotation operations edit session database metadata; original executable bytes are never written.",
+        "Cancelling an active Ghidra request terminates its ephemeral database and discards session annotations. The selected target remains open; the next provider query imports the original artifact again.",
+        "Default-space addresses use lowercase 0x-prefixed hexadecimal; other address spaces use <percent-encoded-space>:0x<hex>.",
+        "Only resolved Ghidra call references are returned; unresolved computed or indirect calls remain unknown, while function classifications distinguish thunks and externals.",
+        "Windows Ghidra P0 accepts approved native x86 and x86-64 PE applications and DLLs; managed, hostile, sensitive, and mutable-path targets are unsupported.",
+        "The Windows bridge uses authenticated IPv4 loopback because Node path-based IPC does not expose Java AF_UNIX sockets; the endpoint file contains no bearer token.",
+        "Windows sessions require the matching packaged Windows x64 native addon, local NTFS targets and runtimes, and Windows 10 or later. Native handles enforce path admission, private DACLs, and Job Object ownership automatically."
+      ],
+      "locations": [],
+      "normalized_result": [
+        "EXTERNAL:0x1",
+        "0x140001510",
+        "0x140001660",
+        "0x140001f70",
+        "0x140001fa0",
+        "0x140001fc0"
+      ],
+      "operation": "procedure_callees",
+      "parameters": {
+        "procedure": "FUN_140001470"
+      },
+      "predicate_type": "rea.analysis",
+      "provider": {
+        "id": "ghidra",
+        "name": "Ghidra",
+        "version": "12.1.4"
+      },
+      "raw_result": [
+        "EXTERNAL:0x1",
+        "0x140001510",
+        "0x140001660",
+        "0x140001f70",
+        "0x140001fa0",
+        "0x140001fc0"
+      ],
+      "subject": {
+        "architecture": "x86_64",
+        "digest": {
+          "sha256": "63d3ae96dd7dcb7b62b49534b645c72695a05b71613960abf962e174500dacf4"
+        },
+        "format": "pe",
+        "local_path": "<target>/c02-xor-x64-O0-strip.exe",
+        "name": "c02-xor-x64-O0-strip.exe"
+      }
+    },
+    {
+      "analysis_profile": {
+        "digest": "ec6aca1849cfc12aa2154a2e5189dcccb474abeb8e43ab15580a5b807e0767c0",
+        "parameters": {
+          "upstream_analysis_profile": {
+            "digest": "249564812a8d83b9b3f461098fc485ccde60c516d4497547a124081c91d654bf",
+            "parameters": {
+              "analyzer_preset": "ghidra-default",
+              "annotation_policy": "atomic-function-entry-metadata-v1",
+              "architecture": "x86_64",
+              "available_architectures": [
+                "x86_64"
+              ],
+              "compiler_spec_id": "auto-default",
+              "decompiler_jump_loads": true,
+              "executable_role": "application",
+              "function_body_evidence": "complete-inclusive-ranges-v1",
+              "function_boundary_observations": "ghidra-terminal-call-limitations-v1",
+              "function_references": "complete-body-and-entry-reference-manager-v2",
+              "import_mode": "ephemeral-source-immutable",
+              "instruction_flow_evidence": "decoded-return-pcode-v1",
+              "jump_table_evidence": "typed-case-default-blocks-v1",
+              "language_id": "auto-from-header",
+              "load_image_observations": "source-mappings-entry-context-v2",
+              "loader": "auto-from-header",
+              "location_resolution": "explicit-address-exact-entry-symbol-first-v3",
+              "managed": false,
+              "native_aot_metadata": {
+                "contract_revision": "rtr-9.1-x64-pe-read-only-v3",
+                "report_bytes": 4194304,
+                "source_bytes": 134217728,
+                "work_units": 67108864,
+                "working_memory_bytes": 67108864
+              },
+              "no_return_repair": "disabled-windows-p0",
+              "process_launch": "official-headless-script-v1",
+              "string_inventory_evidence": "defined-data-coverage-v1",
+              "target_format": "pe",
+              "target_kind": "executable"
+            },
+            "provider": {
+              "id": "ghidra",
+              "name": "Ghidra",
+              "version": "12.1.4"
+            }
+          },
+          "workflow_revision": 2
+        },
+        "provider": {
+          "id": "rea-workflow",
+          "name": "REA composed investigation workflow",
+          "version": "1"
+        }
+      },
+      "authority": "shipped-artifact",
+      "confidence": "derived",
+      "environment": null,
+      "evidence_id": "ev_74cb4a57ea220d0a01a016e2b5cbe45b5b5f716143aa3c2f30e7f5bbb5b92984",
+      "evidence_links": [],
+      "limitations": [
+        "Derived by an REA composed workflow."
+      ],
+      "locations": [],
+      "normalized_result": {
+        "document": "target-63d3ae96dd7d.exe",
+        "procedure_count": 89,
+        "segment_count": 7,
+        "segments": [
+          {
+            "end": "0x140000400",
+            "length": 1024,
+            "name": "Headers",
+            "start": "0x140000000"
+          },
+          {
+            "end": "0x140002200",
+            "length": 4608,
+            "name": ".text",
+            "start": "0x140001000"
+          },
+          {
+            "end": "0x140003e00",
+            "length": 3584,
+            "name": ".rdata",
+            "start": "0x140003000"
+          },
+          {
+            "end": "0x140004200",
+            "length": 512,
+            "name": ".data",
+            "start": "0x140004000"
+          },
+          {
+            "end": "0x140005200",
+            "length": 512,
+            "name": ".pdata",
+            "start": "0x140005000"
+          },
+          {
+            "end": "0x140006200",
+            "length": 512,
+            "name": ".reloc",
+            "start": "0x140006000"
+          },
+          {
+            "end": "0xff00001850",
+            "length": 6224,
+            "name": "tdb",
+            "start": "0xff00000000"
+          }
+        ],
+        "string_count": 66
+      },
+      "operation": "binary_overview",
+      "parameters": {},
+      "predicate_type": "rea.analysis",
+      "provider": {
+        "id": "rea-workflow",
+        "name": "REA composed investigation workflow",
+        "version": "1"
+      },
+      "raw_result": null,
+      "subject": {
+        "architecture": "x86_64",
+        "digest": {
+          "sha256": "63d3ae96dd7dcb7b62b49534b645c72695a05b71613960abf962e174500dacf4"
+        },
+        "format": "pe",
+        "local_path": "<target>/c02-xor-x64-O0-strip.exe",
+        "name": "c02-xor-x64-O0-strip.exe"
+      }
+    },
+    {
+      "analysis_profile": {
+        "digest": "249564812a8d83b9b3f461098fc485ccde60c516d4497547a124081c91d654bf",
+        "parameters": {
+          "analyzer_preset": "ghidra-default",
+          "annotation_policy": "atomic-function-entry-metadata-v1",
+          "architecture": "x86_64",
+          "available_architectures": [
+            "x86_64"
+          ],
+          "compiler_spec_id": "auto-default",
+          "decompiler_jump_loads": true,
+          "executable_role": "application",
+          "function_body_evidence": "complete-inclusive-ranges-v1",
+          "function_boundary_observations": "ghidra-terminal-call-limitations-v1",
+          "function_references": "complete-body-and-entry-reference-manager-v2",
+          "import_mode": "ephemeral-source-immutable",
+          "instruction_flow_evidence": "decoded-return-pcode-v1",
+          "jump_table_evidence": "typed-case-default-blocks-v1",
+          "language_id": "auto-from-header",
+          "load_image_observations": "source-mappings-entry-context-v2",
+          "loader": "auto-from-header",
+          "location_resolution": "explicit-address-exact-entry-symbol-first-v3",
+          "managed": false,
+          "native_aot_metadata": {
+            "contract_revision": "rtr-9.1-x64-pe-read-only-v3",
+            "report_bytes": 4194304,
+            "source_bytes": 134217728,
+            "work_units": 67108864,
+            "working_memory_bytes": 67108864
+          },
+          "no_return_repair": "disabled-windows-p0",
+          "process_launch": "official-headless-script-v1",
+          "string_inventory_evidence": "defined-data-coverage-v1",
+          "target_format": "pe",
+          "target_kind": "executable"
+        },
+        "provider": {
+          "id": "ghidra",
+          "name": "Ghidra",
+          "version": "12.1.4"
+        }
+      },
+      "authority": "shipped-artifact",
+      "confidence": "observed",
+      "environment": null,
+      "evidence_id": "ev_b3191df5fd04c0a648e0ed5c30cbeed11daa1a065562a064318944de5dd917e4",
+      "evidence_links": [],
+      "limitations": [
+        "The session serves operations only after Ghidra reports default auto-analysis complete; incomplete analysis does not expose partial results.",
+        "The imported Program and temporary project are ephemeral and deleted on close. Annotation operations edit session database metadata; original executable bytes are never written.",
+        "Cancelling an active Ghidra request terminates its ephemeral database and discards session annotations. The selected target remains open; the next provider query imports the original artifact again.",
+        "Default-space addresses use lowercase 0x-prefixed hexadecimal; other address spaces use <percent-encoded-space>:0x<hex>.",
+        "Pseudocode is Ghidra decompiler output, not original source and not text-equivalent to Hopper output.",
+        "External functions and functions without an analyzable body return null; other decompiler failures remain explicit.",
+        "Windows Ghidra P0 accepts approved native x86 and x86-64 PE applications and DLLs; managed, hostile, sensitive, and mutable-path targets are unsupported.",
+        "The Windows bridge uses authenticated IPv4 loopback because Node path-based IPC does not expose Java AF_UNIX sockets; the endpoint file contains no bearer token.",
+        "Windows sessions require the matching packaged Windows x64 native addon, local NTFS targets and runtimes, and Windows 10 or later. Native handles enforce path admission, private DACLs, and Job Object ownership automatically."
+      ],
+      "locations": [],
+      "normalized_result": "\r\nundefined4 FUN_140001470(void)\r\n\r\n{\r\n  int iVar1;\r\n  FILE *_File;\r\n  char *pcVar2;\r\n  size_t sVar3;\r\n  char local_98 [140];\r\n  undefined4 local_c;\r\n  \r\n  FUN_140001660();\r\n  local_c = 0;\r\n  _File = (FILE *)__acrt_iob_func(0);\r\n  pcVar2 = fgets(local_98,0x80,_File);\r\n  if (pcVar2 == (char *)0x0) {\r\n    local_c = 1;\r\n  }\r\n  else {\r\n    sVar3 = strcspn(local_98,\"\\r\\n\");\r\n    local_98[sVar3] = '\\0';\r\n    iVar1 = FUN_140001510(local_98);\r\n    pcVar2 = \"ACCESS DENIED\";\r\n    if (iVar1 != 0) {\r\n      pcVar2 = \"ACCESS GRANTED\";\r\n    }\r\n    puts(pcVar2);\r\n    local_c = 0;\r\n  }\r\n  return local_c;\r\n}\r\n\r\n",
+      "operation": "procedure_pseudo_code",
+      "parameters": {
+        "procedure": "FUN_140001470"
+      },
+      "predicate_type": "rea.analysis",
+      "provider": {
+        "id": "ghidra",
+        "name": "Ghidra",
+        "version": "12.1.4"
+      },
+      "raw_result": {
+        "limitations": [],
+        "value": "\r\nundefined4 FUN_140001470(void)\r\n\r\n{\r\n  int iVar1;\r\n  FILE *_File;\r\n  char *pcVar2;\r\n  size_t sVar3;\r\n  char local_98 [140];\r\n  undefined4 local_c;\r\n  \r\n  FUN_140001660();\r\n  local_c = 0;\r\n  _File = (FILE *)__acrt_iob_func(0);\r\n  pcVar2 = fgets(local_98,0x80,_File);\r\n  if (pcVar2 == (char *)0x0) {\r\n    local_c = 1;\r\n  }\r\n  else {\r\n    sVar3 = strcspn(local_98,\"\\r\\n\");\r\n    local_98[sVar3] = '\\0';\r\n    iVar1 = FUN_140001510(local_98);\r\n    pcVar2 = \"ACCESS DENIED\";\r\n    if (iVar1 != 0) {\r\n      pcVar2 = \"ACCESS GRANTED\";\r\n    }\r\n    puts(pcVar2);\r\n    local_c = 0;\r\n  }\r\n  return local_c;\r\n}\r\n\r\n"
+      },
+      "subject": {
+        "architecture": "x86_64",
+        "digest": {
+          "sha256": "63d3ae96dd7dcb7b62b49534b645c72695a05b71613960abf962e174500dacf4"
+        },
+        "format": "pe",
+        "local_path": "<target>/c02-xor-x64-O0-strip.exe",
+        "name": "c02-xor-x64-O0-strip.exe"
+      }
+    },
+    {
+      "analysis_profile": {
+        "digest": "249564812a8d83b9b3f461098fc485ccde60c516d4497547a124081c91d654bf",
+        "parameters": {
+          "analyzer_preset": "ghidra-default",
+          "annotation_policy": "atomic-function-entry-metadata-v1",
+          "architecture": "x86_64",
+          "available_architectures": [
+            "x86_64"
+          ],
+          "compiler_spec_id": "auto-default",
+          "decompiler_jump_loads": true,
+          "executable_role": "application",
+          "function_body_evidence": "complete-inclusive-ranges-v1",
+          "function_boundary_observations": "ghidra-terminal-call-limitations-v1",
+          "function_references": "complete-body-and-entry-reference-manager-v2",
+          "import_mode": "ephemeral-source-immutable",
+          "instruction_flow_evidence": "decoded-return-pcode-v1",
+          "jump_table_evidence": "typed-case-default-blocks-v1",
+          "language_id": "auto-from-header",
+          "load_image_observations": "source-mappings-entry-context-v2",
+          "loader": "auto-from-header",
+          "location_resolution": "explicit-address-exact-entry-symbol-first-v3",
+          "managed": false,
+          "native_aot_metadata": {
+            "contract_revision": "rtr-9.1-x64-pe-read-only-v3",
+            "report_bytes": 4194304,
+            "source_bytes": 134217728,
+            "work_units": 67108864,
+            "working_memory_bytes": 67108864
+          },
+          "no_return_repair": "disabled-windows-p0",
+          "process_launch": "official-headless-script-v1",
+          "string_inventory_evidence": "defined-data-coverage-v1",
+          "target_format": "pe",
+          "target_kind": "executable"
+        },
+        "provider": {
+          "id": "ghidra",
+          "name": "Ghidra",
+          "version": "12.1.4"
+        }
+      },
+      "authority": "shipped-artifact",
+      "confidence": "observed",
+      "environment": null,
+      "evidence_id": "ev_bb60b016d517f72fb3d0153b909ac11ba379f9e282aded4389567c17e6807b42",
+      "evidence_links": [],
+      "limitations": [
+        "The session serves operations only after Ghidra reports default auto-analysis complete; incomplete analysis does not expose partial results.",
+        "The imported Program and temporary project are ephemeral and deleted on close. Annotation operations edit session database metadata; original executable bytes are never written.",
+        "Cancelling an active Ghidra request terminates its ephemeral database and discards session annotations. The selected target remains open; the next provider query imports the original artifact again.",
+        "Default-space addresses use lowercase 0x-prefixed hexadecimal; other address spaces use <percent-encoded-space>:0x<hex>.",
+        "An exact external entry resolves to its observed function identity even when its body is empty. This does not establish mapped executable bytes or containment of nearby external addresses.",
+        "Windows Ghidra P0 accepts approved native x86 and x86-64 PE applications and DLLs; managed, hostile, sensitive, and mutable-path targets are unsupported.",
+        "The Windows bridge uses authenticated IPv4 loopback because Node path-based IPC does not expose Java AF_UNIX sockets; the endpoint file contains no bearer token.",
+        "Windows sessions require the matching packaged Windows x64 native addon, local NTFS targets and runtimes, and Windows 10 or later. Native handles enforce path admission, private DACLs, and Job Object ownership automatically."
+      ],
+      "locations": [],
+      "normalized_result": {
+        "found": true,
+        "procedure": {
+          "address": "0x140001470",
+          "body": {
+            "available": true,
+            "contains_entry": true,
+            "non_contiguous": false,
+            "provenance": "ghidra-function-body-address-set",
+            "ranges": [
+              {
+                "end": "0x140001508",
+                "start": "0x140001470"
+              }
+            ],
+            "span_bytes": 153,
+            "total_bytes": 153
+          },
+          "classification": {
+            "external": false,
+            "provenance": "ghidra-function-manager",
+            "thunk": false,
+            "thunk_target": null
+          },
+          "name": "FUN_140001470"
+        },
+        "query_address": "0x1400014e3"
+      },
+      "operation": "resolve_containing_procedure",
+      "parameters": {
+        "address": "0x1400014e3"
+      },
+      "predicate_type": "rea.analysis",
+      "provider": {
+        "id": "ghidra",
+        "name": "Ghidra",
+        "version": "12.1.4"
+      },
+      "raw_result": {
+        "found": true,
+        "procedure": {
+          "address": "0x140001470",
+          "body": {
+            "available": true,
+            "contains_entry": true,
+            "non_contiguous": false,
+            "provenance": "ghidra-function-body-address-set",
+            "ranges": [
+              {
+                "end": "0x140001508",
+                "start": "0x140001470"
+              }
+            ],
+            "span_bytes": 153,
+            "total_bytes": 153
+          },
+          "classification": {
+            "external": false,
+            "provenance": "ghidra-function-manager",
+            "thunk": false,
+            "thunk_target": null
+          },
+          "name": "FUN_140001470"
+        },
+        "query_address": "0x1400014e3"
+      },
+      "subject": {
+        "architecture": "x86_64",
+        "digest": {
+          "sha256": "63d3ae96dd7dcb7b62b49534b645c72695a05b71613960abf962e174500dacf4"
+        },
+        "format": "pe",
+        "local_path": "<target>/c02-xor-x64-O0-strip.exe",
+        "name": "c02-xor-x64-O0-strip.exe"
+      }
+    },
+    {
+      "analysis_profile": {
+        "digest": "249564812a8d83b9b3f461098fc485ccde60c516d4497547a124081c91d654bf",
+        "parameters": {
+          "analyzer_preset": "ghidra-default",
+          "annotation_policy": "atomic-function-entry-metadata-v1",
+          "architecture": "x86_64",
+          "available_architectures": [
+            "x86_64"
+          ],
+          "compiler_spec_id": "auto-default",
+          "decompiler_jump_loads": true,
+          "executable_role": "application",
+          "function_body_evidence": "complete-inclusive-ranges-v1",
+          "function_boundary_observations": "ghidra-terminal-call-limitations-v1",
+          "function_references": "complete-body-and-entry-reference-manager-v2",
+          "import_mode": "ephemeral-source-immutable",
+          "instruction_flow_evidence": "decoded-return-pcode-v1",
+          "jump_table_evidence": "typed-case-default-blocks-v1",
+          "language_id": "auto-from-header",
+          "load_image_observations": "source-mappings-entry-context-v2",
+          "loader": "auto-from-header",
+          "location_resolution": "explicit-address-exact-entry-symbol-first-v3",
+          "managed": false,
+          "native_aot_metadata": {
+            "contract_revision": "rtr-9.1-x64-pe-read-only-v3",
+            "report_bytes": 4194304,
+            "source_bytes": 134217728,
+            "work_units": 67108864,
+            "working_memory_bytes": 67108864
+          },
+          "no_return_repair": "disabled-windows-p0",
+          "process_launch": "official-headless-script-v1",
+          "string_inventory_evidence": "defined-data-coverage-v1",
+          "target_format": "pe",
+          "target_kind": "executable"
+        },
+        "provider": {
+          "id": "ghidra",
+          "name": "Ghidra",
+          "version": "12.1.4"
+        }
+      },
+      "authority": "shipped-artifact",
+      "confidence": "observed",
+      "environment": null,
+      "evidence_id": "ev_c8c0bb3bb98491a2c44edcf0806b521683ef974981c3f6cbc41ebf8640bae4c3",
+      "evidence_links": [],
+      "limitations": [
+        "The session serves operations only after Ghidra reports default auto-analysis complete; incomplete analysis does not expose partial results.",
+        "The imported Program and temporary project are ephemeral and deleted on close. Annotation operations edit session database metadata; original executable bytes are never written.",
+        "Cancelling an active Ghidra request terminates its ephemeral database and discards session annotations. The selected target remains open; the next provider query imports the original artifact again.",
+        "Default-space addresses use lowercase 0x-prefixed hexadecimal; other address spaces use <percent-encoded-space>:0x<hex>.",
+        "Pseudocode is Ghidra decompiler output, not original source and not text-equivalent to Hopper output.",
+        "External functions and functions without an analyzable body return null; other decompiler failures remain explicit.",
+        "Windows Ghidra P0 accepts approved native x86 and x86-64 PE applications and DLLs; managed, hostile, sensitive, and mutable-path targets are unsupported.",
+        "The Windows bridge uses authenticated IPv4 loopback because Node path-based IPC does not expose Java AF_UNIX sockets; the endpoint file contains no bearer token.",
+        "Windows sessions require the matching packaged Windows x64 native addon, local NTFS targets and runtimes, and Windows 10 or later. Native handles enforce path admission, private DACLs, and Job Object ownership automatically."
+      ],
+      "locations": [],
+      "normalized_result": "\r\nundefined4 FUN_140001510(char *param_1)\r\n\r\n{\r\n  size_t sVar1;\r\n  ulonglong local_20;\r\n  undefined4 local_4;\r\n  \r\n  sVar1 = strlen(param_1);\r\n  if (sVar1 == 0xe) {\r\n    for (local_20 = 0; local_20 < 0xe; local_20 = local_20 + 1) {\r\n      if ((byte)(param_1[local_20] ^ 0x51U) != \"6#>\\'4|38#29|ha\"[local_20]) {\r\n        return 0;\r\n      }\r\n    }\r\n    local_4 = 1;\r\n  }\r\n  else {\r\n    local_4 = 0;\r\n  }\r\n  return local_4;\r\n}\r\n\r\n",
+      "operation": "procedure_pseudo_code",
+      "parameters": {
+        "procedure": "FUN_140001510"
+      },
+      "predicate_type": "rea.analysis",
+      "provider": {
+        "id": "ghidra",
+        "name": "Ghidra",
+        "version": "12.1.4"
+      },
+      "raw_result": {
+        "limitations": [],
+        "value": "\r\nundefined4 FUN_140001510(char *param_1)\r\n\r\n{\r\n  size_t sVar1;\r\n  ulonglong local_20;\r\n  undefined4 local_4;\r\n  \r\n  sVar1 = strlen(param_1);\r\n  if (sVar1 == 0xe) {\r\n    for (local_20 = 0; local_20 < 0xe; local_20 = local_20 + 1) {\r\n      if ((byte)(param_1[local_20] ^ 0x51U) != \"6#>\\'4|38#29|ha\"[local_20]) {\r\n        return 0;\r\n      }\r\n    }\r\n    local_4 = 1;\r\n  }\r\n  else {\r\n    local_4 = 0;\r\n  }\r\n  return local_4;\r\n}\r\n\r\n"
+      },
+      "subject": {
+        "architecture": "x86_64",
+        "digest": {
+          "sha256": "63d3ae96dd7dcb7b62b49534b645c72695a05b71613960abf962e174500dacf4"
+        },
+        "format": "pe",
+        "local_path": "<target>/c02-xor-x64-O0-strip.exe",
+        "name": "c02-xor-x64-O0-strip.exe"
+      }
+    },
+    {
+      "analysis_profile": {
+        "digest": "249564812a8d83b9b3f461098fc485ccde60c516d4497547a124081c91d654bf",
+        "parameters": {
+          "analyzer_preset": "ghidra-default",
+          "annotation_policy": "atomic-function-entry-metadata-v1",
+          "architecture": "x86_64",
+          "available_architectures": [
+            "x86_64"
+          ],
+          "compiler_spec_id": "auto-default",
+          "decompiler_jump_loads": true,
+          "executable_role": "application",
+          "function_body_evidence": "complete-inclusive-ranges-v1",
+          "function_boundary_observations": "ghidra-terminal-call-limitations-v1",
+          "function_references": "complete-body-and-entry-reference-manager-v2",
+          "import_mode": "ephemeral-source-immutable",
+          "instruction_flow_evidence": "decoded-return-pcode-v1",
+          "jump_table_evidence": "typed-case-default-blocks-v1",
+          "language_id": "auto-from-header",
+          "load_image_observations": "source-mappings-entry-context-v2",
+          "loader": "auto-from-header",
+          "location_resolution": "explicit-address-exact-entry-symbol-first-v3",
+          "managed": false,
+          "native_aot_metadata": {
+            "contract_revision": "rtr-9.1-x64-pe-read-only-v3",
+            "report_bytes": 4194304,
+            "source_bytes": 134217728,
+            "work_units": 67108864,
+            "working_memory_bytes": 67108864
+          },
+          "no_return_repair": "disabled-windows-p0",
+          "process_launch": "official-headless-script-v1",
+          "string_inventory_evidence": "defined-data-coverage-v1",
+          "target_format": "pe",
+          "target_kind": "executable"
+        },
+        "provider": {
+          "id": "ghidra",
+          "name": "Ghidra",
+          "version": "12.1.4"
+        }
+      },
+      "authority": "shipped-artifact",
+      "confidence": "observed",
+      "environment": null,
+      "evidence_id": "ev_f5142883397361a6b356530fb0dee9df8d05f31f7c7b47673f269c69325ca083",
+      "evidence_links": [],
+      "limitations": [
+        "The session serves operations only after Ghidra reports default auto-analysis complete; incomplete analysis does not expose partial results.",
+        "The imported Program and temporary project are ephemeral and deleted on close. Annotation operations edit session database metadata; original executable bytes are never written.",
+        "Cancelling an active Ghidra request terminates its ephemeral database and discards session annotations. The selected target remains open; the next provider query imports the original artifact again.",
+        "Default-space addresses use lowercase 0x-prefixed hexadecimal; other address spaces use <percent-encoded-space>:0x<hex>.",
+        "The direct address list projects exact Ghidra references to one address but does not expose their kinds; procedure_references and analyze_function preserve available kind metadata.",
+        "Synthetic Ghidra entry-point references without actionable memory sources are omitted.",
+        "Windows Ghidra P0 accepts approved native x86 and x86-64 PE applications and DLLs; managed, hostile, sensitive, and mutable-path targets are unsupported.",
+        "The Windows bridge uses authenticated IPv4 loopback because Node path-based IPC does not expose Java AF_UNIX sockets; the endpoint file contains no bearer token.",
+        "Windows sessions require the matching packaged Windows x64 native addon, local NTFS targets and runtimes, and Windows 10 or later. Native handles enforce path admission, private DACLs, and Job Object ownership automatically."
+      ],
+      "locations": [],
+      "normalized_result": [
+        "0x1400014e3",
+        "0x1400014ed"
+      ],
+      "operation": "xrefs",
+      "parameters": {
+        "address": "0x14000307b"
+      },
+      "predicate_type": "rea.analysis",
+      "provider": {
+        "id": "ghidra",
+        "name": "Ghidra",
+        "version": "12.1.4"
+      },
+      "raw_result": [
+        "0x1400014e3",
+        "0x1400014ed"
+      ],
+      "subject": {
+        "architecture": "x86_64",
+        "digest": {
+          "sha256": "63d3ae96dd7dcb7b62b49534b645c72695a05b71613960abf962e174500dacf4"
+        },
+        "format": "pe",
+        "local_path": "<target>/c02-xor-x64-O0-strip.exe",
+        "name": "c02-xor-x64-O0-strip.exe"
+      }
+    }
+  ],
+  "scenarios": [],
+  "unknowns": []
+}

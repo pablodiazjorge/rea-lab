@@ -45,6 +45,7 @@ There are no dates: each phase closes when it meets its exit criteria.
 
 - rea 6.4.0 with Ghidra 12.1.4 on Windows 11 26H2 (x64, NTFS, non-elevated user): `rea doctor --provider ghidra` passes every check, including the native authority self-test that fails on other machines ([morluto/rea#1701](https://github.com/morluto/rea/issues/1701)).
 - First real session: `WinHelloCPP.exe`, an exercise shipped with Ghidra, analysed in about 25 s (6 segments, 388 functions, 254 strings), with no leftover processes or temporary files.
+- First upstream contribution merged: [morluto/rea#1863](https://github.com/morluto/rea/pull/1863) fixes the real Windows Ghidra verification lanes, which had stopped passing on every host. All nine Windows lanes pass with it.
 
 ## Layout
 
@@ -53,7 +54,7 @@ There are no dates: each phase closes when it meets its exit criteria.
 | `AGENTS.md` | Instructions for coding agents (`CLAUDE.md` imports it) |
 | `docs/adr/` | Architecture decision records |
 | `docs/guides/` | How-to guides, such as the [portable per-project MCP registration](docs/guides/portable-mcp-registration.md) |
-| `writeups/` | Investigations with their sanitised Evidence: [WinHelloCPP](writeups/2026-10-winhellocpp/README.md), [Wallace v1 against v2](writeups/2026-10-wallace-versions/README.md) |
+| `writeups/` | Investigations with their sanitised Evidence: [WinHelloCPP](writeups/2026-10-winhellocpp/README.md), [Wallace v1 against v2](writeups/2026-10-wallace-versions/README.md), [c02-xor at -O0 and -O2](writeups/2026-10-own-xor/README.md) |
 | [`challenges/`](challenges/README.md) | Seeded practice challenges with known answers, built reproducibly |
 | `tools.json` | Tool versions, download URLs and SHA-256 hashes |
 | `scripts/setup.mjs` | Downloads, verifies and extracts the tools into `tools/` |
