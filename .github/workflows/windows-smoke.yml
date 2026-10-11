@@ -1,0 +1,65 @@
+name: windows-smoke
+
+# Real Ghidra on a hosted Windows runner (ADR 0022): weekly, on demand, and when the tools change.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
+  push:
+    branches: [main]
+    paths:
+      - tools.json
+      - package-lock.json
+      - env.ps1
+      - scripts/setup.mjs
+      - scripts/rea-mcp.mjs
+      - .github/workflows/windows-smoke.yml
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Cache tool archives
+        uses: actions/cache@v4
+        with:
+          path: tools/*.zip
+          key: tools-${{ hashFiles('tools.json') }}
+      - run: npm ci
+      - name: Download, verify and extract tools
+        run: node scripts/setup.mjs
+      - name: rea doctor for the Ghidra provider
+        shell: pwsh
+        run: |
+          . ./env.ps1
+          rea doctor --provider ghidra --json | Out-File -Encoding utf8 doctor.json
+          $doctor = Get-Content -Raw doctor.json | ConvertFrom-Json
+          ($doctor.providerInspections | Where-Object id -eq 'ghidra').checks | Format-Table name, ok -AutoSize
+          if (-not $doctor.healthy) { throw 'rea doctor reported an unhealthy Ghidra provider' }
+      - name: Analyse a GhidraClass exercise end to end
+        shell: pwsh
+        run: |
+          . ./env.ps1
+          $watch = [Diagnostics.Stopwatch]::StartNew()
+          rea inspect targets/ghidra-class/WinhelloCPP/WinHelloCPP.exe --provider ghidra --format json | Out-File -Encoding utf8 inspect.json
+          if ($LASTEXITCODE -ne 0) { throw "rea inspect failed with exit code $LASTEXITCODE" }
+          $result = (Get-Content -Raw inspect.json | ConvertFrom-Json).normalized_result
+          "Analysed in $([math]::Round($watch.Elapsed.TotalSeconds, 1)) s: $($result.segment_count) segments, $($result.procedure_count) procedures, $($result.string_count) strings"
+          if ($result.procedure_count -lt 1) { throw 'Ghidra returned no procedures' }
+      - name: Keep the reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-smoke-reports
+          path: |
+            doctor.json
+            inspect.json
+          if-no-files-found: ignore

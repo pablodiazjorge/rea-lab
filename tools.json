@@ -1,0 +1,44 @@
+{
+  "description": "Single source of tool versions (ADR 0006). scripts/setup.mjs downloads each archive into tools/, verifies its SHA-256 and extracts it; env.ps1, scripts/rea-mcp.mjs and CI read the extracted folders from here.",
+  "tools": [
+    {
+      "id": "ghidra",
+      "name": "Ghidra",
+      "version": "12.1.4",
+      "url": "https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_12.1.4_build/ghidra_12.1.4_PUBLIC_20260921.zip",
+      "file": "ghidra_12.1.4_PUBLIC_20260921.zip",
+      "size": 569649598,
+      "sha256": "ddac49f903da9d5bac833e5cc79395098b9c33cfd3279be5f31bd00387d2d4db",
+      "hashSource": "GitHub release asset digest, NationalSecurityAgency/ghidra",
+      "dir": "ghidra_12.1.4_PUBLIC"
+    },
+    {
+      "id": "jdk",
+      "name": "Eclipse Temurin JDK",
+      "version": "21.0.12.1+1",
+      "url": "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.12.1%2B1/OpenJDK21U-jdk_x64_windows_hotspot_21.0.12.1_1.zip",
+      "file": "OpenJDK21U-jdk_x64_windows_hotspot_21.0.12.1_1.zip",
+      "size": 205073461,
+      "sha256": "f9d6e191ab098c0d416e7d588a24420a8621cd2f4720dab2459b8b7b2d2d8b4e",
+      "hashSource": "Adoptium API, api.adoptium.net/v3/assets/latest/21/hotspot",
+      "dir": "jdk-21.0.12.1+1"
+    },
+    {
+      "id": "llvm-mingw",
+      "name": "llvm-mingw",
+      "version": "20261006",
+      "url": "https://github.com/mstorsjo/llvm-mingw/releases/download/20261006/llvm-mingw-20261006-ucrt-x86_64.zip",
+      "file": "llvm-mingw-20261006-ucrt-x86_64.zip",
+      "size": 190836485,
+      "sha256": "317492c456aa27ee607a5919f1d2d38dcdc1112516a24d0bf4b00d078f52d17a",
+      "hashSource": "GitHub release asset digest, mstorsjo/llvm-mingw",
+      "dir": "llvm-mingw-20261006-ucrt-x86_64"
+    }
+  ],
+  "exercises": {
+    "tool": "ghidra",
+    "from": "docs/GhidraClass/ExerciseFiles",
+    "to": "targets/ghidra-class",
+    "folders": ["WinhelloCPP", "VersionTracking"]
+  }
+}

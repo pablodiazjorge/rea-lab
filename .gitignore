@@ -11,3 +11,6 @@ repos/
 
 # Private process log, raw notes and drafts
 _docs-internal/
+
+# Personal Claude Code settings (the shared ones live in .claude/settings.json)
+.claude/settings.local.json

@@ -7,7 +7,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/rea-6.4.0-6f42c1" alt="rea 6.4.0">
   <img src="https://img.shields.io/badge/Ghidra-12.1.4-d32f2f" alt="Ghidra 12.1.4">
-  <img src="https://img.shields.io/badge/phase-F0-blue" alt="Fase actual: F0">
+  <img src="https://img.shields.io/badge/phase-F1-blue" alt="Fase actual: F1">
   <img src="https://img.shields.io/badge/code-MIT-green" alt="Licencia del código: MIT">
   <img src="https://img.shields.io/badge/text-CC_BY_4.0-green" alt="Licencia de los textos: CC BY 4.0">
 </p>
@@ -30,8 +30,8 @@ No hay fechas: cada fase se cierra cuando cumple sus criterios de salida.
 
 | Fase | Objetivo | Estado |
 |---|---|---|
-| F0 | Cimientos públicos: normas, decisiones y comprobaciones | en curso |
-| F1 | Entorno reproducible y registro MCP por proyecto | siguiente |
+| F0 | Cimientos públicos: normas, decisiones y comprobaciones | hecha |
+| F1 | Entorno reproducible y registro MCP por proyecto | en curso |
 | F2 | Contribuciones a rea desde un Windows real | continua |
 | F3 | Retos con semilla y respuesta conocida, y primeros writeups | prevista |
 | F4 | Banco de pruebas y estudio 1: qué le aporta rea a un agente | prevista |
@@ -50,21 +50,27 @@ No hay fechas: cada fase se cierra cuando cumple sus criterios de salida.
 |---|---|
 | `AGENTS.md` | Instrucciones para los agentes (`CLAUDE.md` lo importa) |
 | `docs/adr/` | Registros de decisiones de arquitectura |
+| `tools.json` | Versiones, URL de descarga y SHA-256 de cada herramienta |
+| `scripts/setup.mjs` | Descarga, verifica y descomprime las herramientas en `tools/` |
+| `scripts/rea-mcp.mjs`, `.mcp.json` | El servidor MCP de rea, registrado solo para este proyecto |
+| `.claude/settings.json` | Herramientas de rea permitidas; denegadas las que ejecutan un objetivo o un dispositivo |
 | `scripts/check.mjs` | Comprobaciones del repositorio: datos personales, paridad bilingüe, enlaces y estilo |
-| `env.ps1` | Variables de rea y Ghidra para la sesión de PowerShell actual |
+| `env.ps1` | rea, Ghidra y clang para la sesión de PowerShell actual |
+| `.github/workflows/` | CI: comprobaciones en cada push y Ghidra real en Windows cada semana |
 | `tools/`, `targets/`, `repos/` | Herramientas locales, objetivos de análisis y repositorios anidados (fuera de git) |
 
 ## Inicio rápido
 
-La preparación es manual hasta que F1 añada `scripts/setup.mjs`, que descargará y verificará cada herramienta.
-
-Requisitos: Windows 10 o posterior (x64), Node.js 22.19 o posterior, un JDK de 64 bits 21 o posterior y [Ghidra 12.1.4](https://github.com/NationalSecurityAgency/ghidra/releases) descomprimido en `tools/ghidra_12.1.4_PUBLIC`.
+Requisitos: Windows 10 o posterior (x64) y Node.js 22.19 o posterior. `npm run setup` descarga Ghidra 12.1.4, el JDK 21 de Temurin y llvm-mingw (unos 920 MB), verifica cada SHA-256 antes de descomprimir y lo deja todo dentro de `tools/`: no se instala nada en el sistema.
 
 ```powershell
 npm ci
+npm run setup
 . .\env.ps1
 rea doctor --provider ghidra --json
 ```
+
+Después, abre Claude Code en esta carpeta y aprueba el servidor `rea` de `.mcp.json`: el agente tendrá las herramientas de rea solo en este proyecto, sin rutas personales en la configuración. La primera consulta a Ghidra importa y analiza el binario, y tarda alrededor de medio minuto con un ejecutable pequeño.
 
 ## Objetivos y marco legal
 

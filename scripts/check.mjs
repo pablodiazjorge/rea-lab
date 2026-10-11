@@ -122,7 +122,8 @@ const PERSONAL = [
   ['a home path', /(?:^|[\s"'`(])\/home\/(?!<|runner\b)[^/\s"'`<>]+/],
   ['an email address', /\b[\w.+-]+@[\w-]+(?:\.[\w-]+)+\b/],
 ]
-if (userName && userName.length >= 3) {
+// CI runners use generic account names (such as "runner") that also appear in ordinary prose.
+if (!process.env.CI && userName && userName.length >= 3) {
   PERSONAL.push(['the local user name', new RegExp(`\\b${escapeRegExp(userName)}\\b`, 'i')])
 }
 const ALLOWED_EMAIL = /noreply|no-reply|example\.(com|org)/i

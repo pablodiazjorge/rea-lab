@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "rea": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${CLAUDE_PROJECT_DIR:-.}/scripts/rea-mcp.mjs"],
+      "timeout": 600000
+    }
+  }
+}

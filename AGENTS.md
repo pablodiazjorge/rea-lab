@@ -12,8 +12,13 @@ A lab for reverse engineering with AI agents on Windows, using [rea](https://git
 |---|---|---|
 | `README.md`, `README.es.md` | Project overview, English and Spanish | yes |
 | `docs/adr/` | Architecture decision records | yes |
+| `tools.json` | Single source of tool versions, URLs and SHA-256 hashes | yes |
+| `scripts/setup.mjs` | Downloads, verifies and extracts the tools (`npm run setup`) | yes |
+| `scripts/rea-mcp.mjs`, `.mcp.json` | rea MCP server for this project, paths resolved at runtime | yes |
+| `.claude/settings.json` | Allows rea tools, denies the ones that run targets or devices | yes |
 | `scripts/check.mjs` | Repository checks (`npm run check`) | yes |
-| `env.ps1` | Sets rea and Ghidra variables for the current PowerShell session | yes |
+| `env.ps1` | rea, Ghidra and clang for the current PowerShell session | yes |
+| `.github/workflows/` | CI: checks on every push, Windows smoke test with real Ghidra | yes |
 | `package.json`, `package-lock.json` | rea pinned to an exact version | yes |
 | `tools/` | Downloaded tools (Ghidra, JDK, llvm-mingw) | no |
 | `targets/` | Analysis targets, copied or third-party | no |
@@ -24,7 +29,8 @@ A lab for reverse engineering with AI agents on Windows, using [rea](https://git
 
 ```powershell
 npm run check                                   # must pass before a change is done
-. .\env.ps1                                     # rea and Ghidra for this session
+npm run setup                                   # tools from tools.json (asks nothing, verifies hashes)
+. .\env.ps1                                     # rea, Ghidra and clang for this session
 rea doctor --provider ghidra --json             # read-only health check
 rea inspect <path-to-pe> --provider ghidra --format json
 ```
@@ -49,6 +55,7 @@ Follow ADR 0010:
 
 ## Working with rea
 
+- In Claude Code, rea comes from `.mcp.json` through `scripts/rea-mcp.mjs`; never register it at user level and never write absolute paths into `.mcp.json`.
 - Use rea when a claim depends on a binary. Start with summaries (`binary_overview`), drill down with specific tools and close the session with `close_binary`.
 - Cite `evidence_id` values and keep observed, derived, inferred and unknown apart. Record open questions with `record_unknown`.
 - The first Ghidra-backed query imports and analyses the target and can take minutes on a cold start.
