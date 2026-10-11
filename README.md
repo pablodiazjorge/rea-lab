@@ -1,0 +1,84 @@
+<h1 align="center">rea-lab</h1>
+
+<p align="center">
+  Reverse engineering with AI agents on Windows: verifying, measuring and visualising the tools agents use, with rea and Ghidra
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/rea-6.4.0-6f42c1" alt="rea 6.4.0">
+  <img src="https://img.shields.io/badge/Ghidra-12.1.4-d32f2f" alt="Ghidra 12.1.4">
+  <img src="https://img.shields.io/badge/phase-F0-blue" alt="Current phase: F0">
+  <img src="https://img.shields.io/badge/code-MIT-green" alt="Code license: MIT">
+  <img src="https://img.shields.io/badge/text-CC_BY_4.0-green" alt="Text license: CC BY 4.0">
+</p>
+
+<p align="center"><a href="README.es.md">Leer en español</a></p>
+
+## Why
+
+[rea](https://github.com/morluto/rea) gives coding agents (Claude Code, Codex, Cursor and others) MCP tools to reverse engineer software, from app behaviour down to native binaries. Three gaps stand out on Windows:
+
+1. Its Ghidra provider is experimental there and barely verified on real machines.
+2. Nobody has measured what it adds to an agent on native Windows binaries.
+3. Its evidence lives only in memory, so you cannot watch what the agent is finding.
+
+This lab works on those three gaps: it contributes Windows verification upstream, builds a reproducible benchmark with known answers, and ships a Claude Code mod that shows the agent's evidence live.
+
+## Roadmap
+
+There are no dates: each phase closes when it meets its exit criteria.
+
+| Phase | Goal | Status |
+|---|---|---|
+| F0 | Public foundations: rules, decisions and checks | in progress |
+| F1 | Reproducible environment and per-project MCP registration | next |
+| F2 | Contributions to rea from a real Windows machine | ongoing |
+| F3 | Seeded challenges with known answers and first writeups | planned |
+| F4 | Benchmark and study 1: what rea adds to an agent | planned |
+| F5 | Claude Code mod with a live evidence pane | planned |
+| F6 | Second upstream wave, improved skill, second agent | planned |
+| F7 | Dynamic analysis inside Windows Sandbox | optional |
+
+## Status
+
+- rea 6.4.0 with Ghidra 12.1.4 on Windows 11 26H2 (x64, NTFS, non-elevated user): `rea doctor --provider ghidra` passes every check, including the native authority self-test that fails on other machines ([morluto/rea#1701](https://github.com/morluto/rea/issues/1701)).
+- First real session: `WinHelloCPP.exe`, an exercise shipped with Ghidra, analysed in about 25 s (6 segments, 388 functions, 254 strings), with no leftover processes or temporary files.
+
+## Layout
+
+| Path | Content |
+|---|---|
+| `AGENTS.md` | Instructions for coding agents (`CLAUDE.md` imports it) |
+| `docs/adr/` | Architecture decision records |
+| `scripts/check.mjs` | Repository checks: personal data, bilingual parity, links, style |
+| `env.ps1` | rea and Ghidra variables for the current PowerShell session |
+| `tools/`, `targets/`, `repos/` | Local tools, analysis targets and nested repositories (not in git) |
+
+## Quick start
+
+The setup is manual until F1 adds `scripts/setup.mjs`, which will download and verify every tool.
+
+Requirements: Windows 10 or later (x64), Node.js 22.19 or later, a 64-bit JDK 21 or later, and [Ghidra 12.1.4](https://github.com/NationalSecurityAgency/ghidra/releases) extracted to `tools/ghidra_12.1.4_PUBLIC`.
+
+```powershell
+npm ci
+. .\env.ps1
+rea doctor --provider ghidra --json
+```
+
+## Targets and legal scope
+
+Only binaries built here, the exercises that ship with Ghidra, and crackmes or finished CTF challenges whose rules allow writeups. Third-party binaries are analysed statically and never run on the host; anything dynamic happens inside Windows Sandbox without network access. Commercial software, online games, DRM and anything related to the author's employer are out of scope. Details and legal basis in [ADR 0010](docs/adr/0010-target-policy.md).
+
+## Decisions
+
+Every hard-to-reverse decision has a short record in [docs/adr](docs/adr/README.md): repository layout, language policy, the portable MCP launcher, pinned versions, target policy, benchmark isolation and how the lab contributes to rea.
+
+## License
+
+Code is released under the [MIT License](LICENSE). Text (READMEs, guides, ADRs, writeups) and benchmark results are released under [CC BY 4.0](LICENSE-CC-BY-4.0).
+
+## Acknowledgements
+
+- [rea](https://github.com/morluto/rea) by morluto, MIT License.
+- [Ghidra](https://github.com/NationalSecurityAgency/ghidra) by the NSA, Apache License 2.0.

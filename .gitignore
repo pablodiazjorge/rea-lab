@@ -1,0 +1,13 @@
+# Dependencies and downloaded tools
+node_modules/
+tools/
+*.zip
+
+# Analysis targets: copied or third-party binaries are never redistributed
+targets/
+
+# Nested repositories (the mod and the rea fork checkout)
+repos/
+
+# Private process log, raw notes and drafts
+_docs-internal/

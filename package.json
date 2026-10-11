@@ -1,0 +1,12 @@
+{
+  "name": "rea-lab",
+  "private": true,
+  "description": "Reverse engineering with AI agents on Windows, using rea",
+  "license": "MIT",
+  "scripts": {
+    "check": "node scripts/check.mjs"
+  },
+  "dependencies": {
+    "rea-agents": "6.4.0"
+  }
+}
