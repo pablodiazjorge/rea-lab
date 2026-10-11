@@ -13,8 +13,11 @@ Programas pequeños de Windows compilados desde este repositorio, así que la re
 | `c03-checksum` | checksum | La regla de aceptación: longitud fija, minúsculas y suma ponderada por posición módulo un primo |
 | `c04-table` | table | Una entrada cuyos caracteres salen de un switch sobre su posición, desplazados una constante |
 | `c05-state` | state | Una máquina de estados sobre los caracteres de la entrada, con una transición de retroceso en cada estado |
+| `c06-pairs` | pairs | Una entrada en minúsculas fijada por aritmética: un ancla en el primer carácter y la suma de cada par de vecinos |
+| `c07-sbox` | sbox | Una entrada cuyos caracteres pasan por una tabla de sustitución de 256 bytes y deben dar bytes registrados |
+| `c08-indirect` | indirect | Una comprobación repartida en cuatro funciones llamadas por una tabla de punteros, cada una con su propia operación |
 
-Cada reto se compila en ocho variantes: x64 y x86, `-O0` y `-O2`, con y sin tabla de símbolos. Son 40 binarios para la semilla pública.
+Cada reto se compila en ocho variantes: x64 y x86, `-O0` y `-O2`, con y sin tabla de símbolos. Son 64 binarios para la semilla pública. Los nombres de las familias evitan palabras como `setup`, `install`, `update` y `patch`: Windows trata como instaladores los programas de 32 bits con esos nombres y pide elevación para ejecutarlos.
 
 ## Órdenes
 

@@ -1,5 +1,5 @@
 {
-  "generator_version": 2,
+  "generator_version": 3,
   "seed": 20261011,
   "toolchain": "llvm-mingw 20261006",
   "flags": "-std=c11 -Wall -Wextra -Werror -O0|-O2 -ffile-prefix-map=<src>=. -static -Wl,--no-insert-timestamp [-s]",
@@ -283,6 +283,174 @@
       "file": "bin/c05-state/c05-state-x86-O2-strip.exe",
       "size": 8704,
       "sha256": "9695645621f86706236d5d743e3d14e46acaff8d303054b5bdf1667d0e9c3e42"
+    },
+    {
+      "id": "c06-pairs",
+      "variant": "x64-O0-sym",
+      "file": "bin/c06-pairs/c06-pairs-x64-O0-sym.exe",
+      "size": 62976,
+      "sha256": "889d09be431ca26b899b1d42a25fc674d9b2f67b913c23782e3775d6f65b65d6"
+    },
+    {
+      "id": "c06-pairs",
+      "variant": "x64-O0-strip",
+      "file": "bin/c06-pairs/c06-pairs-x64-O0-strip.exe",
+      "size": 10752,
+      "sha256": "9b41bb08e404d76b1b6f3677a962788050b9f22461e0d89414d3e76453789a80"
+    },
+    {
+      "id": "c06-pairs",
+      "variant": "x64-O2-sym",
+      "file": "bin/c06-pairs/c06-pairs-x64-O2-sym.exe",
+      "size": 62976,
+      "sha256": "f20ba0be18fb1e03a8f1ff2de38fa181770a0aa233c871f6c0262a35d59b04a0"
+    },
+    {
+      "id": "c06-pairs",
+      "variant": "x64-O2-strip",
+      "file": "bin/c06-pairs/c06-pairs-x64-O2-strip.exe",
+      "size": 10752,
+      "sha256": "53807d541c0b5540f6888af1f8faec6f2dc40be0583084b08c9fd972fe1245a4"
+    },
+    {
+      "id": "c06-pairs",
+      "variant": "x86-O0-sym",
+      "file": "bin/c06-pairs/c06-pairs-x86-O0-sym.exe",
+      "size": 57344,
+      "sha256": "f4a06174f0fb7cfdb2edf7efbe05fbfc68c53c44caf7dd6ebf567d611274abbc"
+    },
+    {
+      "id": "c06-pairs",
+      "variant": "x86-O0-strip",
+      "file": "bin/c06-pairs/c06-pairs-x86-O0-strip.exe",
+      "size": 8192,
+      "sha256": "a4da29cea1b740b636288885d2d44bb82c16850bc50f8c0d2fb50a0045f79f68"
+    },
+    {
+      "id": "c06-pairs",
+      "variant": "x86-O2-sym",
+      "file": "bin/c06-pairs/c06-pairs-x86-O2-sym.exe",
+      "size": 57344,
+      "sha256": "4ec7de77f5a998064067912cee9edaf7371bc8cd5828c2b14f7205dd67391f9c"
+    },
+    {
+      "id": "c06-pairs",
+      "variant": "x86-O2-strip",
+      "file": "bin/c06-pairs/c06-pairs-x86-O2-strip.exe",
+      "size": 8192,
+      "sha256": "988db74ad8868e497689b36ef886604936859e69059e41c04546e07be636343e"
+    },
+    {
+      "id": "c07-sbox",
+      "variant": "x64-O0-sym",
+      "file": "bin/c07-sbox/c07-sbox-x64-O0-sym.exe",
+      "size": 62976,
+      "sha256": "917dc82db6e7568efb18e81fce1ea73ceebe6309eeddb294c015d6a0b4c49d14"
+    },
+    {
+      "id": "c07-sbox",
+      "variant": "x64-O0-strip",
+      "file": "bin/c07-sbox/c07-sbox-x64-O0-strip.exe",
+      "size": 10752,
+      "sha256": "9f26d5773d72372b645f55bf701c1234b9065e4734863b8e586e361d95e2f518"
+    },
+    {
+      "id": "c07-sbox",
+      "variant": "x64-O2-sym",
+      "file": "bin/c07-sbox/c07-sbox-x64-O2-sym.exe",
+      "size": 62976,
+      "sha256": "17f790587854557e3fe1694c315036eeab5ea4ce337c53b000ddba269bfe9d87"
+    },
+    {
+      "id": "c07-sbox",
+      "variant": "x64-O2-strip",
+      "file": "bin/c07-sbox/c07-sbox-x64-O2-strip.exe",
+      "size": 10752,
+      "sha256": "9503d6b95f0149488f5714488745918fd26a3190a06be17d1a53db92cebbd1f7"
+    },
+    {
+      "id": "c07-sbox",
+      "variant": "x86-O0-sym",
+      "file": "bin/c07-sbox/c07-sbox-x86-O0-sym.exe",
+      "size": 57344,
+      "sha256": "343b21f39ae338315f0379662e3133b3756884ba538ac059bedc75c8a99f8e4d"
+    },
+    {
+      "id": "c07-sbox",
+      "variant": "x86-O0-strip",
+      "file": "bin/c07-sbox/c07-sbox-x86-O0-strip.exe",
+      "size": 8192,
+      "sha256": "e39e8ed394f7e2cec5ba89bea9224054ea20aa69c512609deae0909368bb62d2"
+    },
+    {
+      "id": "c07-sbox",
+      "variant": "x86-O2-sym",
+      "file": "bin/c07-sbox/c07-sbox-x86-O2-sym.exe",
+      "size": 57856,
+      "sha256": "7f802a4a1ef957e7ae6abf6cb209c9f2648a0d03d09de4b31b1c4a7afc589a80"
+    },
+    {
+      "id": "c07-sbox",
+      "variant": "x86-O2-strip",
+      "file": "bin/c07-sbox/c07-sbox-x86-O2-strip.exe",
+      "size": 8704,
+      "sha256": "6fa88b8adc1384358d905c3d98abe2c539f88e65007a66c00fa16889d48941a2"
+    },
+    {
+      "id": "c08-indirect",
+      "variant": "x64-O0-sym",
+      "file": "bin/c08-indirect/c08-indirect-x64-O0-sym.exe",
+      "size": 63488,
+      "sha256": "ae64411a3b420f290bcb4b436fd95238adc7741b50002295e1177287f6b803db"
+    },
+    {
+      "id": "c08-indirect",
+      "variant": "x64-O0-strip",
+      "file": "bin/c08-indirect/c08-indirect-x64-O0-strip.exe",
+      "size": 11264,
+      "sha256": "435bbd0192265d9af26f0f97c619d8f6d3f43550d655c1115710d7d857409ed2"
+    },
+    {
+      "id": "c08-indirect",
+      "variant": "x64-O2-sym",
+      "file": "bin/c08-indirect/c08-indirect-x64-O2-sym.exe",
+      "size": 62976,
+      "sha256": "a4f2d0dad715f3d3ace8971234ee8dd2f8b6ea3d530c0c71ecc50bce9d093896"
+    },
+    {
+      "id": "c08-indirect",
+      "variant": "x64-O2-strip",
+      "file": "bin/c08-indirect/c08-indirect-x64-O2-strip.exe",
+      "size": 10752,
+      "sha256": "6c6b4a827d1c2164cad37eee1d5dab0bff6d2d5017f957d5392633799924bafa"
+    },
+    {
+      "id": "c08-indirect",
+      "variant": "x86-O0-sym",
+      "file": "bin/c08-indirect/c08-indirect-x86-O0-sym.exe",
+      "size": 57856,
+      "sha256": "b75627557766437aba171edc662a468233e62cc08f9198df48c45c809ea15d94"
+    },
+    {
+      "id": "c08-indirect",
+      "variant": "x86-O0-strip",
+      "file": "bin/c08-indirect/c08-indirect-x86-O0-strip.exe",
+      "size": 8704,
+      "sha256": "c35de357deaad1082a021bd4a2e5d85b3385b8db628e24e9ba815d549dc0a082"
+    },
+    {
+      "id": "c08-indirect",
+      "variant": "x86-O2-sym",
+      "file": "bin/c08-indirect/c08-indirect-x86-O2-sym.exe",
+      "size": 57856,
+      "sha256": "4416b05874728c7d0273b34aef9efca3cd3d52f61080728ec9fc177b11714e11"
+    },
+    {
+      "id": "c08-indirect",
+      "variant": "x86-O2-strip",
+      "file": "bin/c08-indirect/c08-indirect-x86-O2-strip.exe",
+      "size": 8704,
+      "sha256": "20456413c189d8e23ed2f009a4cd1b8474f205a90d4406d791cd45ff1c1f68ab"
     }
   ]
 }

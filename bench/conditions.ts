@@ -18,8 +18,15 @@ export const CONDITIONS: Readonly<Record<ConditionId, Condition>> = {
 /** Built-in Claude Code tools offered in every condition (`--tools`). MCP tools are not affected by it. */
 export const BUILT_IN_TOOLS = ['Bash', 'Read', 'Grep', 'Glob', 'Skill', 'ToolSearch']
 
-/** Static analysis commands the agent may run. No interpreter is allowed, so the target cannot be executed. */
-export const ALLOWED_COMMANDS = ['llvm-readobj', 'llvm-objdump', 'llvm-strings', 'llvm-nm', 'grep', 'head', 'tail', 'wc']
+/**
+ * Static analysis commands the agent may run, with the text filters agents reach for every day (pilot 3: a
+ * denied awk made an agent stop). No interpreter is allowed; awk and sed could still start a program, so
+ * the grader flags any command that tries to run something (grade.ts, executionAttempts).
+ */
+export const ALLOWED_COMMANDS = [
+  'llvm-readobj', 'llvm-objdump', 'llvm-strings', 'llvm-nm',
+  'grep', 'head', 'tail', 'wc', 'awk', 'sed', 'cut', 'tr', 'sort', 'uniq', 'od',
+]
 
 /** rea tools that run targets or touch devices, denied as in the lab's own .claude/settings.json. */
 export function deniedReaTools(repoRoot: string): string[] {

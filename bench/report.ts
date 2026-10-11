@@ -46,6 +46,7 @@ export type RunRecord = {
   skillLoaded: boolean
   permissionDenials: number
   outsidePaths: string[]
+  executionAttempts?: string[]
   isolation: { ok: boolean; problems: string[] }
 }
 
@@ -123,12 +124,13 @@ export function buildReport(records: RunRecord[]) {
   }
 
   // Denied commands are expected (the allow list is narrow) and are counted above; only isolation and paths need review.
-  const flagged = records.filter((record) => record.outsidePaths.length > 0 || !record.isolation.ok)
+  const flagged = records.filter((record) => record.outsidePaths.length > 0 || !record.isolation.ok || (record.executionAttempts?.length ?? 0) > 0)
   lines.push('', '## Runs flagged for review', '')
-  if (flagged.length === 0) lines.push('None: isolation held in every run, with no paths outside the work folder.')
+  if (flagged.length === 0) lines.push('None: isolation held in every run, with no paths outside the work folder and no attempt to run a program.')
   for (const record of flagged) {
     const notes: string[] = []
     if (!record.isolation.ok) notes.push(`isolation: ${record.isolation.problems.join(', ')}`)
+    if ((record.executionAttempts?.length ?? 0) > 0) notes.push(`execution attempts ${record.executionAttempts!.map((command) => `\`${command}\``).join(', ')}`)
     if (record.outsidePaths.length > 0) notes.push(`outside paths ${record.outsidePaths.map((path) => `\`${path}\``).join(', ')}`)
     lines.push(`- ${record.key}: ${notes.join('; ')}`)
   }

@@ -13,8 +13,11 @@ Small Windows programs built from this repository, so every answer is known exac
 | `c03-checksum` | checksum | The acceptance rule: fixed length, lowercase, position-weighted sum modulo a prime |
 | `c04-table` | table | An input whose characters come from a switch over their position, shifted by a constant |
 | `c05-state` | state | A state machine over the input characters, with a fall-back transition in every state |
+| `c06-pairs` | pairs | Lowercase input fixed by arithmetic: an anchor on the first character and the sum of every neighbouring pair |
+| `c07-sbox` | sbox | An input whose characters go through a 256-byte substitution table and must land on recorded bytes |
+| `c08-indirect` | indirect | A check split across four functions called through a table of function pointers, each with its own operation |
 
-Every challenge is built in eight variants: x64 and x86, `-O0` and `-O2`, with and without the symbol table. That is 40 binaries for the public seed.
+Every challenge is built in eight variants: x64 and x86, `-O0` and `-O2`, with and without the symbol table. That is 64 binaries for the public seed. Family names avoid words such as `setup`, `install`, `update` and `patch`: Windows treats 32-bit programs with those names as installers and asks for elevation to run them.
 
 ## Commands
 

@@ -10,7 +10,7 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-export const GENERATOR_VERSION = 2
+export const GENERATOR_VERSION = 3
 export const PUBLIC_SEED = 20261011
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -37,6 +37,21 @@ const pick = (random, list) => list[Math.floor(random() * list.length)]
 const integer = (random, min, max) => min + Math.floor(random() * (max - min + 1))
 const passphrase = (random) => `${pick(random, WORDS)}-${pick(random, WORDS)}-${integer(random, 10, 99)}`
 const hex = (value) => `0x${value.toString(16).padStart(2, '0')}`
+const rows = (values, perRow, format = String) => {
+  const lines = []
+  for (let index = 0; index < values.length; index += perRow) {
+    lines.push(`  ${values.slice(index, index + perRow).map(format).join(', ')},`)
+  }
+  return lines.join('\n')
+}
+const shuffled = (random, values) => {
+  const copy = [...values]
+  for (let index = copy.length - 1; index > 0; index--) {
+    const other = Math.floor(random() * (index + 1))
+    ;[copy[index], copy[other]] = [copy[other], copy[index]]
+  }
+  return copy
+}
 
 const MAIN = `int main(void) {
   char line[128];
@@ -196,6 +211,119 @@ ${MAIN}`
     return {
       description: 'A state machine over the input characters; each state moves forward on one character and falls back on another.',
       answer: { machine: { start: ids[0], accept, states }, example },
+      source,
+    }
+  },
+
+  // Lowercase input bound by arithmetic: the first character times a factor hits an anchor, and every
+  // pair of neighbouring characters adds up to a recorded sum. Only one input satisfies all of it.
+  pairs(random) {
+    const length = integer(random, 9, 12)
+    const codes = Array.from({ length }, () => integer(random, 97, 122))
+    const secret = String.fromCharCode(...codes)
+    const sums = codes.slice(0, -1).map((code, index) => code + codes[index + 1])
+    const factor = integer(random, 3, 9)
+    const anchor = codes[0] * factor
+    const source = `${HEADER}
+static const int sums[] = {
+${rows(sums, 8)}
+};
+
+static int check(const char *input) {
+  size_t length = strlen(input);
+  if (length != ${length}) return 0;
+  if ((unsigned char)input[0] * ${factor} != ${anchor}) return 0;
+  for (size_t index = 0; index + 1 < length; index++) {
+    if ((unsigned char)input[index] + (unsigned char)input[index + 1] != sums[index]) return 0;
+  }
+  return 1;
+}
+
+${MAIN}`
+    return {
+      description: 'Lowercase input whose first character times a factor hits an anchor and whose neighbouring characters add up to recorded sums.',
+      answer: { input: secret, rule: { length, factor, anchor, adjacent_sums: sums } },
+      source,
+    }
+  },
+
+  // Every character goes through a 256-byte substitution table and must land on a recorded byte, so the
+  // expected input only appears after inverting the table. Both tables are writable globals: with const
+  // tables, -O2 folds every lookup into a comparison with the plain character and the table disappears.
+  sbox(random) {
+    const secret = passphrase(random)
+    const sbox = shuffled(random, Array.from({ length: 256 }, (_, index) => index))
+    const expected = [...secret].map((character) => sbox[character.charCodeAt(0)])
+    const source = `${HEADER}
+unsigned char sbox[256] = {
+${rows(sbox, 16, hex)}
+};
+
+unsigned char expected[] = {
+${rows(expected, 8, hex)}
+};
+
+static int check(const char *input) {
+  size_t length = sizeof expected;
+  if (strlen(input) != length) return 0;
+  for (size_t index = 0; index < length; index++) {
+    if (sbox[(unsigned char)input[index]] != expected[index]) return 0;
+  }
+  return 1;
+}
+
+${MAIN}`
+    return {
+      description: 'Each character passes through a 256-byte substitution table and must match a recorded byte.',
+      answer: { input: secret, expected: expected.map(hex) },
+      source,
+    }
+  },
+
+  // The check is split into four functions reached through a writable table of function pointers, each
+  // testing one slice of the input with its own operation (add, xor or subtract-from a key). The expected
+  // bytes are writable globals, so -O2 cannot fold them into the plain characters. The family is not
+  // called "dispatch": Windows treats 32-bit programs whose name contains "patch" as installers.
+  indirect(random) {
+    const secret = passphrase(random)
+    const size = Math.ceil(secret.length / 4)
+    const operations = ['add', 'xor', 'sub']
+    const parts = [0, 1, 2, 3].map((part) => {
+      const offset = part * size
+      const slice = secret.slice(offset, offset + size)
+      const operation = pick(random, operations)
+      const key = integer(random, 1, 250)
+      const apply = (code) =>
+        operation === 'add' ? (code + key) & 0xff : operation === 'xor' ? code ^ key : (key - code) & 0xff
+      return { offset, length: slice.length, operation, key, expected: [...slice].map((character) => apply(character.charCodeAt(0))) }
+    })
+    const expression = { add: (key) => `((unsigned char)part[index] + ${key}) & 0xff`, xor: (key) => `(unsigned char)part[index] ^ ${key}`, sub: (key) => `(${key} - (unsigned char)part[index]) & 0xff` }
+    const functions = parts.map(({ length, operation, key, expected }, index) => `unsigned char expected${index}[] = { ${expected.map(hex).join(', ')} };
+
+static int part${index}(const char *part) {
+  for (size_t index = 0; index < ${length}; index++) {
+    if ((${expression[operation](key)}) != expected${index}[index]) return 0;
+  }
+  return 1;
+}`)
+    const source = `${HEADER}
+${functions.join('\n\n')}
+
+int (*parts[4])(const char *) = { part0, part1, part2, part3 };
+
+static int check(const char *input) {
+  static const size_t offsets[4] = { ${parts.map(({ offset }) => offset).join(', ')} };
+  if (strlen(input) != ${secret.length}) return 0;
+  for (size_t index = 0; index < 4; index++) {
+    if (!parts[index](input + offsets[index])) return 0;
+  }
+  return 1;
+}
+
+${MAIN}`
+    return {
+      description: 'The check is split across four functions called through a table of function pointers, each with its own operation on one slice.',
+      answer: { input: secret, parts: parts.map(({ offset, length, operation, key }) => ({ offset, length, operation, key })) },
       source,
     }
   },

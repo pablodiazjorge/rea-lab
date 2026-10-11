@@ -4,7 +4,17 @@
 
 export const CLAIM_IDS = ['accepted_input', 'check_mechanism'] as const
 
-export const MECHANISMS = ['string_compare', 'xor_encoded', 'weighted_checksum', 'switch_table', 'state_machine', 'other'] as const
+export const MECHANISMS = [
+  'string_compare',
+  'xor_encoded',
+  'weighted_checksum',
+  'switch_table',
+  'state_machine',
+  'arithmetic_constraints',
+  'substitution_table',
+  'function_table',
+  'other',
+] as const
 
 /** The mechanism that each challenge family implements (see challenges/generate.mjs). */
 export const FAMILY_MECHANISM: Readonly<Record<string, (typeof MECHANISMS)[number]>> = {
@@ -13,6 +23,9 @@ export const FAMILY_MECHANISM: Readonly<Record<string, (typeof MECHANISMS)[numbe
   checksum: 'weighted_checksum',
   table: 'switch_table',
   state: 'state_machine',
+  pairs: 'arithmetic_constraints',
+  sbox: 'substitution_table',
+  indirect: 'function_table',
 }
 
 // Families whose only accepted input is one fixed string. An optimising compiler may fold their check

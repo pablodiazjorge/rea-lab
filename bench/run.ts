@@ -6,8 +6,8 @@
 //
 // Usage:
 //   node bench/run.ts --study <name> --model <id> [--effort <level>] [--set public|<built folder>]
-//     [--challenges c01-compare,...] [--variants x64-O2-strip,...] [--conditions A,B,C]
-//     [--repetitions <n>] [--order-seed <n>] [--timeout-min <n>] [--max-budget-usd <n>] [--dry-run | --probe]
+//     [--challenges c01-compare,...] [--variants x64-O2-strip,...] [--cells id:variant,...] [--conditions A,B,C]
+//     [--repetitions <n> | A=<n>,B=<n>,C=<n>] [--order-seed <n>] [--timeout-min <n>] [--max-budget-usd <n>] [--dry-run | --probe]
 //
 //   --dry-run  prints the planned runs and the prompt, without starting Claude Code
 //   --probe    one trivial session per condition, to check isolation before spending real runs
@@ -32,13 +32,33 @@ type Options = {
   set: string
   challenges: string[] | null
   variants: string[]
+  /** Explicit challenge and variant pairs ("c03-checksum:x86-O2-strip"); when given, they replace challenges times variants. */
+  cells: Array<{ id: string; variant: string }> | null
   conditions: ConditionId[]
-  repetitions: number
+  repetitions: Partial<Record<ConditionId, number>>
   orderSeed: number
   timeoutMs: number
   maxBudgetUsd: number
   dryRun: boolean
   probe: boolean
+}
+
+/** "3" gives every condition three repetitions; "A=3,B=3,C=1" sets them per condition. */
+function parseRepetitions(text: string, conditions: ConditionId[]): Partial<Record<ConditionId, number>> {
+  const parts = text.split(',').map((part) => part.trim())
+  const result: Partial<Record<ConditionId, number>> = {}
+  if (parts.length === 1 && !parts[0].includes('=')) {
+    for (const condition of conditions) result[condition] = Number.parseInt(parts[0], 10)
+  } else {
+    for (const part of parts) {
+      const [condition, count] = part.split('=')
+      result[condition as ConditionId] = Number.parseInt(count, 10)
+    }
+  }
+  for (const condition of conditions) {
+    if (!Number.isInteger(result[condition]) || result[condition]! < 1) throw new Error(`--repetitions has no valid count for condition ${condition}`)
+  }
+  return result
 }
 
 function parseOptions(argv: string[]): Options {
@@ -59,9 +79,14 @@ function parseOptions(argv: string[]): Options {
     effort: value('--effort') ?? 'medium',
     set: value('--set') ?? 'public',
     challenges: list('--challenges') ?? null,
+    cells: list('--cells')?.map((cell) => {
+      const [id, variant] = cell.split(':')
+      if (!id || !variant) throw new Error(`--cells takes id:variant pairs, not ${cell}`)
+      return { id, variant }
+    }) ?? null,
     variants: list('--variants') ?? ['x64-O2-strip'],
     conditions,
-    repetitions: Number.parseInt(value('--repetitions') ?? '1', 10),
+    repetitions: parseRepetitions(value('--repetitions') ?? '1', conditions),
     orderSeed: Number.parseInt(value('--order-seed') ?? '1', 10),
     timeoutMs: Number.parseFloat(value('--timeout-min') ?? '20') * 60_000,
     maxBudgetUsd: Number.parseFloat(value('--max-budget-usd') ?? '5'),
@@ -138,17 +163,22 @@ function createRandom(seed: number) {
 
 export type PlannedRun = { key: string; challenge: Challenge; variant: string; condition: ConditionId; repetition: number; binary: { file: string; sha256: string } }
 
-export function planRuns(set: ChallengeSet, options: Pick<Options, 'challenges' | 'variants' | 'conditions' | 'repetitions' | 'orderSeed'>): PlannedRun[] {
-  const selected = set.challenges.filter((challenge) => !options.challenges || options.challenges.includes(challenge.id))
+export function planRuns(
+  set: ChallengeSet,
+  options: Pick<Options, 'challenges' | 'variants' | 'cells' | 'conditions' | 'repetitions' | 'orderSeed'>,
+): PlannedRun[] {
+  const cells = options.cells ?? set.challenges
+    .filter((challenge) => !options.challenges || options.challenges.includes(challenge.id))
+    .flatMap((challenge) => options.variants.map((variant) => ({ id: challenge.id, variant })))
   const runs: PlannedRun[] = []
-  for (const challenge of selected) {
-    for (const variant of options.variants) {
-      const binary = set.binaries.find((candidate) => candidate.id === challenge.id && candidate.variant === variant)
-      if (!binary) throw new Error(`No ${variant} build for ${challenge.id}`)
-      for (let repetition = 1; repetition <= options.repetitions; repetition++) {
-        for (const condition of options.conditions) {
-          runs.push({ key: `${challenge.id}-${variant}-${condition}-r${repetition}`, challenge, variant, condition, repetition, binary })
-        }
+  for (const { id, variant } of cells) {
+    const challenge = set.challenges.find((candidate) => candidate.id === id)
+    if (!challenge) throw new Error(`No challenge ${id} in the ${set.name} set`)
+    const binary = set.binaries.find((candidate) => candidate.id === id && candidate.variant === variant)
+    if (!binary) throw new Error(`No ${variant} build for ${id}`)
+    for (const condition of options.conditions) {
+      for (let repetition = 1; repetition <= options.repetitions[condition]!; repetition++) {
+        runs.push({ key: `${id}-${variant}-${condition}-r${repetition}`, challenge, variant, condition, repetition, binary })
       }
     }
   }

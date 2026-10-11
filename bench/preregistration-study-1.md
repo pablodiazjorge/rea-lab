@@ -21,7 +21,7 @@ What does rea add to Claude Code when it reverse engineers small native Windows 
 ## Design
 
 - Within-challenge, paired: every challenge runs under A and B, the confirmatory comparison, and under C as an exploratory arm, with the same model, effort, prompt structure and limits ([ADR 0018](../docs/adr/0018-benchmark-isolation.md)).
-- Challenges: the held-out set, generated with a seed that stays private until the report is published. Its `manifest.json` SHA-256 is recorded below before the first run. Only challenges that can tell the conditions apart: in pilot 1 every condition solved `compare`, and the `-O2` builds of `xor` and `table`, because the compiler leaves their constants in view. The set is 10 challenges: `checksum` and `state` in `x64-O2-strip` and `x86-O0-strip`, `xor` and `table` in `x64-O0-strip` and `x86-O0-strip`, and one new, harder family if pilot 2 shows that this set still sits at the ceiling.
+- Challenges: the held-out set, generated with a seed that stays private until the report is published. Its `manifest.json` SHA-256 is recorded below before the first run. The set is 10 challenges: the eight families of generator version 3 (`compare`, `xor`, `checksum`, `table`, `state`, `pairs`, `sbox`, `indirect`) in `x64-O2-strip`, plus `checksum` and `state` again in `x86-O2-strip`, the two families where the pilots showed the conditions apart. Every family stays in the set, so the result describes the whole range of small static crackmes and not only the hardest ones.
 - Repetitions: 3 per challenge for A and B, and 1 for C, so 70 runs in all. In pilot 1 the agent never loaded the skill when it was offered (0 of 5), so C mostly repeats B; one repetition is enough to report how often the skill is picked up.
 - Order: shuffled with a recorded order seed, so conditions spread over time of day and over any service changes.
 - Fixed per study: Claude Code 2.1.296, model, effort, the rea version (6.4.0, or 6.5.0 if it is published before freezing, upgraded in a separate change as ADR 0005 requires) and Ghidra 12.1.4. The harness refuses to resume a study if any of them changes.
@@ -57,7 +57,18 @@ What does rea add to Claude Code when it reverse engineers small native Windows 
 
 ## Pilot (before freezing)
 
-On the public set: the five families in `x64-O2-strip`, one repetition per condition, 15 runs. It checks that isolation holds, that rea connects and delivers Evidence in Claude Code's transcripts, and how long and how much a run takes. The model and the limits above are fixed from it. Pilot runs are not part of the study.
+Four pilots on the public set, 35 runs, none of them part of the study:
+
+| Pilot | Runs | What it showed |
+|---|---|---|
+| 1 | Five families, `x64-O2-strip`, A, B and C | Isolation holds and rea delivers authenticated Evidence; the safety classifier stops most runs with rea; the skill is never loaded; `-O2` folds `xor` and `table` into plain comparisons |
+| 2 | Four families, `x86-O0-strip`, A and B | `-O0` does not make the challenges harder |
+| 3 | Three new families (`pairs`, `sbox`, `indirect`), A and B | `-O2` also folds const lookup tables; a denied `awk` made an agent stop instead of analysing |
+| 3b | The same three, after the fixes, A and B | Writable tables keep the lookups; with common text filters allowed, no agent stops on a denied filter |
+
+Across all of them, A solved 11 of 15 runs and B 15 of 15; the classifier stopped 2 of the 15 A runs and 14 of the 15 B runs. These numbers set the design above and are not evidence for H1.
+
+Decisions fixed by the pilots: Claude Code 2.1.296, `claude-sonnet-5-5` with medium effort, the limits above, and the allow list of `bench/conditions.ts` (the four LLVM tools plus `grep`, `head`, `tail`, `wc`, `awk`, `sed`, `cut`, `tr`, `sort`, `uniq` and `od`, with no interpreter; any command that tries to run a program is flagged for review).
 
 ## Held-out set
 
@@ -65,7 +76,7 @@ On the public set: the five families in `x64-O2-strip`, one repetition per condi
 |---|---|
 | Manifest SHA-256 | recorded before the first study run |
 | Seed | published with the report |
-| Generator version | 2 |
+| Generator version | 3 |
 
 ## Deviations
 

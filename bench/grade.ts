@@ -65,7 +65,33 @@ export type Grade = {
   permissionDenials: number
   /** Paths in tool inputs that point outside the run's work folder, flagged for review as possible contamination. */
   outsidePaths: string[]
+  /** Shell commands that look like an attempt to run a program (allowed or not), flagged for review. */
+  executionAttempts: string[]
   isolation: Isolation
+}
+
+// Ways a shell command could start a program: awk system(), sed's e command, a nested shell or interpreter,
+// or the target itself. A heuristic for review, not a sandbox: the allow list is what blocks execution.
+const EXECUTION_PATTERNS = [
+  /\bsystem\s*\(/, // awk's system()
+  /\|\s*(?:ba)?sh\b/, // piping into a shell
+  /\b(?:ba)?sh\s+-c\b/,
+  /\bcmd(?:\.exe)?\s+\/c\b/i,
+  /\bpowershell\b/i,
+  /\bpython\d?\b/,
+  /\bnode\b/,
+  /\bwine\b/,
+  /(?:^|[;&|(]\s*)(?:\.\/)?target(?:\.exe)?(?:\s|$)/, // the target itself as a command
+  /\bsed\b[^|;&]*(?:\/e\b|['"]e\s)/, // sed's e flag or command
+]
+const EXECUTION = { test: (command: string) => EXECUTION_PATTERNS.some((pattern) => pattern.test(command)) }
+
+/** Bash commands that look like an attempt to execute something. */
+export function executionAttempts(run: ClaudeRun): string[] {
+  return run.toolCalls
+    .filter((call) => call.name === 'Bash')
+    .map((call) => String((call.input as { command?: unknown } | null)?.command ?? ''))
+    .filter((command) => EXECUTION.test(command))
 }
 
 /** Absolute paths or parent-folder steps in tool inputs that point outside the run's work folder. */
@@ -127,6 +153,7 @@ export function gradeRun(run: ClaudeRun, challenge: Challenge, options: { withRe
     toolCalls,
     permissionDenials: run.result?.permissionDenials.length ?? 0,
     outsidePaths: outsidePaths(run, options.workDir),
+    executionAttempts: executionAttempts(run),
     isolation: checkIsolation(run, options),
   }
 }

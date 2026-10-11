@@ -9,6 +9,9 @@ const FAMILIES = {
   compare: (answer, input) => input === answer.input,
   xor: (answer, input) => input === answer.input,
   table: (answer, input) => input === answer.input,
+  pairs: (answer, input) => input === answer.input,
+  sbox: (answer, input) => input === answer.input,
+  indirect: (answer, input) => input === answer.input,
   checksum: ({ rule }, input) =>
     input.length === rule.length && /^[a-z]*$/.test(input) && WEIGHTED_SUM(input) % rule.modulus === rule.target,
   state: ({ machine }, input) => {
