@@ -38,12 +38,13 @@ const manifest = (claims: object[]) => JSON.stringify({ claims })
 const claim = (id: string, value: unknown, evidence_id: string, confidence = 'observed', authority = 'shipped-artifact') =>
   ({ id, value, evidence_id, confidence, authority })
 
-const reaSession = (finalText: string, pseudoCodeText = JSON.stringify(pseudoCode)) => parseStreamJson(transcript([
+const reaSessionLines = (finalText: string, pseudoCodeText = JSON.stringify(pseudoCode)) => transcript([
   { tool: 'mcp__rea__open_binary', input: { path: 'C:\\run\\work\\target.exe' }, result: JSON.stringify({ result: { status: 'opened' } }) },
   { tool: 'mcp__rea__search_strings', result: JSON.stringify(strings) },
   { tool: 'mcp__rea__procedure_pseudo_code', input: { address: '0x140001450' }, result: pseudoCodeText },
   { tool: 'mcp__rea__close_binary', result: JSON.stringify({ result: { status: 'closed' } }) },
-], finalText))
+], finalText)
+const reaSession = (finalText: string, pseudoCodeText = JSON.stringify(pseudoCode)) => parseStreamJson(reaSessionLines(finalText, pseudoCodeText))
 
 test('parseStreamJson collects turns, tool calls, results and usage', () => {
   const run = reaSession('done')
@@ -61,7 +62,7 @@ test('a correct, grounded answer passes every check', () => {
     claim('accepted_input', 'grove-birch-90', pseudoCode.evidence_id),
     claim('check_mechanism', 'xor_encoded', pseudoCode.evidence_id),
   ]))
-  const grade = gradeRun(run, xor, { withRea: true, withSkill: false, targetSha256, workDir: 'C:\\run\\work' })
+  const grade = gradeRun(run, xor, { withRea: true, withSkill: false, targetSha256, workDir: 'C:\\run\\work', variant: 'x64-O0-strip' })
   assert.equal(grade.solved, true)
   assert.equal(grade.strictManifest, true)
   assert.equal(grade.mechanismCorrect, true)
@@ -78,7 +79,7 @@ test('an invented evidence_id is reported as unknown even when the value is righ
   const grade = gradeRun(reaSession(manifest([
     claim('accepted_input', 'grove-birch-90', invented),
     claim('check_mechanism', 'xor_encoded', pseudoCode.evidence_id),
-  ])), xor, { withRea: true, withSkill: false, targetSha256, workDir: 'C:\\run\\work' })
+  ])), xor, { withRea: true, withSkill: false, targetSha256, workDir: 'C:\\run\\work', variant: 'x64-O0-strip' })
   assert.equal(grade.solved, true)
   assert.equal(grade.grounding?.authenticated, 1)
   assert.deepEqual(grade.grounding?.unknown, [invented])
@@ -108,7 +109,7 @@ test('prose around the manifest fails the strict parse but still scores the valu
     claim('accepted_input', 'grove-birch-90', pseudoCode.evidence_id),
     claim('check_mechanism', 'string_compare', pseudoCode.evidence_id),
   ])}\n\`\`\``
-  const grade = gradeRun(reaSession(text), xor, { withRea: true, withSkill: false, targetSha256, workDir: 'C:\\run\\work' })
+  const grade = gradeRun(reaSession(text), xor, { withRea: true, withSkill: false, targetSha256, workDir: 'C:\\run\\work', variant: 'x64-O0-strip' })
   assert.equal(grade.strictManifest, false)
   assert.deepEqual(grade.manifestProblems, ['not_closed_json'])
   assert.equal(grade.solved, true)
@@ -119,7 +120,7 @@ test('a wrong input is not solved', () => {
   const grade = gradeRun(reaSession(manifest([
     claim('accepted_input', 'grove-birch-91', pseudoCode.evidence_id),
     claim('check_mechanism', 'xor_encoded', pseudoCode.evidence_id),
-  ])), xor, { withRea: true, withSkill: false, targetSha256, workDir: 'C:\\run\\work' })
+  ])), xor, { withRea: true, withSkill: false, targetSha256, workDir: 'C:\\run\\work', variant: 'x64-O0-strip' })
   assert.equal(grade.solved, false)
 })
 
@@ -132,7 +133,7 @@ test('condition A answers have no evidence_id and need none', () => {
   assert.equal(parsed.strict, true)
   assert.deepEqual(parseAnswer(text, true).problems, ['claim_fields:accepted_input', 'evidence_id:accepted_input', 'claim_fields:check_mechanism', 'evidence_id:check_mechanism'])
   const run = parseStreamJson(transcript([{ tool: 'Bash', input: { command: 'llvm-objdump -d target.exe' }, result: '...' }], text))
-  const grade = gradeRun(run, xor, { withRea: false, withSkill: false, targetSha256, workDir: 'C:\\run\\work' })
+  const grade = gradeRun(run, xor, { withRea: false, withSkill: false, targetSha256, workDir: 'C:\\run\\work', variant: 'x64-O0-strip' })
   assert.equal(grade.solved, true)
   assert.equal(grade.grounding, null)
   assert.equal(grade.rea, null)
@@ -159,7 +160,7 @@ test('paths outside the work folder are flagged for review', () => {
     { tool: 'Bash', input: { command: 'grep -r GRANTED /c/lab/build' }, result: '' },
     { tool: 'Glob', input: { pattern: '../**/*.json' }, result: '' },
   ], 'done'))
-  const grade = gradeRun(run, xor, { withRea: false, withSkill: false, targetSha256, workDir: 'C:\\run\\work' })
+  const grade = gradeRun(run, xor, { withRea: false, withSkill: false, targetSha256, workDir: 'C:\\run\\work', variant: 'x64-O0-strip' })
   assert.deepEqual(grade.outsidePaths, ['C:\\lab\\build\\challenges\\answers.json', '/c/lab/build', 'Glob: parent folder'])
 })
 
@@ -193,8 +194,49 @@ test('a safety refusal is counted as its own outcome', () => {
     JSON.stringify({ type: 'assistant', message: { id: 'r1', model: 'claude-test', stop_reason: 'refusal', content: [{ type: 'text', text: 'I cannot help with that.' }] } }),
     JSON.stringify({ type: 'result', subtype: 'success', is_error: false, num_turns: 1, result: 'I cannot help with that.' }),
   ]
-  const grade = gradeRun(parseStreamJson(lines), xor, { withRea: false, withSkill: false, targetSha256, workDir: 'C:/run/work' })
+  const grade = gradeRun(parseStreamJson(lines), xor, { withRea: false, withSkill: false, targetSha256, workDir: 'C:/run/work', variant: 'x64-O0-strip' })
   assert.equal(grade.refused, true)
   assert.equal(grade.solved, false)
   assert.equal(grade.answerFound, false)
+})
+
+test('an optimised build of a single-answer family also accepts string_compare as the mechanism', () => {
+  const text = manifest([
+    claim('accepted_input', 'grove-birch-90', pseudoCode.evidence_id),
+    claim('check_mechanism', 'string_compare', pseudoCode.evidence_id),
+  ])
+  const options = { withRea: true, withSkill: false, targetSha256, workDir: 'C:/run/work' }
+  assert.equal(gradeRun(reaSession(text), xor, { ...options, variant: 'x64-O2-strip' }).mechanismCorrect, true)
+  assert.equal(gradeRun(reaSession(text), xor, { ...options, variant: 'x64-O0-strip' }).mechanismCorrect, false)
+  const state: Challenge = { id: 'c05-state', family: 'state', answer: { machine: { start: 100, accept: 101, states: [] }, example: 'a' } }
+  assert.equal(gradeRun(reaSession(text), state, { ...options, variant: 'x64-O2-strip' }).mechanismCorrect, false)
+})
+
+test('a classifier stop that leaves the run without an answer counts as a refusal', () => {
+  const lines = [
+    JSON.stringify({ type: 'system', subtype: 'init', session_id: 's4', tools: [], mcp_servers: [], plugins: [], skills: [] }),
+    JSON.stringify({ type: 'system', subtype: 'informational', content: 'safeguards stopped the response above', level: 'notice' }),
+    JSON.stringify({ type: 'user', message: { role: 'user', content: [{ type: 'text', text: 'Your response above was stopped by a safety classifier.' }] }, isSynthetic: true, refused_message_id: 'msg_x' }),
+    JSON.stringify({ type: 'assistant', message: { id: 'a1', model: 'claude-test', content: [{ type: 'text', text: 'I cannot give the JSON answer yet.' }] } }),
+    JSON.stringify({ type: 'result', subtype: 'success', is_error: false, num_turns: 3, safety_stops: 1, result: 'I cannot give the JSON answer yet.' }),
+  ]
+  const run = parseStreamJson(lines)
+  assert.equal(run.safetyStops, 1)
+  const grade = gradeRun(run, xor, { withRea: false, withSkill: false, targetSha256, workDir: 'C:/run/work', variant: 'x64-O2-strip' })
+  assert.equal(grade.refused, true)
+  assert.equal(grade.safetyStops, 1)
+  assert.equal(grade.solved, false)
+})
+
+test('a classifier stop after which the agent still answers is counted but is not a refusal', () => {
+  const answer = manifest([
+    claim('accepted_input', 'grove-birch-90', pseudoCode.evidence_id),
+    claim('check_mechanism', 'xor_encoded', pseudoCode.evidence_id),
+  ])
+  const lines = reaSessionLines(answer)
+  lines.splice(1, 0, JSON.stringify({ type: 'user', message: { role: 'user', content: [{ type: 'text', text: 'stopped' }] }, isSynthetic: true, refused_message_id: 'msg_y' }))
+  const grade = gradeRun(parseStreamJson(lines), xor, { withRea: true, withSkill: false, targetSha256, workDir: 'C:/run/work', variant: 'x64-O0-strip' })
+  assert.equal(grade.safetyStops, 1)
+  assert.equal(grade.refused, false)
+  assert.equal(grade.solved, true)
 })

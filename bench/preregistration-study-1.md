@@ -20,11 +20,11 @@ What does rea add to Claude Code when it reverse engineers small native Windows 
 
 ## Design
 
-- Within-challenge, paired: every challenge runs under A, B and C, with the same model, effort, prompt structure and limits ([ADR 0018](../docs/adr/0018-benchmark-isolation.md)).
-- Challenges: the held-out set, generated with a seed that stays private until the report is published. Its `manifest.json` SHA-256 is recorded below before the first run. Five families (compare, xor, checksum, table, state), each in two variants, `x64-O2-strip` and `x86-O2-strip`: 10 challenges.
-- Repetitions: 3 per challenge and condition, so 90 runs in all.
+- Within-challenge, paired: every challenge runs under A and B, the confirmatory comparison, and under C as an exploratory arm, with the same model, effort, prompt structure and limits ([ADR 0018](../docs/adr/0018-benchmark-isolation.md)).
+- Challenges: the held-out set, generated with a seed that stays private until the report is published. Its `manifest.json` SHA-256 is recorded below before the first run. Only challenges that can tell the conditions apart: in pilot 1 every condition solved `compare`, and the `-O2` builds of `xor` and `table`, because the compiler leaves their constants in view. The set is 10 challenges: `checksum` and `state` in `x64-O2-strip` and `x86-O0-strip`, `xor` and `table` in `x64-O0-strip` and `x86-O0-strip`, and one new, harder family if pilot 2 shows that this set still sits at the ceiling.
+- Repetitions: 3 per challenge for A and B, and 1 for C, so 70 runs in all. In pilot 1 the agent never loaded the skill when it was offered (0 of 5), so C mostly repeats B; one repetition is enough to report how often the skill is picked up.
 - Order: shuffled with a recorded order seed, so conditions spread over time of day and over any service changes.
-- Fixed per study: Claude Code version, model, effort, rea 6.4.0 and Ghidra 12.1.4. The harness refuses to resume a study if any of them changes.
+- Fixed per study: Claude Code 2.1.296, model, effort, the rea version (6.4.0, or 6.5.0 if it is published before freezing, upgraded in a separate change as ADR 0005 requires) and Ghidra 12.1.4. The harness refuses to resume a study if any of them changes.
 - Limits per run: 20 minutes of wall time and an equivalent cost cap of 5 USD. A run that hits either limit counts as not solved.
 
 ## Outcomes
@@ -32,9 +32,10 @@ What does rea add to Claude Code when it reverse engineers small native Windows 
 | Outcome | Definition |
 |---|---|
 | Solved (primary) | The challenge oracle accepts the answer's `accepted_input`, with the lenient parse |
-| Mechanism | `check_mechanism` matches the family |
+| Mechanism | `check_mechanism` matches the family; for `compare`, `xor` and `table` built with `-O2`, `string_compare` also counts, because the compiler can fold their check into a comparison with constants |
 | Strict manifest | The final message is exactly one manifest with rea's shape |
-| Refused | The model stopped with a safety refusal (`stop_reason` "refusal") at least once |
+| Classifier stops | Responses cut off by the model's safety classifier (Claude Code's `safety_stops`); in pilot 1 they hit 9 of the 10 runs with rea and 1 of the 5 without it |
+| Refused | The run ended without an answer after a safety refusal or a classifier stop |
 | Citations | In B and C: cited `evidence_id` values that authenticate against Evidence delivered in the run, and those about the target's SHA-256 |
 | rea usage | rea's own metrics: rea used, first call `open_binary`, session opened and closed, repeated calls, input validation failures, skill loaded |
 | Cost | Wall time, turns, input and output tokens, equivalent cost |
@@ -43,7 +44,7 @@ What does rea add to Claude Code when it reverse engineers small native Windows 
 
 - Solve rate per condition with a Wilson 95 % interval.
 - H1: exact McNemar on the A and B pairs, matched by challenge, variant and repetition (30 pairs).
-- B against C and A against C: the same test, reported as exploratory, without a correction because they are not confirmatory.
+- B against C and A against C: the same test on the single C repetition, reported as exploratory, without a correction because they are not confirmatory.
 - Sensitivity: repetitions of one challenge are not independent, so H1 is also tested with one pair per challenge (solved in at least 2 of 3 repetitions), 10 pairs.
 - With 30 pairs only large effects can be detected. A non-significant result is reported as "no large effect detected", never as "no effect".
 

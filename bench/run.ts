@@ -249,7 +249,7 @@ async function executeRun(run: PlannedRun, set: ChallengeSet, options: Options, 
   rmSync(temp, { recursive: true, force: true, maxRetries: 3 })
 
   const transcript = parseStreamJson(readFileSync(eventsFile, 'utf8').split('\n'))
-  const grade = gradeRun(transcript, run.challenge, { withRea: condition.withRea, withSkill: condition.withSkill, targetSha256: run.binary.sha256, workDir: work })
+  const grade = gradeRun(transcript, run.challenge, { withRea: condition.withRea, withSkill: condition.withSkill, targetSha256: run.binary.sha256, workDir: work, variant: run.variant })
   const record = {
     schema: 1,
     study: options.study,

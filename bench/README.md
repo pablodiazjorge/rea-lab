@@ -25,9 +25,9 @@ No LLM judge is involved.
 | Measure | How it is decided |
 |---|---|
 | Solved (primary outcome) | The challenge oracle accepts `accepted_input` ([`oracle.mjs`](../challenges/oracle.mjs), checked against every real binary on Windows) |
-| Mechanism | `check_mechanism` matches the challenge family |
+| Mechanism | `check_mechanism` matches the challenge family; in `-O2` builds of single-answer families, where the compiler can fold the check into a comparison with constants, `string_compare` counts too |
 | Strict manifest | The final message is exactly one manifest with rea's shape |
-| Refused | The model stopped with a safety refusal; it counts as not solved and is reported apart |
+| Classifier stops and refusals | Responses cut off by the model's safety classifier, and runs that ended without an answer because of one; reported apart |
 | Evidence citations (B, C) | Each cited `evidence_id` belongs to an Evidence that rea delivered in the run and that re-authenticates with rea's `parseEvidence`, about the same SHA-256 as the target |
 | rea usage (B, C) | rea's `evaluateCodexEvents` through an adapter: rea used, first call `open_binary`, session opened and closed, repeated calls, input validation failures |
 | Cost and effort | Wall time, turns, tokens and equivalent cost from Claude Code's result |
@@ -55,7 +55,7 @@ node bench/run.ts --study pilot --model <model>
 node bench/report.ts --study pilot
 ```
 
-Raw transcripts stay in the benchmark home. `node bench/report.ts --study <name> --publish` copies the graded runs, without personal paths, into `bench/results/<name>/` together with the report.
+After a grader fix, `node bench/regrade.ts --study <name>` grades a study again from its saved transcripts, without repeating any run. Raw transcripts stay in the benchmark home. `node bench/report.ts --study <name> --publish` copies the graded runs, without personal paths, into `bench/results/<name>/` together with the report.
 
 ## Limitations
 

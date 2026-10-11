@@ -54,6 +54,11 @@ export type ClaudeRun = {
   syntheticMessages: number
   /** Model messages that stopped with stop_reason "refusal" (a safety refusal), counted as their own outcome. */
   refusals: number
+  /**
+   * Responses cut off by the model's safety classifier. Claude Code reports each one as a synthetic user message
+   * with refused_message_id, and their total as safety_stops in the result; the larger of the two is kept.
+   */
+  safetyStops: number
 }
 
 type Json = Record<string, unknown>
@@ -100,6 +105,7 @@ export function parseStreamJson(lines: Iterable<string>): ClaudeRun {
     invalidLines: 0,
     syntheticMessages: 0,
     refusals: 0,
+    safetyStops: 0,
   }
   const callsById = new Map<string, ToolCall>()
   let lastMessageId: string | null = null
@@ -156,6 +162,7 @@ export function parseStreamJson(lines: Iterable<string>): ClaudeRun {
     }
 
     if (event.type === 'user' && isObject(event.message) && !event.parent_tool_use_id) {
+      if (typeof event.refused_message_id === 'string') run.safetyStops++
       const content = Array.isArray(event.message.content) ? event.message.content.filter(isObject) : []
       for (const block of content) {
         if (block.type !== 'tool_result' || typeof block.tool_use_id !== 'string') continue
@@ -179,6 +186,7 @@ export function parseStreamJson(lines: Iterable<string>): ClaudeRun {
         text: stringOrNull(event.result),
         structuredOutput: event.structured_output ?? null,
       }
+      run.safetyStops = Math.max(run.safetyStops, numberOrNull(event.safety_stops) ?? 0)
     }
   }
   return run

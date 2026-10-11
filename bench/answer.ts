@@ -15,6 +15,18 @@ export const FAMILY_MECHANISM: Readonly<Record<string, (typeof MECHANISMS)[numbe
   state: 'state_machine',
 }
 
+// Families whose only accepted input is one fixed string. An optimising compiler may fold their check
+// into a direct comparison with constants (the c02-xor writeup shows the XOR vanishing at -O2), so the
+// binary itself then reads as a string comparison.
+const SINGLE_ANSWER_FAMILIES = new Set(['compare', 'xor', 'table'])
+
+/** Mechanisms counted as right for a family in a given build variant, such as "x64-O2-strip". */
+export function acceptedMechanisms(family: string, variant: string): string[] {
+  const own = FAMILY_MECHANISM[family]
+  const optimised = !/-O0-/.test(variant)
+  return optimised && SINGLE_ANSWER_FAMILIES.has(family) && own !== 'string_compare' ? [own, 'string_compare'] : [own]
+}
+
 const CONFIDENCE = new Set(['observed', 'derived', 'inferred'])
 const AUTHORITY = new Set(['shipped-artifact', 'controlled-replay', 'historical-reference', 'external-service', 'analyst-inference'])
 const EVIDENCE_ID = /^ev_[a-f0-9]{64}$/u

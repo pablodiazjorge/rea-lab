@@ -37,6 +37,7 @@ export type RunRecord = {
   usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number } | null
   solved: boolean
   refused: boolean
+  safetyStops?: number
   answerFound: boolean
   strictManifest: boolean
   mechanismCorrect: boolean
@@ -84,12 +85,12 @@ export function buildReport(records: RunRecord[]) {
   lines.push('Rates show successes/runs, the estimate and its Wilson 95 % interval. Cost is the equivalent cost reported by Claude Code, not money spent.', '')
 
   lines.push('## Outcome by condition', '')
-  lines.push('| Condition | Solved | Mechanism right | Strict manifest | Refused | Timed out | Median time | Median turns | Median input tokens | Median output tokens | Median cost |')
-  lines.push('|---|---|---|---|---|---|---|---|---|---|---|')
+  lines.push('| Condition | Solved | Mechanism right | Strict manifest | Classifier stops (runs) | Refused | Timed out | Denied commands | Median time | Median turns | Median input tokens | Median output tokens | Median cost |')
+  lines.push('|---|---|---|---|---|---|---|---|---|---|---|---|---|')
   for (const condition of CONDITIONS) {
     const group = byCondition[condition]
     if (group.length === 0) continue
-    lines.push(`| ${condition} | ${rate(group, (record) => record.solved)} | ${rate(group, (record) => record.mechanismCorrect)} | ${rate(group, (record) => record.strictManifest)} | ${group.filter((record) => record.refused).length} | ${group.filter((record) => record.timed_out).length} | ${middle(group.map((record) => record.wall_ms), (value) => `${Math.round(value / 1000)} s`)} | ${middle(group.map((record) => record.num_turns), (value) => String(value))} | ${middle(group.map(inputTokens), (value) => String(Math.round(value)))} | ${middle(group.map((record) => record.usage?.output_tokens ?? null), (value) => String(Math.round(value)))} | ${middle(group.map((record) => record.equivalent_cost_usd), (value) => `${value.toFixed(2)} USD`)} |`)
+    lines.push(`| ${condition} | ${rate(group, (record) => record.solved)} | ${rate(group, (record) => record.mechanismCorrect)} | ${rate(group, (record) => record.strictManifest)} | ${group.filter((record) => (record.safetyStops ?? 0) > 0).length} | ${group.filter((record) => record.refused).length} | ${group.filter((record) => record.timed_out).length} | ${group.reduce((total, record) => total + record.permissionDenials, 0)} | ${middle(group.map((record) => record.wall_ms), (value) => `${Math.round(value / 1000)} s`)} | ${middle(group.map((record) => record.num_turns), (value) => String(value))} | ${middle(group.map(inputTokens), (value) => String(Math.round(value)))} | ${middle(group.map((record) => record.usage?.output_tokens ?? null), (value) => String(Math.round(value)))} | ${middle(group.map((record) => record.equivalent_cost_usd), (value) => `${value.toFixed(2)} USD`)} |`)
   }
 
   lines.push('', '## Solved by family', '')
@@ -121,11 +122,12 @@ export function buildReport(records: RunRecord[]) {
     }
   }
 
-  const flagged = records.filter((record) => record.outsidePaths.length > 0 || record.permissionDenials > 0 || !record.isolation.ok)
+  // Denied commands are expected (the allow list is narrow) and are counted above; only isolation and paths need review.
+  const flagged = records.filter((record) => record.outsidePaths.length > 0 || !record.isolation.ok)
   lines.push('', '## Runs flagged for review', '')
-  if (flagged.length === 0) lines.push('None: isolation held in every run, with no permission denials and no paths outside the work folder.')
+  if (flagged.length === 0) lines.push('None: isolation held in every run, with no paths outside the work folder.')
   for (const record of flagged) {
-    const notes = [`${record.permissionDenials} permission denial(s)`]
+    const notes: string[] = []
     if (!record.isolation.ok) notes.push(`isolation: ${record.isolation.problems.join(', ')}`)
     if (record.outsidePaths.length > 0) notes.push(`outside paths ${record.outsidePaths.map((path) => `\`${path}\``).join(', ')}`)
     lines.push(`- ${record.key}: ${notes.join('; ')}`)

@@ -25,9 +25,9 @@ No interviene ningún LLM como juez.
 | Medida | Cómo se decide |
 |---|---|
 | Resuelto (resultado principal) | El oráculo del reto acepta `accepted_input` ([`oracle.mjs`](../challenges/oracle.mjs), contrastado con cada binario real en Windows) |
-| Mecanismo | `check_mechanism` coincide con la familia del reto |
+| Mecanismo | `check_mechanism` coincide con la familia del reto; en las compilaciones `-O2` de familias de respuesta única, donde el compilador puede convertir la comprobación en una comparación con constantes, también vale `string_compare` |
 | Manifiesto estricto | El mensaje final es exactamente un manifiesto con la forma de rea |
-| Rechazo | El modelo se detuvo con un rechazo de seguridad; cuenta como no resuelto y se informa aparte |
+| Paradas del clasificador y rechazos | Respuestas cortadas por el clasificador de seguridad del modelo, y ejecuciones que acabaron sin respuesta por una de ellas; se informan aparte |
 | Citas de evidencia (B, C) | Cada `evidence_id` citado pertenece a una Evidence que rea entregó en la ejecución, que se vuelve a autenticar con `parseEvidence` de rea y que trata del mismo SHA-256 que el objetivo |
 | Uso de rea (B, C) | `evaluateCodexEvents` de rea mediante un adaptador: si usó rea, si la primera llamada fue `open_binary`, si abrió y cerró la sesión, las llamadas repetidas y los fallos de validación de entrada |
 | Coste y esfuerzo | Tiempo real, turnos, tokens y coste equivalente según el resultado de Claude Code |
@@ -55,7 +55,7 @@ node bench/run.ts --study pilot --model <modelo>
 node bench/report.ts --study pilot
 ```
 
-Las transcripciones en bruto se quedan en la carpeta del banco. `node bench/report.ts --study <nombre> --publish` copia las ejecuciones calificadas, sin rutas personales, en `bench/results/<nombre>/` junto con el informe.
+Tras corregir un calificador, `node bench/regrade.ts --study <nombre>` vuelve a calificar un estudio a partir de sus transcripciones guardadas, sin repetir ninguna ejecución. Las transcripciones en bruto se quedan en la carpeta del banco. `node bench/report.ts --study <nombre> --publish` copia las ejecuciones calificadas, sin rutas personales, en `bench/results/<nombre>/` junto con el informe.
 
 ## Limitaciones
 

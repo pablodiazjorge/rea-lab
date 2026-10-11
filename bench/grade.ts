@@ -2,7 +2,7 @@
 // oracle; Evidence citations and tool usage are scored with rea's own code (ADR 0019).
 
 import { accepts } from '../challenges/oracle.mjs'
-import { claimValue, FAMILY_MECHANISM, parseAnswer } from './answer.ts'
+import { acceptedMechanisms, claimValue, parseAnswer } from './answer.ts'
 import type { ClaudeRun } from './claude.ts'
 import { deliveredEvidence, reaMetrics, type ReaMetrics } from './rea.ts'
 
@@ -50,8 +50,10 @@ export function checkIsolation(run: ClaudeRun, options: { withRea: boolean; with
 export type Grade = {
   /** Primary outcome: the oracle accepts the answer's accepted_input. */
   solved: boolean
-  /** The model stopped with a safety refusal at least once; reported apart, and not solved unless it answered. */
+  /** The run ended without an answer after a safety refusal or classifier stop (an explicit refusal counts too). */
   refused: boolean
+  /** Responses cut off by the safety classifier (Claude Code's safety_stops). */
+  safetyStops: number
   answerFound: boolean
   strictManifest: boolean
   manifestProblems: string[]
@@ -84,7 +86,7 @@ export function outsidePaths(run: ClaudeRun, workDir: string): string[] {
   return [...found]
 }
 
-export function gradeRun(run: ClaudeRun, challenge: Challenge, options: { withRea: boolean; withSkill: boolean; targetSha256: string; workDir: string }): Grade {
+export function gradeRun(run: ClaudeRun, challenge: Challenge, options: { withRea: boolean; withSkill: boolean; targetSha256: string; workDir: string; variant: string }): Grade {
   const answer = parseAnswer(run.result?.text ?? run.finalText, options.withRea)
   const input = claimValue(answer.claims, 'accepted_input')
   const toolCalls: Record<string, number> = {}
@@ -111,11 +113,12 @@ export function gradeRun(run: ClaudeRun, challenge: Challenge, options: { withRe
 
   return {
     solved: typeof input === 'string' && accepts(challenge, input),
-    refused: run.refusals > 0,
+    refused: run.refusals > 0 || (run.safetyStops > 0 && answer.claims === null),
+    safetyStops: run.safetyStops,
     answerFound: answer.claims !== null,
     strictManifest: answer.strict,
     manifestProblems: answer.problems,
-    mechanismCorrect: claimValue(answer.claims, 'check_mechanism') === FAMILY_MECHANISM[challenge.family],
+    mechanismCorrect: acceptedMechanisms(challenge.family, options.variant).includes(String(claimValue(answer.claims, 'check_mechanism'))),
     grounding,
     rea: options.withRea ? reaMetrics(run) : null,
     skillLoaded: run.toolCalls.some(
