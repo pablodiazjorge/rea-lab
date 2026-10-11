@@ -5,7 +5,9 @@
   "license": "MIT",
   "scripts": {
     "check": "node scripts/check.mjs",
-    "setup": "node scripts/setup.mjs"
+    "setup": "node scripts/setup.mjs",
+    "challenges": "node challenges/build.mjs",
+    "challenges:check": "node challenges/build.mjs --check && node challenges/build.mjs && node challenges/verify-answers.mjs"
   },
   "dependencies": {
     "rea-agents": "6.4.0"

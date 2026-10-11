@@ -7,7 +7,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/rea-6.4.0-6f42c1" alt="rea 6.4.0">
   <img src="https://img.shields.io/badge/Ghidra-12.1.4-d32f2f" alt="Ghidra 12.1.4">
-  <img src="https://img.shields.io/badge/phase-F1-blue" alt="Fase actual: F1">
+  <img src="https://img.shields.io/badge/phase-F3-blue" alt="Fase actual: F3">
   <a href="https://github.com/pablodiazjorge/rea-lab/actions/workflows/check.yml"><img src="https://github.com/pablodiazjorge/rea-lab/actions/workflows/check.yml/badge.svg" alt="Comprobaciones del repositorio"></a>
   <a href="https://github.com/pablodiazjorge/rea-lab/actions/workflows/windows-smoke.yml"><img src="https://github.com/pablodiazjorge/rea-lab/actions/workflows/windows-smoke.yml/badge.svg" alt="Prueba en Windows con Ghidra real"></a>
   <img src="https://img.shields.io/badge/code-MIT-green" alt="Licencia del código: MIT">
@@ -33,9 +33,9 @@ No hay fechas: cada fase se cierra cuando cumple sus criterios de salida.
 | Fase | Objetivo | Estado |
 |---|---|---|
 | F0 | Cimientos públicos: normas, decisiones y comprobaciones | hecha |
-| F1 | Entorno reproducible y registro MCP por proyecto | en curso |
+| F1 | Entorno reproducible y registro MCP por proyecto | hecha |
 | F2 | Contribuciones a rea desde un Windows real | continua |
-| F3 | Retos con semilla y respuesta conocida, y primeros writeups | prevista |
+| F3 | Retos con semilla y respuesta conocida, y primeros writeups | en curso |
 | F4 | Banco de pruebas y estudio 1: qué le aporta rea a un agente | prevista |
 | F5 | Mod de Claude Code con un panel de evidencia en directo | prevista |
 | F6 | Segunda ola de contribuciones, skill mejorada y segundo agente | prevista |
@@ -53,6 +53,7 @@ No hay fechas: cada fase se cierra cuando cumple sus criterios de salida.
 | `AGENTS.md` | Instrucciones para los agentes (`CLAUDE.md` lo importa) |
 | `docs/adr/` | Registros de decisiones de arquitectura |
 | `docs/guides/` | Guías prácticas, como el [registro MCP portátil y por proyecto](docs/guides/portable-mcp-registration.es.md) |
+| [`challenges/`](challenges/README.es.md) | Retos de práctica con semilla y respuesta conocida, compilados de forma reproducible |
 | `tools.json` | Versiones, URL de descarga y SHA-256 de cada herramienta |
 | `scripts/setup.mjs` | Descarga, verifica y descomprime las herramientas en `tools/` |
 | `scripts/rea-mcp.mjs`, `.mcp.json` | El servidor MCP de rea, registrado solo para este proyecto |

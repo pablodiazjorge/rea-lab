@@ -18,7 +18,7 @@ import { dirname, extname, join, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const MUST_BE_IGNORED = ['_docs-internal', 'tools', 'targets', 'repos', 'node_modules']
+const MUST_BE_IGNORED = ['_docs-internal', 'tools', 'targets', 'repos', 'node_modules', 'build']
 const BINARY_EXT = new Set(['.png', '.jpg', '.jpeg', '.gif', '.ico', '.webp', '.woff', '.woff2', '.zip', '.exe', '.dll', '.so', '.o', '.obj', '.pdf'])
 const CODE_EXT = new Set(['.mjs', '.cjs', '.js', '.ts', '.tsx', '.ps1', '.psm1', '.json', '.yml', '.yaml', '.toml', '.sh'])
 

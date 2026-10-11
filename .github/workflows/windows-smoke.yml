@@ -13,6 +13,7 @@ on:
       - env.ps1
       - scripts/setup.mjs
       - scripts/rea-mcp.mjs
+      - challenges/**
       - .github/workflows/windows-smoke.yml
 
 permissions:
@@ -36,6 +37,10 @@ jobs:
       - run: npm ci
       - name: Download, verify and extract tools
         run: node scripts/setup.mjs
+      - name: Challenges are reproducible and match the public manifest
+        run: node challenges/build.mjs --check
+      - name: Challenge answers are correct
+        run: node challenges/build.mjs && node challenges/verify-answers.mjs
       - name: rea doctor for the Ghidra provider
         shell: pwsh
         run: |

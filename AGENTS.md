@@ -12,6 +12,8 @@ A lab for reverse engineering with AI agents on Windows, using [rea](https://git
 |---|---|---|
 | `README.md`, `README.es.md` | Project overview, English and Spanish | yes |
 | `docs/adr/` | Architecture decision records | yes |
+| `challenges/` | Seeded challenge generator, reproducible build, answer check, public manifest | yes |
+| `build/` | Generated challenge sources and binaries | no |
 | `tools.json` | Single source of tool versions, URLs and SHA-256 hashes | yes |
 | `scripts/setup.mjs` | Downloads, verifies and extracts the tools (`npm run setup`) | yes |
 | `scripts/rea-mcp.mjs`, `.mcp.json` | rea MCP server for this project, paths resolved at runtime | yes |
@@ -30,6 +32,7 @@ A lab for reverse engineering with AI agents on Windows, using [rea](https://git
 ```powershell
 npm run check                                   # must pass before a change is done
 npm run setup                                   # tools from tools.json (asks nothing, verifies hashes)
+npm run challenges:check                        # challenges: reproducible, public manifest, answers
 . .\env.ps1                                     # rea, Ghidra and clang for this session
 rea doctor --provider ghidra --json             # read-only health check
 rea inspect <path-to-pe> --provider ghidra --format json

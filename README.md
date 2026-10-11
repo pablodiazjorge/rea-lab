@@ -7,7 +7,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/rea-6.4.0-6f42c1" alt="rea 6.4.0">
   <img src="https://img.shields.io/badge/Ghidra-12.1.4-d32f2f" alt="Ghidra 12.1.4">
-  <img src="https://img.shields.io/badge/phase-F1-blue" alt="Current phase: F1">
+  <img src="https://img.shields.io/badge/phase-F3-blue" alt="Current phase: F3">
   <a href="https://github.com/pablodiazjorge/rea-lab/actions/workflows/check.yml"><img src="https://github.com/pablodiazjorge/rea-lab/actions/workflows/check.yml/badge.svg" alt="Repository checks"></a>
   <a href="https://github.com/pablodiazjorge/rea-lab/actions/workflows/windows-smoke.yml"><img src="https://github.com/pablodiazjorge/rea-lab/actions/workflows/windows-smoke.yml/badge.svg" alt="Windows smoke test with real Ghidra"></a>
   <img src="https://img.shields.io/badge/code-MIT-green" alt="Code license: MIT">
@@ -33,9 +33,9 @@ There are no dates: each phase closes when it meets its exit criteria.
 | Phase | Goal | Status |
 |---|---|---|
 | F0 | Public foundations: rules, decisions and checks | done |
-| F1 | Reproducible environment and per-project MCP registration | in progress |
+| F1 | Reproducible environment and per-project MCP registration | done |
 | F2 | Contributions to rea from a real Windows machine | ongoing |
-| F3 | Seeded challenges with known answers and first writeups | planned |
+| F3 | Seeded challenges with known answers and first writeups | in progress |
 | F4 | Benchmark and study 1: what rea adds to an agent | planned |
 | F5 | Claude Code mod with a live evidence pane | planned |
 | F6 | Second upstream wave, improved skill, second agent | planned |
@@ -53,6 +53,7 @@ There are no dates: each phase closes when it meets its exit criteria.
 | `AGENTS.md` | Instructions for coding agents (`CLAUDE.md` imports it) |
 | `docs/adr/` | Architecture decision records |
 | `docs/guides/` | How-to guides, such as the [portable per-project MCP registration](docs/guides/portable-mcp-registration.md) |
+| [`challenges/`](challenges/README.md) | Seeded practice challenges with known answers, built reproducibly |
 | `tools.json` | Tool versions, download URLs and SHA-256 hashes |
 | `scripts/setup.mjs` | Downloads, verifies and extracts the tools into `tools/` |
 | `scripts/rea-mcp.mjs`, `.mcp.json` | rea's MCP server, registered for this project only |

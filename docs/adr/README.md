@@ -14,7 +14,7 @@ One short file per decision that is hard to reverse, surprising without context 
 | [0008](0008-node-versions.md) | Node 22 for the lab, Node 24 only for the rea fork | accepted |
 | [0009](0009-wsl-for-the-fork.md) | Full rea suite and native addon in WSL, Windows only for lanes | accepted |
 | [0010](0010-target-policy.md) | Target policy and safety boundary | accepted |
-| [0011](0011-reproducible-challenges.md) | Seeded, reproducible challenges as ground truth | proposed (F3) |
+| [0011](0011-reproducible-challenges.md) | Seeded, reproducible challenges as ground truth | accepted (F3) |
 | [0012](0012-writeup-format.md) | Writeup format | proposed (F3) |
 | [0013](0013-licensing.md) | MIT for code, CC BY 4.0 for text and results | accepted |
 | [0014](0014-publishing-evidence.md) | Published evidence is sanitised and re-import tested | proposed (F3) |

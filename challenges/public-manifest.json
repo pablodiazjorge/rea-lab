@@ -1,0 +1,176 @@
+{
+  "generator_version": 1,
+  "seed": 20261011,
+  "toolchain": "llvm-mingw 20261006",
+  "flags": "-std=c11 -Wall -Wextra -Werror -O0|-O2 -ffile-prefix-map=<src>=. -static -Wl,--no-insert-timestamp [-s]",
+  "binaries": [
+    {
+      "id": "c01-compare",
+      "variant": "x64-O0-sym",
+      "file": "bin/c01-compare/c01-compare-x64-O0-sym.exe",
+      "size": 62976,
+      "sha256": "ce4c089a6c35a65cf1a8d1c08a312cffbdac5588f8a9dd9aa61b57d6ce106441"
+    },
+    {
+      "id": "c01-compare",
+      "variant": "x64-O0-strip",
+      "file": "bin/c01-compare/c01-compare-x64-O0-strip.exe",
+      "size": 10752,
+      "sha256": "827cb32ba8513e5dacffe67f3e8a6e4de8ace079c9d54ab8adb5552c64f8e5d9"
+    },
+    {
+      "id": "c01-compare",
+      "variant": "x64-O2-sym",
+      "file": "bin/c01-compare/c01-compare-x64-O2-sym.exe",
+      "size": 62976,
+      "sha256": "2dd6438f8c78fa8e165afdea960484d6bf20436b9206e061c7b9804e535be4f7"
+    },
+    {
+      "id": "c01-compare",
+      "variant": "x64-O2-strip",
+      "file": "bin/c01-compare/c01-compare-x64-O2-strip.exe",
+      "size": 10752,
+      "sha256": "0fedfbbd7e9aad5fc4ae4346a1391275a6701583c1a41828d95cb7fe6ff82831"
+    },
+    {
+      "id": "c01-compare",
+      "variant": "x86-O0-sym",
+      "file": "bin/c01-compare/c01-compare-x86-O0-sym.exe",
+      "size": 57344,
+      "sha256": "3ce97f78ca6d9858ff7a7a5460532742ac4e4b760e9a864fd8f711fa03ce9ac9"
+    },
+    {
+      "id": "c01-compare",
+      "variant": "x86-O0-strip",
+      "file": "bin/c01-compare/c01-compare-x86-O0-strip.exe",
+      "size": 8192,
+      "sha256": "049531ed873d8f888c4aef43ff78b79437e2a57488952f92d3696902485ae9a5"
+    },
+    {
+      "id": "c01-compare",
+      "variant": "x86-O2-sym",
+      "file": "bin/c01-compare/c01-compare-x86-O2-sym.exe",
+      "size": 57344,
+      "sha256": "a52377b85c3db02774fc2b9a65d1127eb752adf66837d118c9623ec913c62e76"
+    },
+    {
+      "id": "c01-compare",
+      "variant": "x86-O2-strip",
+      "file": "bin/c01-compare/c01-compare-x86-O2-strip.exe",
+      "size": 8192,
+      "sha256": "3e2cb4c7cf95202b8323cab194acfe948e569347254d265b1a4feb997ec2b969"
+    },
+    {
+      "id": "c02-xor",
+      "variant": "x64-O0-sym",
+      "file": "bin/c02-xor/c02-xor-x64-O0-sym.exe",
+      "size": 62976,
+      "sha256": "603986fc4d469bc1c35d2e98d1ec99ab2aba72517685ae094e5d520fb5c4502f"
+    },
+    {
+      "id": "c02-xor",
+      "variant": "x64-O0-strip",
+      "file": "bin/c02-xor/c02-xor-x64-O0-strip.exe",
+      "size": 10752,
+      "sha256": "63d3ae96dd7dcb7b62b49534b645c72695a05b71613960abf962e174500dacf4"
+    },
+    {
+      "id": "c02-xor",
+      "variant": "x64-O2-sym",
+      "file": "bin/c02-xor/c02-xor-x64-O2-sym.exe",
+      "size": 62976,
+      "sha256": "a9ccb20ecf67c464714b926d5f2ae53b07f4df3ee79dd7b40754efd9f1b5b1e5"
+    },
+    {
+      "id": "c02-xor",
+      "variant": "x64-O2-strip",
+      "file": "bin/c02-xor/c02-xor-x64-O2-strip.exe",
+      "size": 10752,
+      "sha256": "4ec8d5c0ccdacb378dd0de8113b6cf9b0b04f3194e346a3d6b1bb41eccc5f25f"
+    },
+    {
+      "id": "c02-xor",
+      "variant": "x86-O0-sym",
+      "file": "bin/c02-xor/c02-xor-x86-O0-sym.exe",
+      "size": 57344,
+      "sha256": "2df434ed8bae044e79d690b9c536c3d6e563785962cdbb7bd3fe10c14b8249c3"
+    },
+    {
+      "id": "c02-xor",
+      "variant": "x86-O0-strip",
+      "file": "bin/c02-xor/c02-xor-x86-O0-strip.exe",
+      "size": 8192,
+      "sha256": "7e44f28eec77dd5924ee2ffe9dfe5e1a4a015e17c80291bc594a71456018ae30"
+    },
+    {
+      "id": "c02-xor",
+      "variant": "x86-O2-sym",
+      "file": "bin/c02-xor/c02-xor-x86-O2-sym.exe",
+      "size": 57344,
+      "sha256": "cea2ad613613e93abfac14bffcabfc4a1eab84442d86d2abbbe96584778e5ef1"
+    },
+    {
+      "id": "c02-xor",
+      "variant": "x86-O2-strip",
+      "file": "bin/c02-xor/c02-xor-x86-O2-strip.exe",
+      "size": 8192,
+      "sha256": "89b2c68013853999787991b7940bd03d409640146019b8bb26dfdd74c5643ba5"
+    },
+    {
+      "id": "c03-checksum",
+      "variant": "x64-O0-sym",
+      "file": "bin/c03-checksum/c03-checksum-x64-O0-sym.exe",
+      "size": 62976,
+      "sha256": "51edac6625365c2e27a620f99bdf533d386f2ba7d3032f3eca51d78f983f01d0"
+    },
+    {
+      "id": "c03-checksum",
+      "variant": "x64-O0-strip",
+      "file": "bin/c03-checksum/c03-checksum-x64-O0-strip.exe",
+      "size": 10752,
+      "sha256": "56ca11c0bc710fde3960eb4598d83ff8b064f6b3a0699fa1bbb5521f7b346ae8"
+    },
+    {
+      "id": "c03-checksum",
+      "variant": "x64-O2-sym",
+      "file": "bin/c03-checksum/c03-checksum-x64-O2-sym.exe",
+      "size": 62976,
+      "sha256": "c5e0a1209fc6f82b5508e18ed08ef7baccfac170b410fd385e4c266191ae7215"
+    },
+    {
+      "id": "c03-checksum",
+      "variant": "x64-O2-strip",
+      "file": "bin/c03-checksum/c03-checksum-x64-O2-strip.exe",
+      "size": 10752,
+      "sha256": "caf591a9f30663d1f21a38730491b5d9f9cc54b85090bd86193da25447fd5530"
+    },
+    {
+      "id": "c03-checksum",
+      "variant": "x86-O0-sym",
+      "file": "bin/c03-checksum/c03-checksum-x86-O0-sym.exe",
+      "size": 57344,
+      "sha256": "aaa39a5529d1b645acf23b5d693efb6fd36cb8e9b5cf520958664099f319d167"
+    },
+    {
+      "id": "c03-checksum",
+      "variant": "x86-O0-strip",
+      "file": "bin/c03-checksum/c03-checksum-x86-O0-strip.exe",
+      "size": 8192,
+      "sha256": "a8c9bab57d79ae455588d7e2b1cd3bb86c326ffcad07fb4872ac835d748df73e"
+    },
+    {
+      "id": "c03-checksum",
+      "variant": "x86-O2-sym",
+      "file": "bin/c03-checksum/c03-checksum-x86-O2-sym.exe",
+      "size": 57856,
+      "sha256": "208ef65c2eecf40023af11e1d458c7b8297f17851fbda8a6a90987aefa2961cf"
+    },
+    {
+      "id": "c03-checksum",
+      "variant": "x86-O2-strip",
+      "file": "bin/c03-checksum/c03-checksum-x86-O2-strip.exe",
+      "size": 8704,
+      "sha256": "d8bc8d29ba6e0145bbb29bca9911d7e46f6e88f9842e22b51d4701ef73e383a5"
+    }
+  ]
+}

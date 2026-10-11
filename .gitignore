@@ -6,6 +6,9 @@ tools/
 # Analysis targets: copied or third-party binaries are never redistributed
 targets/
 
+# Generated challenge sources and binaries (rebuilt from the seed by challenges/build.mjs)
+build/
+
 # Nested repositories (the mod and the rea fork checkout)
 repos/
 
