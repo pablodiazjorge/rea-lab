@@ -11,8 +11,10 @@ Programas pequeños de Windows compilados desde este repositorio, así que la re
 | `c01-compare` | compare | Una entrada que se compara con una cadena literal |
 | `c02-xor` | xor | Una entrada guardada con XOR y una clave de un byte |
 | `c03-checksum` | checksum | La regla de aceptación: longitud fija, minúsculas y suma ponderada por posición módulo un primo |
+| `c04-table` | table | Una entrada cuyos caracteres salen de un switch sobre su posición, desplazados una constante |
+| `c05-state` | state | Una máquina de estados sobre los caracteres de la entrada, con una transición de retroceso en cada estado |
 
-Cada reto se compila en ocho variantes: x64 y x86, `-O0` y `-O2`, con y sin tabla de símbolos. Son 24 binarios para la semilla pública.
+Cada reto se compila en ocho variantes: x64 y x86, `-O0` y `-O2`, con y sin tabla de símbolos. Son 40 binarios para la semilla pública.
 
 ## Órdenes
 
@@ -21,7 +23,7 @@ npm run challenges          # genera el conjunto público y lo compila en build/
 npm run challenges:check    # doble compilación con huellas idénticas, manifiesto público y respuestas
 ```
 
-`build/challenges/answers.json` guarda las respuestas, `build/challenges/manifest.json` la huella de cada binario y [`public-manifest.json`](public-manifest.json) las huellas de referencia que la CI comprueba en Windows.
+`build/challenges/answers.json` guarda las respuestas y `build/challenges/manifest.json`, la huella de cada binario. [`public-manifest.json`](public-manifest.json) conserva las huellas de referencia que la CI comprueba en Windows. [`oracle.mjs`](oracle.mjs) decide a partir de las respuestas si una entrada se acepta, sin ejecutar nada, y `verify-answers.mjs` comprueba en Windows que coincide con cada binario.
 
 ## Reproducibilidad
 

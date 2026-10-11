@@ -19,3 +19,16 @@ jobs:
           node-version: 22
       - name: Repository checks
         run: node scripts/check.mjs
+
+  bench:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install the pinned rea package
+        run: npm ci --ignore-scripts
+      - name: Benchmark unit tests (graders, rea adapter, statistics)
+        run: npm run bench:test

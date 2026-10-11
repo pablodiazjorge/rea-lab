@@ -1,0 +1,366 @@
+#!/usr/bin/env node
+// Runs benchmark batches (ADR 0018): one isolated `claude -p` per challenge, variant, condition and
+// repetition, in a seeded random order. Raw transcripts stay in the benchmark home, outside the
+// repository; every graded run is appended to results.jsonl. Finished runs are skipped, so an
+// interrupted batch resumes where it stopped.
+//
+// Usage:
+//   node bench/run.ts --study <name> --model <id> [--effort <level>] [--set public|<built folder>]
+//     [--challenges c01-compare,...] [--variants x64-O2-strip,...] [--conditions A,B,C]
+//     [--repetitions <n>] [--order-seed <n>] [--timeout-min <n>] [--max-budget-usd <n>] [--dry-run | --probe]
+//
+//   --dry-run  prints the planned runs and the prompt, without starting Claude Code
+//   --probe    one trivial session per condition, to check isolation before spending real runs
+
+import { spawn, spawnSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
+import { appendFileSync, copyFileSync, cpSync, createWriteStream, existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs'
+import { homedir } from 'node:os'
+import { delimiter, dirname, join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { parseStreamJson } from './claude.ts'
+import { CONDITIONS, BUILT_IN_TOOLS, mcpConfig, runSettings, taskPrompt, type ConditionId } from './conditions.ts'
+import { gradeRun, type Challenge } from './grade.ts'
+
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const REA_VERSION: string = JSON.parse(readFileSync(join(ROOT, 'node_modules', 'rea-agents', 'package.json'), 'utf8')).version
+
+type Options = {
+  study: string
+  model: string
+  effort: string
+  set: string
+  challenges: string[] | null
+  variants: string[]
+  conditions: ConditionId[]
+  repetitions: number
+  orderSeed: number
+  timeoutMs: number
+  maxBudgetUsd: number
+  dryRun: boolean
+  probe: boolean
+}
+
+function parseOptions(argv: string[]): Options {
+  const value = (name: string) => {
+    const index = argv.indexOf(name)
+    return index >= 0 ? argv[index + 1] : undefined
+  }
+  const list = (name: string) => value(name)?.split(',').map((item) => item.trim()).filter(Boolean)
+  const study = value('--study')
+  const model = value('--model')
+  if (!study || !/^[a-z0-9][a-z0-9-]*$/.test(study)) throw new Error('--study is required (lowercase letters, digits and dashes)')
+  if (!model) throw new Error('--model is required, so every study states the exact model it used')
+  const conditions = (list('--conditions') ?? ['A', 'B', 'C']) as ConditionId[]
+  for (const condition of conditions) if (!CONDITIONS[condition]) throw new Error(`Unknown condition ${condition}`)
+  return {
+    study,
+    model,
+    effort: value('--effort') ?? 'medium',
+    set: value('--set') ?? 'public',
+    challenges: list('--challenges') ?? null,
+    variants: list('--variants') ?? ['x64-O2-strip'],
+    conditions,
+    repetitions: Number.parseInt(value('--repetitions') ?? '1', 10),
+    orderSeed: Number.parseInt(value('--order-seed') ?? '1', 10),
+    timeoutMs: Number.parseFloat(value('--timeout-min') ?? '20') * 60_000,
+    maxBudgetUsd: Number.parseFloat(value('--max-budget-usd') ?? '5'),
+    dryRun: argv.includes('--dry-run'),
+    probe: argv.includes('--probe'),
+  }
+}
+
+/** The benchmark home: outside the repository, holds run folders, transcripts and the token file. */
+export const benchHome = () =>
+  resolve(process.env.REA_LAB_BENCH_HOME ?? join(process.env.LOCALAPPDATA ?? join(homedir(), '.cache'), 'rea-lab-bench'))
+
+const CLAUDE_BIN = join('node_modules', '@anthropic-ai', 'claude-code', 'bin', process.platform === 'win32' ? 'claude.exe' : 'claude')
+
+/**
+ * The Claude Code executable: REA_LAB_BENCH_CLAUDE, the local dev dependency, or the npm-installed one found
+ * through PATH (a shim such as claude.cmd cannot be spawned without a shell, so the real binary is used).
+ */
+function claudeExecutable(): { path: string; pinned: boolean } {
+  if (process.env.REA_LAB_BENCH_CLAUDE) return { path: process.env.REA_LAB_BENCH_CLAUDE, pinned: true }
+  if (existsSync(join(ROOT, CLAUDE_BIN))) return { path: join(ROOT, CLAUDE_BIN), pinned: true }
+  const pathValue = Object.entries(process.env).find(([name]) => name.toUpperCase() === 'PATH')?.[1] ?? ''
+  for (const folder of pathValue.split(delimiter).filter(Boolean)) {
+    for (const candidate of [join(folder, CLAUDE_BIN), join(folder, process.platform === 'win32' ? 'claude.exe' : 'claude')]) {
+      if (existsSync(candidate)) return { path: candidate, pinned: false }
+    }
+  }
+  throw new Error('Claude Code not found. Set REA_LAB_BENCH_CLAUDE to its executable.')
+}
+
+/** A JavaScript module as the executable runs under Node: that is how the harness tests use a fake Claude Code. */
+const command = (path: string, args: string[]): [string, string[]] =>
+  /\.m?js$/.test(path) ? [process.execPath, [path, ...args]] : [path, args]
+
+function claudeVersion(path: string): string {
+  const result = spawnSync(...command(path, ['--version']), { encoding: 'utf8' })
+  const match = /(\d+\.\d+\.\d+)/.exec(result.stdout ?? '')
+  if (!match) throw new Error(`Cannot read the Claude Code version from ${path}`)
+  return match[1]
+}
+
+/** The token for the child process only. It is never printed or written into a run folder. */
+function authenticationToken(home: string): string {
+  if (process.env.REA_LAB_BENCH_OAUTH_TOKEN) return process.env.REA_LAB_BENCH_OAUTH_TOKEN
+  const file = process.env.REA_LAB_BENCH_TOKEN_FILE ?? join(home, 'oauth-token')
+  if (!existsSync(file)) {
+    throw new Error(`No authentication token. Run "claude setup-token" and save the token in ${file}, or set REA_LAB_BENCH_OAUTH_TOKEN.`)
+  }
+  return readFileSync(file, 'utf8').trim()
+}
+
+type ChallengeSet = { name: string; folder: string; seed: number; challenges: Challenge[]; binaries: Array<{ id: string; variant: string; file: string; sha256: string }> }
+
+function loadSet(set: string): ChallengeSet {
+  const folder = set === 'public' ? join(ROOT, 'build', 'challenges') : resolve(set)
+  const manifestFile = join(folder, 'manifest.json')
+  if (!existsSync(manifestFile)) throw new Error(`No built challenges in ${folder}. Run: node challenges/build.mjs${set === 'public' ? '' : ' --seed <n> --out <folder>'}`)
+  const manifest = JSON.parse(readFileSync(manifestFile, 'utf8'))
+  const answers = JSON.parse(readFileSync(join(folder, 'answers.json'), 'utf8'))
+  return { name: set === 'public' ? 'public' : 'held-out', folder, seed: manifest.seed, challenges: answers.challenges, binaries: manifest.binaries }
+}
+
+// Same small PRNG as the challenge generator (mulberry32), used here to shuffle the run order.
+function createRandom(seed: number) {
+  let state = seed >>> 0
+  return () => {
+    state = (state + 0x6d2b79f5) >>> 0
+    let t = state
+    t = Math.imul(t ^ (t >>> 15), t | 1)
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+export type PlannedRun = { key: string; challenge: Challenge; variant: string; condition: ConditionId; repetition: number; binary: { file: string; sha256: string } }
+
+export function planRuns(set: ChallengeSet, options: Pick<Options, 'challenges' | 'variants' | 'conditions' | 'repetitions' | 'orderSeed'>): PlannedRun[] {
+  const selected = set.challenges.filter((challenge) => !options.challenges || options.challenges.includes(challenge.id))
+  const runs: PlannedRun[] = []
+  for (const challenge of selected) {
+    for (const variant of options.variants) {
+      const binary = set.binaries.find((candidate) => candidate.id === challenge.id && candidate.variant === variant)
+      if (!binary) throw new Error(`No ${variant} build for ${challenge.id}`)
+      for (let repetition = 1; repetition <= options.repetitions; repetition++) {
+        for (const condition of options.conditions) {
+          runs.push({ key: `${challenge.id}-${variant}-${condition}-r${repetition}`, challenge, variant, condition, repetition, binary })
+        }
+      }
+    }
+  }
+  const random = createRandom(options.orderSeed)
+  for (let index = runs.length - 1; index > 0; index--) {
+    const other = Math.floor(random() * (index + 1))
+    ;[runs[index], runs[other]] = [runs[other], runs[index]]
+  }
+  return runs
+}
+
+/** Environment for the child: inherited variables minus anything that could leak configuration in. */
+function childEnvironment(configDir: string, token: string): NodeJS.ProcessEnv {
+  const blocked = /^(CLAUDE|ANTHROPIC_|REA_|CODEX_|GHIDRA_|JAVA_HOME$|MCP_|OTEL_)/i
+  const env: NodeJS.ProcessEnv = {}
+  for (const [name, value] of Object.entries(process.env)) if (!blocked.test(name)) env[name] = value
+  const tools = JSON.parse(readFileSync(join(ROOT, 'tools.json'), 'utf8')).tools
+  const llvm = tools.find((tool: { id: string }) => tool.id === 'llvm-mingw')
+  const pathName = Object.keys(env).find((name) => name.toUpperCase() === 'PATH') ?? 'PATH'
+  env[pathName] = [join(ROOT, 'tools', llvm.dir, 'bin'), env[pathName]].join(delimiter)
+  return {
+    ...env,
+    CLAUDE_CONFIG_DIR: configDir,
+    CLAUDE_CODE_OAUTH_TOKEN: token,
+    DISABLE_AUTOUPDATER: '1',
+    CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: '1',
+  }
+}
+
+function killTree(pid: number | undefined) {
+  if (pid === undefined) return
+  if (process.platform === 'win32') spawnSync('taskkill', ['/PID', String(pid), '/T', '/F'], { stdio: 'ignore' })
+  else process.kill(-pid, 'SIGKILL')
+}
+
+const sha256 = (file: string) => createHash('sha256').update(readFileSync(file)).digest('hex')
+
+async function executeRun(run: PlannedRun, set: ChallengeSet, options: Options, context: { home: string; claude: string; version: string; token: string; prompt?: string }) {
+  const runDir = join(context.home, 'runs', options.study, run.key)
+  const work = join(runDir, 'work')
+  const config = join(runDir, 'claude-config')
+  const temp = join(runDir, 'tmp')
+  rmSync(runDir, { recursive: true, force: true })
+  for (const folder of [work, config, temp]) mkdirSync(folder, { recursive: true })
+
+  const target = join(work, 'target.exe')
+  copyFileSync(join(set.folder, run.binary.file), target)
+  if (sha256(target) !== run.binary.sha256) throw new Error(`${run.key}: the copied target does not match the manifest hash`)
+
+  const condition = CONDITIONS[run.condition]
+  // Passed with --settings: permission rules in settings files of an untrusted folder are ignored in print mode.
+  const settingsFile = join(runDir, 'settings.json')
+  writeFileSync(settingsFile, `${JSON.stringify(runSettings(condition, ROOT), null, 2)}\n`)
+  if (condition.withSkill) {
+    cpSync(join(ROOT, 'node_modules', 'rea-agents', 'skills', 'reverse-engineer-anything'), join(config, 'skills', 'reverse-engineer-anything'), { recursive: true })
+  }
+  const mcpFile = join(runDir, 'mcp.json')
+  writeFileSync(mcpFile, `${JSON.stringify(mcpConfig(condition, ROOT, temp), null, 2)}\n`)
+
+  const args = [
+    '--print', '--output-format', 'stream-json', '--verbose', '--no-session-persistence',
+    '--setting-sources', 'user', '--settings', settingsFile, '--strict-mcp-config', '--mcp-config', mcpFile,
+    '--model', options.model, '--effort', options.effort,
+    '--tools', BUILT_IN_TOOLS.join(','), '--permission-mode', 'dontAsk',
+    '--max-budget-usd', String(options.maxBudgetUsd),
+  ]
+
+  const eventsFile = join(runDir, 'events.jsonl')
+  const started = Date.now()
+  const outcome = await new Promise<{ exitCode: number | null; timedOut: boolean }>((resolvePromise, reject) => {
+    const child = spawn(...command(context.claude, args), {
+      cwd: work,
+      env: childEnvironment(config, context.token),
+      stdio: ['pipe', 'pipe', 'pipe'],
+      detached: process.platform !== 'win32',
+      windowsHide: true,
+    })
+    // The prompt goes through stdin: no quoting or length limits on the Windows command line.
+    child.stdin.end(context.prompt ?? taskPrompt(condition))
+    child.stdout.pipe(createWriteStream(eventsFile))
+    child.stderr.pipe(createWriteStream(join(runDir, 'stderr.txt')))
+    let timedOut = false
+    const timer = setTimeout(() => {
+      timedOut = true
+      killTree(child.pid)
+    }, options.timeoutMs)
+    child.on('error', (error) => {
+      clearTimeout(timer)
+      reject(error)
+    })
+    child.on('close', (exitCode) => {
+      clearTimeout(timer)
+      resolvePromise({ exitCode, timedOut })
+    })
+  })
+  const wallMs = Date.now() - started
+  // rea's temporary files; on timeout the whole process tree was already killed.
+  rmSync(temp, { recursive: true, force: true, maxRetries: 3 })
+
+  const transcript = parseStreamJson(readFileSync(eventsFile, 'utf8').split('\n'))
+  const grade = gradeRun(transcript, run.challenge, { withRea: condition.withRea, withSkill: condition.withSkill, targetSha256: run.binary.sha256, workDir: work })
+  const record = {
+    schema: 1,
+    study: options.study,
+    key: run.key,
+    set: set.name,
+    seed: set.name === 'public' ? set.seed : null,
+    challenge: run.challenge.id,
+    family: run.challenge.family,
+    variant: run.variant,
+    condition: run.condition,
+    repetition: run.repetition,
+    target_sha256: run.binary.sha256,
+    client: 'claude-code',
+    client_version: context.version,
+    requested_model: options.model,
+    model: transcript.model,
+    effort: options.effort,
+    rea_version: REA_VERSION,
+    exit_code: outcome.exitCode,
+    timed_out: outcome.timedOut,
+    wall_ms: wallMs,
+    // The session failed before the agent did anything (no init, or an error with no tool call): rerun it.
+    infrastructure_failure: !outcome.timedOut && (transcript.sessionId === null || transcript.result === null || (transcript.result.isError && transcript.toolCalls.length === 0)),
+    result_subtype: transcript.result?.subtype ?? null,
+    result_is_error: transcript.result?.isError ?? null,
+    terminal_reason: transcript.result?.terminalReason ?? null,
+    duration_ms: transcript.result?.durationMs ?? null,
+    duration_api_ms: transcript.result?.durationApiMs ?? null,
+    num_turns: transcript.result?.numTurns ?? null,
+    equivalent_cost_usd: transcript.result?.totalCostUsd ?? null,
+    usage: transcript.result?.usage ?? null,
+    mcp_servers: transcript.mcpServers,
+    ...grade,
+  }
+  writeFileSync(join(runDir, 'run.json'), `${JSON.stringify(record, null, 2)}\n`)
+  appendFileSync(join(context.home, 'runs', options.study, 'results.jsonl'), `${JSON.stringify(record)}\n`)
+  return record
+}
+
+/**
+ * Checks the harness without spending a real run: one trivial session per condition, then prints what each
+ * one loaded (plugins, skills, MCP servers) against what its condition allows.
+ */
+async function probe(runs: PlannedRun[], set: ChallengeSet, options: Options, context: { home: string; claude: string; version: string; token: string }) {
+  for (const condition of options.conditions) {
+    const run = runs.find((candidate) => candidate.condition === condition)!
+    const record = await executeRun({ ...run, key: `probe-${condition}` }, set, { ...options, timeoutMs: 5 * 60_000 }, {
+      ...context,
+      prompt: 'Reply with the single word OK. Do not call any tool.',
+    })
+    const servers = record.mcp_servers.map((server) => `${server.name}:${server.status}`).join(', ')
+    const isolation = record.isolation.ok ? 'isolation holds' : `isolation problems: ${record.isolation.problems.join(', ')}`
+    console.log(`${condition}: ${isolation}; MCP servers [${servers}], plugins [${record.isolation.plugins.join(', ')}], skill offered: ${record.isolation.skillOffered}, model ${record.model}, ${Math.round(record.wall_ms / 1000)} s, terminal reason ${record.terminal_reason ?? 'none'}`)
+  }
+}
+
+async function main() {
+  const options = parseOptions(process.argv.slice(2))
+  const home = benchHome()
+  const set = loadSet(options.set)
+  const runs = planRuns(set, options)
+  const { path: claude, pinned } = claudeExecutable()
+  const version = claudeVersion(claude)
+  console.log(`Study ${options.study}: ${runs.length} runs, ${set.name} set, Claude Code ${version}${pinned ? '' : ' (from PATH, not pinned)'}, rea ${REA_VERSION}, model ${options.model}, effort ${options.effort}`)
+  console.log(`Benchmark home: ${home}`)
+  if (options.dryRun) {
+    for (const run of runs) console.log(`  ${run.key}`)
+    console.log(`\nPrompt for condition B:\n${taskPrompt(CONDITIONS.B)}`)
+    return
+  }
+  const token = authenticationToken(home)
+  if (options.probe) return probe(runs, set, options, { home, claude, version, token })
+  const studyDir = join(home, 'runs', options.study)
+  mkdirSync(studyDir, { recursive: true })
+  const studyFile = join(studyDir, 'study.json')
+  const study = { study: options.study, client_version: version, rea_version: REA_VERSION, model: options.model, effort: options.effort, set: set.name }
+  if (existsSync(studyFile)) {
+    const previous = JSON.parse(readFileSync(studyFile, 'utf8'))
+    for (const field of ['client_version', 'rea_version', 'model', 'effort', 'set'] as const) {
+      if (previous[field] !== study[field]) throw new Error(`Study ${options.study} was started with ${field} ${previous[field]}, not ${study[field]}`)
+    }
+  } else writeFileSync(studyFile, `${JSON.stringify(study, null, 2)}\n`)
+
+  let index = 0
+  for (const run of runs) {
+    index++
+    const runDir = join(studyDir, run.key)
+    // Infrastructure failures are rerun up to twice (preregistration); earlier attempts are kept beside the run.
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      const previousFile = join(runDir, 'run.json')
+      if (existsSync(previousFile)) {
+        const previous = JSON.parse(readFileSync(previousFile, 'utf8'))
+        const kept = Array.from({ length: 3 }, (_, number) => `${runDir}.attempt-${number + 1}`).filter((folder) => existsSync(folder)).length
+        if (!previous.infrastructure_failure || kept >= 2) {
+          console.log(`[${index}/${runs.length}] ${run.key}: already done`)
+          break
+        }
+        renameSync(runDir, `${runDir}.attempt-${kept + 1}`)
+      }
+      const record = await executeRun(run, set, options, { home, claude, version, token })
+      const cost = record.equivalent_cost_usd === null ? '?' : record.equivalent_cost_usd.toFixed(2)
+      const status = record.infrastructure_failure ? `infrastructure failure (${record.terminal_reason ?? 'no result'})` : record.solved ? 'solved' : 'not solved'
+      console.log(`[${index}/${runs.length}] ${run.key}: ${status}${record.timed_out ? ' (timed out)' : ''}, ${Math.round(record.wall_ms / 1000)} s, ${cost} USD equivalent`)
+      if (!record.infrastructure_failure) break
+    }
+  }
+}
+
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  main().catch((error) => {
+    console.error(error instanceof Error ? error.message : error)
+    process.exit(1)
+  })
+}

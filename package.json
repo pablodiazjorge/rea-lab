@@ -3,11 +3,15 @@
   "private": true,
   "description": "Reverse engineering with AI agents on Windows, using rea",
   "license": "MIT",
+  "type": "module",
   "scripts": {
     "check": "node scripts/check.mjs",
     "setup": "node scripts/setup.mjs",
     "challenges": "node challenges/build.mjs",
-    "challenges:check": "node challenges/build.mjs --check && node challenges/build.mjs && node challenges/verify-answers.mjs"
+    "challenges:check": "node challenges/build.mjs --check && node challenges/build.mjs && node challenges/verify-answers.mjs",
+    "bench": "node bench/run.ts",
+    "bench:report": "node bench/report.ts",
+    "bench:test": "node --test \"bench/tests/*.test.ts\""
   },
   "dependencies": {
     "rea-agents": "6.4.0"

@@ -1,0 +1,64 @@
+# Banco de pruebas
+
+<p><a href="README.md">Read in English</a></p>
+
+¿Qué le aporta rea a un agente de programación que hace ingeniería inversa de binarios nativos de Windows? Este banco lo mide con retos cuya respuesta se conoce con exactitud, calificadores deterministas y estadística por pares. Ejecuta Claude Code sin interfaz (`claude -p`) y reutiliza el propio código de evaluación de rea donde encaja ([ADR 0019](../docs/adr/0019-reuse-rea-evaluation.md)).
+
+## Condiciones
+
+| Condición | El agente dispone de |
+|---|---|
+| A | `llvm-readobj`, `llvm-objdump`, `llvm-strings`, `llvm-nm` y algunos filtros de texto, a través de Bash, además de lectura de archivos |
+| B | Lo de A, más rea por MCP con Ghidra |
+| C | Lo de B, más la skill de rea (`reverse-engineer-anything`) |
+
+El modelo, el esfuerzo, la estructura del prompt y los límites son los mismos en todas las condiciones. No se permite ningún intérprete, así que el agente no puede ejecutar el objetivo: la tarea es de análisis estático.
+
+## Tarea y respuesta
+
+Cada ejecución recibe un reto de [`challenges/`](../challenges/README.es.md), renombrado como `target.exe`, y tiene que encontrar una entrada que le haga escribir `ACCESS GRANTED` y explicar cómo la comprueba el programa. La respuesta es el manifiesto cerrado de reclamaciones de rea, un único objeto JSON y nada más, con dos reclamaciones: `accepted_input` y `check_mechanism`. En las condiciones B y C cada reclamación cita el `evidence_id` del resultado de rea que la respalda.
+
+## Calificación
+
+No interviene ningún LLM como juez.
+
+| Medida | Cómo se decide |
+|---|---|
+| Resuelto (resultado principal) | El oráculo del reto acepta `accepted_input` ([`oracle.mjs`](../challenges/oracle.mjs), contrastado con cada binario real en Windows) |
+| Mecanismo | `check_mechanism` coincide con la familia del reto |
+| Manifiesto estricto | El mensaje final es exactamente un manifiesto con la forma de rea |
+| Rechazo | El modelo se detuvo con un rechazo de seguridad; cuenta como no resuelto y se informa aparte |
+| Citas de evidencia (B, C) | Cada `evidence_id` citado pertenece a una Evidence que rea entregó en la ejecución, que se vuelve a autenticar con `parseEvidence` de rea y que trata del mismo SHA-256 que el objetivo |
+| Uso de rea (B, C) | `evaluateCodexEvents` de rea mediante un adaptador: si usó rea, si la primera llamada fue `open_binary`, si abrió y cerró la sesión, las llamadas repetidas y los fallos de validación de entrada |
+| Coste y esfuerzo | Tiempo real, turnos, tokens y coste equivalente según el resultado de Claude Code |
+| Avisos | Permisos denegados y rutas fuera de la carpeta de la ejecución, que se revisan antes de publicar un estudio |
+
+Las tasas de resolución llevan intervalos de Wilson al 95 %, y cada par de condiciones se compara con una prueba exacta de McNemar sobre el mismo reto, la misma variante y la misma repetición. Con unas pocas decenas de pares solo se detectan efectos grandes, y el informe lo dice.
+
+## Aislamiento
+
+Cada ejecución tiene su propia carpeta fuera del repositorio, su propio `CLAUDE_CONFIG_DIR` vacío, `--strict-mcp-config`, `--setting-sources user` y `--permission-mode dontAsk`, de modo que no le llega nada de la configuración del usuario y lo que no está permitido se deniega sin preguntar. Detalles en el [ADR 0018](../docs/adr/0018-benchmark-isolation.md).
+
+## Cómo se ejecuta
+
+```powershell
+npm run challenges                        # compila los retos públicos
+npm run bench:test                        # pruebas unitarias de los calificadores, el adaptador de rea y la estadística
+node bench/run.ts --study pilot --model <modelo> --dry-run
+```
+
+Una tanda real necesita un token de larga duración de `claude setup-token`, guardado en `oauth-token` dentro de la carpeta del banco (`%LOCALAPPDATA%\rea-lab-bench`, o `REA_LAB_BENCH_HOME`), o indicado en `REA_LAB_BENCH_OAUTH_TOKEN`. El token solo llega al proceso hijo. Después se comprueba el aislamiento con una sesión trivial por condición y se lanza la tanda:
+
+```powershell
+node bench/run.ts --study probe --model <modelo> --probe
+node bench/run.ts --study pilot --model <modelo>
+node bench/report.ts --study pilot
+```
+
+Las transcripciones en bruto se quedan en la carpeta del banco. `node bench/report.ts --study <nombre> --publish` copia las ejecuciones calificadas, sin rutas personales, en `bench/results/<nombre>/` junto con el informe.
+
+## Limitaciones
+
+- Los retos son programas pequeños en C compilados con llvm-mingw, no con MSVC, y mucho más simples que el software real.
+- Un solo agente (Claude Code) y un solo modelo por estudio, así que los resultados todavía no dicen nada de otros agentes.
+- `total_cost_usd` es un coste equivalente, no dinero gastado en una suscripción.

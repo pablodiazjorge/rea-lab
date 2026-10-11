@@ -1,5 +1,5 @@
 {
-  "generator_version": 1,
+  "generator_version": 2,
   "seed": 20261011,
   "toolchain": "llvm-mingw 20261006",
   "flags": "-std=c11 -Wall -Wextra -Werror -O0|-O2 -ffile-prefix-map=<src>=. -static -Wl,--no-insert-timestamp [-s]",
@@ -171,6 +171,118 @@
       "file": "bin/c03-checksum/c03-checksum-x86-O2-strip.exe",
       "size": 8704,
       "sha256": "d8bc8d29ba6e0145bbb29bca9911d7e46f6e88f9842e22b51d4701ef73e383a5"
+    },
+    {
+      "id": "c04-table",
+      "variant": "x64-O0-sym",
+      "file": "bin/c04-table/c04-table-x64-O0-sym.exe",
+      "size": 62976,
+      "sha256": "0d1c801011a1dc862882430694d366e09bc39f590a572cb364231afeb2aed60e"
+    },
+    {
+      "id": "c04-table",
+      "variant": "x64-O0-strip",
+      "file": "bin/c04-table/c04-table-x64-O0-strip.exe",
+      "size": 10752,
+      "sha256": "287aeb5f27910c70535890ebeb64d903954106916dcf741ca8275b3573f8cbef"
+    },
+    {
+      "id": "c04-table",
+      "variant": "x64-O2-sym",
+      "file": "bin/c04-table/c04-table-x64-O2-sym.exe",
+      "size": 62976,
+      "sha256": "1ef5c0480516cbb7f9ba362bd553707ed1fb446fa992a4476354ed506195205f"
+    },
+    {
+      "id": "c04-table",
+      "variant": "x64-O2-strip",
+      "file": "bin/c04-table/c04-table-x64-O2-strip.exe",
+      "size": 10752,
+      "sha256": "74603ffc859633a06ea280af3302a78421d0c1e2e7604b05a4912b122df7c7d2"
+    },
+    {
+      "id": "c04-table",
+      "variant": "x86-O0-sym",
+      "file": "bin/c04-table/c04-table-x86-O0-sym.exe",
+      "size": 57856,
+      "sha256": "47c382400bbc005c6f2514489205f1e954b66d32871148ea34d9e4765bfef59e"
+    },
+    {
+      "id": "c04-table",
+      "variant": "x86-O0-strip",
+      "file": "bin/c04-table/c04-table-x86-O0-strip.exe",
+      "size": 8704,
+      "sha256": "66f4622b92b2197927bcb999d3fe0860106f59420dbbcd4cb005f7159564518c"
+    },
+    {
+      "id": "c04-table",
+      "variant": "x86-O2-sym",
+      "file": "bin/c04-table/c04-table-x86-O2-sym.exe",
+      "size": 57344,
+      "sha256": "09b341941ae3944871a7663832dbe7639adf83a66339791849eb5701820527a7"
+    },
+    {
+      "id": "c04-table",
+      "variant": "x86-O2-strip",
+      "file": "bin/c04-table/c04-table-x86-O2-strip.exe",
+      "size": 8192,
+      "sha256": "978798e4bd2411e36ca21d397450faffd600797286a0a976d730ce605a48ca98"
+    },
+    {
+      "id": "c05-state",
+      "variant": "x64-O0-sym",
+      "file": "bin/c05-state/c05-state-x64-O0-sym.exe",
+      "size": 64000,
+      "sha256": "852d39194e3a5c08b657cc49a793ad3443b85bb869d3e8bd6e7153114f085613"
+    },
+    {
+      "id": "c05-state",
+      "variant": "x64-O0-strip",
+      "file": "bin/c05-state/c05-state-x64-O0-strip.exe",
+      "size": 11776,
+      "sha256": "eb26eb6ab63b80e3ce5684f9ba41646b0dfd080dad5d25f761e5bf142a301a6a"
+    },
+    {
+      "id": "c05-state",
+      "variant": "x64-O2-sym",
+      "file": "bin/c05-state/c05-state-x64-O2-sym.exe",
+      "size": 62976,
+      "sha256": "523bf2ebb680eb433dbaca749a764be8950680e8be16a403fd9f9e6391cb8514"
+    },
+    {
+      "id": "c05-state",
+      "variant": "x64-O2-strip",
+      "file": "bin/c05-state/c05-state-x64-O2-strip.exe",
+      "size": 10752,
+      "sha256": "6339ed6774347bd7e1655fe0ff82c3f5a838c04be3db5eafcd401ed95b904c7a"
+    },
+    {
+      "id": "c05-state",
+      "variant": "x86-O0-sym",
+      "file": "bin/c05-state/c05-state-x86-O0-sym.exe",
+      "size": 58368,
+      "sha256": "c796ea4709e4fca7a7ee4907981e5c0e82312ff6c14516858d460e4dce79dcb7"
+    },
+    {
+      "id": "c05-state",
+      "variant": "x86-O0-strip",
+      "file": "bin/c05-state/c05-state-x86-O0-strip.exe",
+      "size": 9216,
+      "sha256": "84c0468653a3d7f6c0bf629626c0d08ddbbf17dcb3b8f1a3139324e2fe70971b"
+    },
+    {
+      "id": "c05-state",
+      "variant": "x86-O2-sym",
+      "file": "bin/c05-state/c05-state-x86-O2-sym.exe",
+      "size": 57856,
+      "sha256": "93334ea4894cd19109708c3d5c2aea3643b5428e55712c5741a36de666863cc3"
+    },
+    {
+      "id": "c05-state",
+      "variant": "x86-O2-strip",
+      "file": "bin/c05-state/c05-state-x86-O2-strip.exe",
+      "size": 8704,
+      "sha256": "9695645621f86706236d5d743e3d14e46acaff8d303054b5bdf1667d0e9c3e42"
     }
   ]
 }

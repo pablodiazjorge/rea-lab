@@ -22,8 +22,8 @@ One short file per decision that is hard to reverse, surprising without context 
 | [0016](0016-mod-journal-location.md) | The mod journal lives outside the user's repository | proposed (F5) |
 | [0017](0017-mod-pane.md) | What the mod pane shows | proposed (F5) |
 | [0018](0018-benchmark-isolation.md) | Benchmark isolation | proposed (F4) |
-| [0019](0019-reuse-rea-evaluation.md) | The benchmark reuses rea's evaluation schema | proposed (F4) |
+| [0019](0019-reuse-rea-evaluation.md) | The benchmark reuses rea's evaluation where it fits | proposed (F4) |
 | [0020](0020-cost-sources.md) | One cost source per context | proposed (F4) |
-| [0021](0021-upstream-contribution-strategy.md) | How the lab contributes to rea | accepted |
+| [0021](0021-upstream-contribution-strategy.md) | How the lab contributes to rea | accepted, amended in F4 |
 | [0022](0022-ci.md) | CI on Ubuntu for every push, Windows weekly | accepted (F1) |
 | [0023](0023-internal-docs.md) | Private process log in _docs-internal | accepted |

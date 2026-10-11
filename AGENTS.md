@@ -14,7 +14,9 @@ A lab for reverse engineering with AI agents on Windows, using [rea](https://git
 | `docs/adr/` | Architecture decision records | yes |
 | `writeups/` | One folder per investigation: README EN/ES, sanitised evidence, provenance, session plan | yes |
 | `scripts/rea-session.mjs`, `scripts/sanitize.mjs` | Scripted rea sessions over MCP; sanitise and re-authenticate Evidence before publishing | yes |
-| `challenges/` | Seeded challenge generator, reproducible build, answer check, public manifest | yes |
+| `challenges/` | Seeded challenge generator, reproducible build, answer check and oracle, public manifest | yes |
+| `bench/` | Benchmark harness (TypeScript run directly by Node): runner, graders, rea adapter, report, tests | yes |
+| `bench/results/` | Published, sanitised results of finished studies | yes |
 | `build/` | Generated challenge sources and binaries | no |
 | `tools.json` | Single source of tool versions, URLs and SHA-256 hashes | yes |
 | `scripts/setup.mjs` | Downloads, verifies and extracts the tools (`npm run setup`) | yes |
@@ -35,6 +37,7 @@ A lab for reverse engineering with AI agents on Windows, using [rea](https://git
 npm run check                                   # must pass before a change is done
 npm run setup                                   # tools from tools.json (asks nothing, verifies hashes)
 npm run challenges:check                        # challenges: reproducible, public manifest, answers
+npm run bench:test                              # benchmark graders, rea adapter and statistics
 . .\env.ps1                                     # rea, Ghidra and clang for this session
 rea doctor --provider ghidra --json             # read-only health check
 rea inspect <path-to-pe> --provider ghidra --format json

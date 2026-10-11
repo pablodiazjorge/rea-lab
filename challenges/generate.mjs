@@ -10,7 +10,7 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-export const GENERATOR_VERSION = 1
+export const GENERATOR_VERSION = 2
 export const PUBLIC_SEED = 20261011
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -121,6 +121,81 @@ ${MAIN}`
     return {
       description: 'Accepts lowercase inputs of a fixed length whose position-weighted character sum hits a target modulo a prime.',
       answer: { rule: { length, alphabet: 'a-z', weight: 'position starting at 1', modulus, target }, example },
+      source,
+    }
+  },
+
+  // Each character of the expected input comes from a switch over its position, shifted by a constant.
+  // Compilers lower the switch to a jump table or a lookup table of integers, not to a string.
+  table(random) {
+    const secret = passphrase(random)
+    const offset = integer(random, 1, 9)
+    const cases = [...secret].map((character, index) => `    case ${index}: return ${character.charCodeAt(0) + offset};`)
+    const source = `${HEADER}
+static int expected(size_t index) {
+  switch (index) {
+${cases.join('\n')}
+    default: return -1;
+  }
+}
+
+static int check(const char *input) {
+  size_t length = strlen(input);
+  if (length != ${secret.length}) return 0;
+  for (size_t index = 0; index < length; index++) {
+    if ((unsigned char)input[index] + ${offset} != expected(index)) return 0;
+  }
+  return 1;
+}
+
+${MAIN}`
+    return {
+      description: 'Each character of the expected input is returned by a switch over its position, shifted by a constant.',
+      answer: { input: secret, offset },
+      source,
+    }
+  },
+
+  // A state machine walks the input one character at a time. Every state has one character that moves
+  // forward and one that falls back to an earlier state; anything else rejects. Several inputs reach
+  // the accepting state, so the answer records the whole machine and one accepted example.
+  state(random) {
+    const example = passphrase(random)
+    const ids = []
+    while (ids.length <= example.length) {
+      const id = integer(random, 100, 999)
+      if (!ids.includes(id)) ids.push(id)
+    }
+    const states = [...example].map((character, index) => {
+      let back = character
+      while (back === character) back = pick(random, [...'abcdefghijklmnopqrstuvwxyz-0123456789'])
+      return {
+        id: ids[index],
+        forward: { character, next: ids[index + 1] },
+        back: { character: back, next: ids[integer(random, 0, index)] },
+      }
+    })
+    const accept = ids[example.length]
+    const cases = states.map(({ id, forward, back }) =>
+      `      case ${id}: state = c == '${forward.character}' ? ${forward.next} : c == '${back.character}' ? ${back.next} : 0; break;`)
+    const source = `${HEADER}
+static int check(const char *input) {
+  int state = ${ids[0]};
+  for (size_t index = 0; input[index] != 0; index++) {
+    int c = (unsigned char)input[index];
+    switch (state) {
+${cases.join('\n')}
+      default: return 0;
+    }
+    if (state == 0) return 0;
+  }
+  return state == ${accept};
+}
+
+${MAIN}`
+    return {
+      description: 'A state machine over the input characters; each state moves forward on one character and falls back on another.',
+      answer: { machine: { start: ids[0], accept, states }, example },
       source,
     }
   },
