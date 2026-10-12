@@ -1,6 +1,6 @@
 # Study 1 preregistration
 
-Status: **draft**. It is frozen, with the commit hash and date recorded here, after the pilot and before the first study run. Any later change is listed under Deviations in the study report.
+Status: **frozen** on 12 October 2026, in the commit that adds this line, after the pilots and before the first study run. Any later change is listed under Deviations in the study report.
 
 ## Question
 
@@ -23,8 +23,8 @@ What does rea add to Claude Code when it reverse engineers small native Windows 
 - Within-challenge, paired: every challenge runs under A and B, the confirmatory comparison, and under C as an exploratory arm, with the same model, effort, prompt structure and limits ([ADR 0018](../docs/adr/0018-benchmark-isolation.md)).
 - Challenges: the held-out set, generated with a seed that stays private until the report is published. Its `manifest.json` SHA-256 is recorded below before the first run. The set is 10 challenges: the eight families of generator version 3 (`compare`, `xor`, `checksum`, `table`, `state`, `pairs`, `sbox`, `indirect`) in `x64-O2-strip`, plus `checksum` and `state` again in `x86-O2-strip`, the two families where the pilots showed the conditions apart. Every family stays in the set, so the result describes the whole range of small static crackmes and not only the hardest ones.
 - Repetitions: 3 per challenge for A and B, and 1 for C, so 70 runs in all. In pilot 1 the agent never loaded the skill when it was offered (0 of 5), so C mostly repeats B; one repetition is enough to report how often the skill is picked up.
-- Order: shuffled with a recorded order seed, so conditions spread over time of day and over any service changes.
-- Fixed per study: Claude Code 2.1.296, model, effort, the rea version (6.4.0, or 6.5.0 if it is published before freezing, upgraded in a separate change as ADR 0005 requires) and Ghidra 12.1.4. The harness refuses to resume a study if any of them changes.
+- Order: shuffled with order seed 20261012, so conditions spread over time of day and over any service changes.
+- Fixed per study: Claude Code 2.1.296, `claude-sonnet-5-5` with medium effort, rea 6.4.0 (6.5.0 was not published yet when this was frozen), Ghidra 12.1.4 and Temurin 21.0.12.1. The harness refuses to resume a study if any of them changes.
 - Limits per run: 20 minutes of wall time and an equivalent cost cap of 5 USD. A run that hits either limit counts as not solved.
 
 ## Outcomes
@@ -70,11 +70,20 @@ Across all of them, A solved 11 of 15 runs and B 15 of 15; the classifier stoppe
 
 Decisions fixed by the pilots: Claude Code 2.1.296, `claude-sonnet-5-5` with medium effort, the limits above, and the allow list of `bench/conditions.ts` (the four LLVM tools plus `grep`, `head`, `tail`, `wc`, `awk`, `sed`, `cut`, `tr`, `sort`, `uniq` and `od`, with no interpreter; any command that tries to run a program is flagged for review).
 
+## Command
+
+The study runs exactly as follows, from a clean checkout of the freezing commit, with the held-out set built from its seed into a folder outside the repository:
+
+```powershell
+node bench/run.ts --study study-1 --model claude-sonnet-5-5 --effort medium --set <held-out set folder> --order-seed 20261012 --repetitions A=3,B=3,C=1 --cells c01-compare:x64-O2-strip,c02-xor:x64-O2-strip,c03-checksum:x64-O2-strip,c04-table:x64-O2-strip,c05-state:x64-O2-strip,c06-pairs:x64-O2-strip,c07-sbox:x64-O2-strip,c08-indirect:x64-O2-strip,c03-checksum:x86-O2-strip,c05-state:x86-O2-strip
+node bench/report.ts --study study-1
+```
+
 ## Held-out set
 
 | Field | Value |
 |---|---|
-| Manifest SHA-256 | recorded before the first study run |
+| Manifest SHA-256 | `40bd49f3da9790303312ae9fb026f19b67e54bc206cf73982fa764ea47d8fdda` |
 | Seed | published with the report |
 | Generator version | 3 |
 
