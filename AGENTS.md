@@ -17,6 +17,7 @@ A lab for reverse engineering with AI agents on Windows, using [rea](https://git
 | `challenges/` | Seeded challenge generator, reproducible build, answer check and oracle, public manifest | yes |
 | `bench/` | Benchmark harness (TypeScript run directly by Node): runner, graders, rea adapter, report, tests | yes |
 | `bench/results/` | Published, sanitised results of finished studies | yes |
+| `fixtures/compare-pairs/` | Reproducible PE pairs for rea's `compare_functions` (relocation only, real change) | yes |
 | `build/` | Generated challenge sources and binaries | no |
 | `tools.json` | Single source of tool versions, URLs and SHA-256 hashes | yes |
 | `scripts/setup.mjs` | Downloads, verifies and extracts the tools (`npm run setup`) | yes |
