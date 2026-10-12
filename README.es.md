@@ -36,7 +36,7 @@ No hay fechas: cada fase se cierra cuando cumple sus criterios de salida.
 | F1 | Entorno reproducible y registro MCP por proyecto | hecha |
 | F2 | Contribuciones a rea desde un Windows real | continua |
 | F3 | Retos con semilla y respuesta conocida, y primeros writeups | en curso |
-| F4 | Banco de pruebas y estudio 1: qué le aporta rea a un agente | en curso |
+| F4 | Banco de pruebas y estudio 1: qué le aporta rea a un agente | hecha |
 | F5 | Mod de Claude Code con un panel de evidencia en directo | prevista |
 | F6 | Segunda ola de contribuciones, skill mejorada y segundo agente | prevista |
 | F7 | Análisis dinámico dentro de Windows Sandbox | opcional |
@@ -45,7 +45,8 @@ No hay fechas: cada fase se cierra cuando cumple sus criterios de salida.
 
 - rea 6.4.0 con Ghidra 12.1.4 en Windows 11 26H2 (x64, NTFS, usuario sin elevar): `rea doctor --provider ghidra` pasa todas las comprobaciones, incluida la autoprueba nativa que falla en otros equipos ([morluto/rea#1701](https://github.com/morluto/rea/issues/1701)).
 - Primera sesión real: `WinHelloCPP.exe`, un ejercicio que trae Ghidra, analizado en unos 25 s (6 segmentos, 388 funciones y 254 cadenas), sin procesos ni archivos temporales sueltos.
-- Primera contribución fusionada en el proyecto original: [morluto/rea#1863](https://github.com/morluto/rea/pull/1863) arregla las pruebas reales de Ghidra en Windows, que habían dejado de pasar en cualquier equipo. Con ella pasan las nueve pruebas de Windows.
+- Tres contribuciones fusionadas en el proyecto original: [morluto/rea#1863](https://github.com/morluto/rea/pull/1863) arregla las pruebas reales de Ghidra en Windows, y [morluto/rea#1926](https://github.com/morluto/rea/pull/1926) y [morluto/rea#1936](https://github.com/morluto/rea/pull/1936) hacen que las pruebas de los clientes Claude Code y Gemini CLI funcionen en Windows nativo.
+- [Estudio 1](writeups/2026-10-study-1/README.es.md), preregistrado: con diez crackmes pequeños de Windows, rea no cambió cuántos resolvió Claude Code (28 de 30 con y sin rea), hizo cada ejecución el doble de lenta y de cara, y toda la evidencia de rea que citó el agente se volvió a autenticar.
 
 ## Estructura
 
@@ -54,7 +55,7 @@ No hay fechas: cada fase se cierra cuando cumple sus criterios de salida.
 | `AGENTS.md` | Instrucciones para los agentes (`CLAUDE.md` lo importa) |
 | `docs/adr/` | Registros de decisiones de arquitectura |
 | `docs/guides/` | Guías prácticas, como el [registro MCP portátil y por proyecto](docs/guides/portable-mcp-registration.es.md) |
-| `writeups/` | Investigaciones con su evidencia limpia: [WinHelloCPP](writeups/2026-10-winhellocpp/README.es.md), [Wallace v1 frente a v2](writeups/2026-10-wallace-versions/README.es.md), [c02-xor con -O0 y -O2](writeups/2026-10-own-xor/README.es.md) |
+| `writeups/` | Investigaciones con su evidencia limpia: [WinHelloCPP](writeups/2026-10-winhellocpp/README.es.md), [Wallace v1 frente a v2](writeups/2026-10-wallace-versions/README.es.md), [c02-xor con -O0 y -O2](writeups/2026-10-own-xor/README.es.md), [estudio 1](writeups/2026-10-study-1/README.es.md) |
 | [`challenges/`](challenges/README.es.md) | Retos de práctica con semilla y respuesta conocida, compilados de forma reproducible |
 | [`bench/`](bench/README.es.md) | Banco de pruebas: ejecuciones aisladas de `claude -p`, calificadores deterministas, el propio código de evaluación de rea y estadística por pares |
 | `tools.json` | Versiones, URL de descarga y SHA-256 de cada herramienta |

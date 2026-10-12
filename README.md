@@ -36,7 +36,7 @@ There are no dates: each phase closes when it meets its exit criteria.
 | F1 | Reproducible environment and per-project MCP registration | done |
 | F2 | Contributions to rea from a real Windows machine | ongoing |
 | F3 | Seeded challenges with known answers and first writeups | in progress |
-| F4 | Benchmark and study 1: what rea adds to an agent | in progress |
+| F4 | Benchmark and study 1: what rea adds to an agent | done |
 | F5 | Claude Code mod with a live evidence pane | planned |
 | F6 | Second upstream wave, improved skill, second agent | planned |
 | F7 | Dynamic analysis inside Windows Sandbox | optional |
@@ -45,7 +45,8 @@ There are no dates: each phase closes when it meets its exit criteria.
 
 - rea 6.4.0 with Ghidra 12.1.4 on Windows 11 26H2 (x64, NTFS, non-elevated user): `rea doctor --provider ghidra` passes every check, including the native authority self-test that fails on other machines ([morluto/rea#1701](https://github.com/morluto/rea/issues/1701)).
 - First real session: `WinHelloCPP.exe`, an exercise shipped with Ghidra, analysed in about 25 s (6 segments, 388 functions, 254 strings), with no leftover processes or temporary files.
-- First upstream contribution merged: [morluto/rea#1863](https://github.com/morluto/rea/pull/1863) fixes the real Windows Ghidra verification lanes, which had stopped passing on every host. All nine Windows lanes pass with it.
+- Three upstream contributions merged: [morluto/rea#1863](https://github.com/morluto/rea/pull/1863) fixes the real Windows Ghidra verification lanes, and [morluto/rea#1926](https://github.com/morluto/rea/pull/1926) and [morluto/rea#1936](https://github.com/morluto/rea/pull/1936) make the Claude Code and Gemini CLI client lanes run on native Windows.
+- [Study 1](writeups/2026-10-study-1/README.md), preregistered: on ten small Windows crackmes, rea did not change how many Claude Code solved (28 of 30 with and without it), made each run about twice as slow and expensive, and every piece of rea Evidence the agent cited re-authenticated.
 
 ## Layout
 
@@ -54,7 +55,7 @@ There are no dates: each phase closes when it meets its exit criteria.
 | `AGENTS.md` | Instructions for coding agents (`CLAUDE.md` imports it) |
 | `docs/adr/` | Architecture decision records |
 | `docs/guides/` | How-to guides, such as the [portable per-project MCP registration](docs/guides/portable-mcp-registration.md) |
-| `writeups/` | Investigations with their sanitised Evidence: [WinHelloCPP](writeups/2026-10-winhellocpp/README.md), [Wallace v1 against v2](writeups/2026-10-wallace-versions/README.md), [c02-xor at -O0 and -O2](writeups/2026-10-own-xor/README.md) |
+| `writeups/` | Investigations with their sanitised Evidence: [WinHelloCPP](writeups/2026-10-winhellocpp/README.md), [Wallace v1 against v2](writeups/2026-10-wallace-versions/README.md), [c02-xor at -O0 and -O2](writeups/2026-10-own-xor/README.md), [study 1](writeups/2026-10-study-1/README.md) |
 | [`challenges/`](challenges/README.md) | Seeded practice challenges with known answers, built reproducibly |
 | [`bench/`](bench/README.md) | Benchmark harness: isolated `claude -p` runs, deterministic graders, rea's own evaluation code, paired statistics |
 | `tools.json` | Tool versions, download URLs and SHA-256 hashes |
