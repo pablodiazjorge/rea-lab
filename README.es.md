@@ -7,7 +7,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/rea-6.4.0-6f42c1" alt="rea 6.4.0">
   <img src="https://img.shields.io/badge/Ghidra-12.1.4-d32f2f" alt="Ghidra 12.1.4">
-  <img src="https://img.shields.io/badge/phase-F4-blue" alt="Fase actual: F4">
+  <img src="https://img.shields.io/badge/phase-F6-blue" alt="Fase actual: F6">
   <a href="https://github.com/pablodiazjorge/rea-lab/actions/workflows/check.yml"><img src="https://github.com/pablodiazjorge/rea-lab/actions/workflows/check.yml/badge.svg" alt="Comprobaciones del repositorio"></a>
   <a href="https://github.com/pablodiazjorge/rea-lab/actions/workflows/windows-smoke.yml"><img src="https://github.com/pablodiazjorge/rea-lab/actions/workflows/windows-smoke.yml/badge.svg" alt="Prueba en Windows con Ghidra real"></a>
   <img src="https://img.shields.io/badge/code-MIT-green" alt="Licencia del código: MIT">
@@ -37,7 +37,7 @@ No hay fechas: cada fase se cierra cuando cumple sus criterios de salida.
 | F2 | Contribuciones a rea desde un Windows real | continua |
 | F3 | Retos con semilla y respuesta conocida, y primeros writeups | en curso |
 | F4 | Banco de pruebas y estudio 1: qué le aporta rea a un agente | hecha |
-| F5 | Mod de Claude Code con un panel de evidencia en directo | prevista |
+| F5 | Mod de Claude Code con un panel de evidencia en directo | hecha |
 | F6 | Segunda ola de contribuciones, skill mejorada y segundo agente | prevista |
 | F7 | Análisis dinámico dentro de Windows Sandbox | opcional |
 
@@ -47,6 +47,7 @@ No hay fechas: cada fase se cierra cuando cumple sus criterios de salida.
 - Primera sesión real: `WinHelloCPP.exe`, un ejercicio que trae Ghidra, analizado en unos 25 s (6 segmentos, 388 funciones y 254 cadenas), sin procesos ni archivos temporales sueltos.
 - Tres contribuciones fusionadas en el proyecto original: [morluto/rea#1863](https://github.com/morluto/rea/pull/1863) arregla las pruebas reales de Ghidra en Windows, y [morluto/rea#1926](https://github.com/morluto/rea/pull/1926) y [morluto/rea#1936](https://github.com/morluto/rea/pull/1936) hacen que las pruebas de los clientes Claude Code y Gemini CLI funcionen en Windows nativo.
 - [Estudio 1](writeups/2026-10-study-1/README.es.md), preregistrado: con diez crackmes pequeños de Windows, rea no cambió cuántos resolvió Claude Code (28 de 30 con y sin rea), hizo cada ejecución el doble de lenta y de cara, y toda la evidencia de rea que citó el agente se volvió a autenticar.
+- [rea-casebook](https://github.com/pablodiazjorge/rea-casebook) 1.0.0, un mod de Claude Code que lleva en directo el expediente de la evidencia que rea entrega al agente: la espera del arranque en frío de Ghidra, las preguntas abiertas, los hallazgos que tienen que citar `evidence_id` reales, un diario por sesión y exportaciones a Markdown o a artifact.
 
 ## Estructura
 
