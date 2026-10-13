@@ -11,6 +11,7 @@
 //
 //   --dry-run  prints the planned runs and the prompt, without starting Claude Code
 //   --probe    one trivial session per condition, to check isolation before spending real runs
+//   --probe-prompt <text>  with --probe, send this prompt instead (for example to check what a command may do)
 
 import { spawn, spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
@@ -41,6 +42,7 @@ type Options = {
   maxBudgetUsd: number
   dryRun: boolean
   probe: boolean
+  probePrompt: string | null
 }
 
 /** "3" gives every condition three repetitions; "A=3,B=3,C=1" sets them per condition. */
@@ -92,6 +94,7 @@ function parseOptions(argv: string[]): Options {
     maxBudgetUsd: Number.parseFloat(value('--max-budget-usd') ?? '5'),
     dryRun: argv.includes('--dry-run'),
     probe: argv.includes('--probe'),
+    probePrompt: value('--probe-prompt') ?? null,
   }
 }
 
@@ -238,7 +241,7 @@ async function executeRun(run: PlannedRun, set: ChallengeSet, options: Options, 
   const condition = CONDITIONS[run.condition]
   // Passed with --settings: permission rules in settings files of an untrusted folder are ignored in print mode.
   const settingsFile = join(runDir, 'settings.json')
-  writeFileSync(settingsFile, `${JSON.stringify(runSettings(condition, ROOT), null, 2)}\n`)
+  writeFileSync(settingsFile, `${JSON.stringify(runSettings(condition, ROOT, set.kind), null, 2)}\n`)
   if (condition.withSkill) {
     cpSync(join(ROOT, 'node_modules', 'rea-agents', 'skills', 'reverse-engineer-anything'), join(config, 'skills', 'reverse-engineer-anything'), { recursive: true })
   }
@@ -335,7 +338,7 @@ async function probe(runs: PlannedRun[], set: ChallengeSet, options: Options, co
     const run = runs.find((candidate) => candidate.condition === condition)!
     const record = await executeRun({ ...run, key: `probe-${condition}` }, set, { ...options, timeoutMs: 5 * 60_000 }, {
       ...context,
-      prompt: 'Reply with the single word OK. Do not call any tool.',
+      prompt: options.probePrompt ?? 'Reply with the single word OK. Do not call any tool.',
     })
     const servers = record.mcp_servers.map((server) => `${server.name}:${server.status}`).join(', ')
     const isolation = record.isolation.ok ? 'isolation holds' : `isolation problems: ${record.isolation.problems.join(', ')}`

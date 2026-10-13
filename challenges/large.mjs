@@ -1,9 +1,14 @@
 #!/usr/bin/env node
 // Generates the large challenge set for study 2 from a seed (ADR 0011). Like the small set, every program
 // reads one line from stdin and prints ACCESS GRANTED or ACCESS DENIED, and answers.json holds the ground
-// truth. These programs are bigger or more indirect: the check hides among hundreds of functions, runs as
-// bytecode in a small virtual machine, is spread over C++ objects, or is chained across three stages.
+// truth. Every program hides its real check among 64 checkers reached through a table of function pointers,
+// built over hundreds of hash functions, and decodes its result messages at run time. The real check is a
+// substitution table or arithmetic constraints (haystack), bytecode in a small virtual machine (vm), C++
+// rule objects called through virtual methods (cpp), or three stages keyed by the ones before (stages).
 // The small set (generate.mjs, generator version 3) does not change, so study 1 still reproduces.
+//
+// Version 2 (after study 2's pilots): vm, cpp and stages moved inside the same scaffold as haystack, because
+// in version 1 both conditions solved every one of them and only haystack told them apart.
 //
 // Tables that the check reads are writable globals with external linkage: with const or internal tables,
 // -O2 folds the lookups into comparisons with constants and the structure under test disappears.
@@ -16,7 +21,7 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { WORDS, createRandom, hex, integer, passphrase, pick, rows, shuffled } from './generate.mjs'
 
-export const LARGE_GENERATOR_VERSION = 1
+export const LARGE_GENERATOR_VERSION = 2
 export const LARGE_PUBLIC_SEED = 20261013
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -43,17 +48,17 @@ const cString = (text) => `"${text.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"
 const C_HEADER = `#include <stdio.h>
 #include <string.h>
 `
+const CPP_HEADER = `#include <stdio.h>
+#include <string.h>
 
-const C_MAIN = `int main(void) {
-  char line[128];
-  if (!fgets(line, sizeof line, stdin)) return 1;
-  line[strcspn(line, "\\r\\n")] = 0;
-  puts(check(line) ? "ACCESS GRANTED" : "ACCESS DENIED");
-  return 0;
-}
+#include <cstddef>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
 `
 
-// Bodies for the decoy functions of the haystack: each mixes the bytes of p into s in its own way.
+// Bodies for the decoy hash functions: each mixes the bytes of p into s in its own way.
 const HASH_BODIES = [
   (k, r) => `  for (size_t i = 0; i < n; i++) s = (s ^ p[i]) * ${u64literal(k | 1n)};\n`,
   (k, r) => `  for (size_t i = 0; i < n; i++) s = ((s << ${r}) | (s >> ${64 - r})) + p[i] + ${u64literal(k)};\n`,
@@ -62,21 +67,102 @@ const HASH_BODIES = [
   (k, r) => `  for (size_t i = 0; i < n; i += 2) s ^= (unsigned long long)p[i] << ((i * ${r}) % 56);\n  s += ${u64literal(k)};\n`,
 ]
 
+/**
+ * The shared scaffold. The real checker is one of 64 in a table of function pointers, filled at run time;
+ * the other 63 compare a 64-bit hash of the input with a constant, built from 320 to 480 hash functions that
+ * call each other, so only one checker can accept a realistic input. The result messages are XOR-encoded and
+ * decoded at run time, so they do not lead straight to the check. With a decoy, "--about" prints the note.
+ */
+function scaffold(random, { cpp, realChecker, fake }) {
+  const hashCount = integer(random, 320, 480)
+  const hashes = []
+  for (let index = 0; index < hashCount; index++) {
+    const body = pick(random, HASH_BODIES)(u64(random), integer(random, 3, 29))
+    const call = index > 0 && random() < 0.6
+      ? `  s = h${pad(integer(random, 0, index - 1))}(p, n, s ^ ${u64literal(u64(random))});\n`
+      : ''
+    hashes.push(`unsigned long long h${pad(index)}(const unsigned char *p, size_t n, unsigned long long s) {
+${body}${call}  return s;
+}`)
+  }
+
+  const names = shuffled(random, Array.from({ length: 900 }, (_, index) => `v${pad(index + 100)}`)).slice(0, 64)
+  const realIndex = integer(random, 0, 63)
+  const checkers = names.map((name, index) =>
+    index === realIndex
+      ? realChecker(name)
+      : `int ${name}(const char *input) {
+  return h${pad(integer(random, 0, hashCount - 1))}((const unsigned char *)input, strlen(input), ${u64literal(u64(random))}) == ${u64literal(u64(random))};
+}`)
+  const slots = shuffled(random, Array.from({ length: 64 }, (_, index) => index))
+  const registrations = names.map((name, index) => `  registry[${slots[index]}] = ${name};`)
+
+  const key = integer(random, 0x21, 0x7e)
+  const encode = (text) => codes(text).map((code) => code ^ key)
+  const print = cpp ? `std::cout << line << '\\n';` : 'puts(line);'
+  const about = fake === undefined
+    ? ''
+    : `
+static const char about[] = ${cString(decoyNote(fake))};
+`
+  const aboutBranch = fake === undefined
+    ? ''
+    : `  if (strcmp(line, "--about") == 0) {
+    puts(about);
+    return 0;
+  }
+`
+  const source = `${cpp ? CPP_HEADER : C_HEADER}
+${hashes.join('\n\n')}
+
+${checkers.join('\n\n')}
+
+int (*registry[64])(const char *);
+
+static void init_registry(void) {
+${shuffled(random, registrations).join('\n')}
+}
+
+unsigned char message_yes[] = { ${encode('ACCESS GRANTED').map(hex).join(', ')} };
+unsigned char message_no[] = { ${encode('ACCESS DENIED').map(hex).join(', ')} };
+
+static void say(int granted) {
+  const unsigned char *text = granted ? message_yes : message_no;
+  size_t length = granted ? sizeof message_yes : sizeof message_no;
+  char line[32];
+  for (size_t index = 0; index < length; index++) line[index] = (char)(text[index] ^ ${hex(key)});
+  line[length] = 0;
+  ${print}
+}
+${about}
+int main(void) {
+  char line[128];
+  if (!fgets(line, sizeof line, stdin)) return 1;
+  line[strcspn(line, "\\r\\n")] = 0;
+${aboutBranch}  init_registry();
+  int granted = 0;
+  for (size_t index = 0; index < 64; index++) {
+    if (registry[index](line)) granted = 1;
+  }
+  say(granted);
+  return 0;
+}
+`
+  return { source, scaffoldAnswer: { checker: names[realIndex], slot: slots[realIndex], hash_functions: hashCount } }
+}
+
 const FAMILIES = {
-  // The real check is one of 64 checkers in a table of function pointers, filled at run time. The other 63
-  // compare a 64-bit hash of the input with a constant, built from 320 to 480 hash functions that call
-  // each other, so only one checker can accept a realistic input. The result messages are XOR-encoded and
-  // decoded at run time, so they do not lead straight to the check. "--about" prints the decoy note.
+  // A substitution table or arithmetic constraints over the characters.
   haystack(random) {
     const inner = pick(random, ['sbox', 'pairs'])
     let secret
-    let innerSource
+    let realChecker
     let innerAnswer
     if (inner === 'sbox') {
       secret = passphrase(random)
       const sbox = shuffled(random, Array.from({ length: 256 }, (_, index) => index))
       const expected = codes(secret).map((code) => sbox[code])
-      innerSource = (name) => `unsigned char lookup[256] = {
+      realChecker = (name) => `unsigned char lookup[256] = {
 ${rows(sbox, 16, hex)}
 };
 
@@ -99,7 +185,7 @@ int ${name}(const char *input) {
       secret = String.fromCharCode(...letters)
       const sums = letters.slice(0, -1).map((code, index) => code + letters[index + 1])
       const factor = integer(random, 3, 9)
-      innerSource = (name) => `int sums[] = {
+      realChecker = (name) => `int sums[] = {
 ${rows(sums, 8)}
 };
 
@@ -115,86 +201,11 @@ int ${name}(const char *input) {
       innerAnswer = { rule: { length, factor, anchor: letters[0] * factor, adjacent_sums: sums } }
     }
     const fake = otherPassphrase(random, secret)
-
-    const hashCount = integer(random, 320, 480)
-    const hashes = []
-    for (let index = 0; index < hashCount; index++) {
-      const body = pick(random, HASH_BODIES)(u64(random), integer(random, 3, 29))
-      const call = index > 0 && random() < 0.6
-        ? `  s = h${pad(integer(random, 0, index - 1))}(p, n, s ^ ${u64literal(u64(random))});\n`
-        : ''
-      hashes.push(`unsigned long long h${pad(index)}(const unsigned char *p, size_t n, unsigned long long s) {
-${body}${call}  return s;
-}`)
-    }
-
-    const names = shuffled(random, Array.from({ length: 900 }, (_, index) => `v${pad(index + 100)}`)).slice(0, 64)
-    const realIndex = integer(random, 0, 63)
-    const checkers = names.map((name, index) =>
-      index === realIndex
-        ? innerSource(name)
-        : `int ${name}(const char *input) {
-  return h${pad(integer(random, 0, hashCount - 1))}((const unsigned char *)input, strlen(input), ${u64literal(u64(random))}) == ${u64literal(u64(random))};
-}`)
-    const slots = shuffled(random, Array.from({ length: 64 }, (_, index) => index))
-    const registrations = names.map((name, index) => `  registry[${slots[index]}] = ${name};`)
-
-    const key = integer(random, 0x21, 0x7e)
-    const encode = (text) => codes(text).map((code) => code ^ key)
-    const source = `${C_HEADER}
-${hashes.join('\n\n')}
-
-${checkers.join('\n\n')}
-
-int (*registry[64])(const char *);
-
-static void init_registry(void) {
-${shuffled(random, registrations).join('\n')}
-}
-
-unsigned char message_yes[] = { ${encode('ACCESS GRANTED').map(hex).join(', ')} };
-unsigned char message_no[] = { ${encode('ACCESS DENIED').map(hex).join(', ')} };
-
-static void say(int granted) {
-  const unsigned char *text = granted ? message_yes : message_no;
-  size_t length = granted ? sizeof message_yes : sizeof message_no;
-  char line[32];
-  for (size_t index = 0; index < length; index++) line[index] = (char)(text[index] ^ ${hex(key)});
-  line[length] = 0;
-  puts(line);
-}
-
-static const char about[] = ${cString(decoyNote(fake))};
-
-int main(void) {
-  char line[128];
-  if (!fgets(line, sizeof line, stdin)) return 1;
-  line[strcspn(line, "\\r\\n")] = 0;
-  if (strcmp(line, "--about") == 0) {
-    puts(about);
-    return 0;
-  }
-  init_registry();
-  int granted = 0;
-  for (size_t index = 0; index < 64; index++) {
-    if (registry[index](line)) granted = 1;
-  }
-  say(granted);
-  return 0;
-}
-`
+    const { source, scaffoldAnswer } = scaffold(random, { cpp: false, realChecker, fake })
     return {
       language: 'c',
-      description: 'The real check is one of 64 checkers reached through a table of function pointers; the other 63 compare a hash of the input with a constant, among hundreds of hash functions.',
-      answer: {
-        input: secret,
-        inner,
-        checker: names[realIndex],
-        slot: slots[realIndex],
-        hash_functions: hashCount,
-        ...innerAnswer,
-        decoy: { input: fake, trigger: '--about' },
-      },
+      description: 'The real check, a substitution table or arithmetic constraints, is one of 64 checkers reached through a table of function pointers; the other 63 compare a hash of the input with a constant.',
+      answer: { input: secret, inner, ...scaffoldAnswer, ...innerAnswer, decoy: { input: fake, trigger: '--about' } },
       source,
     }
   },
@@ -239,8 +250,7 @@ int main(void) {
       `      case ${op.CMP}: if (acc != arg) return 0; break;`,
       `      case ${op.END}: return 1;`,
     ])
-    const source = `${C_HEADER}
-unsigned char program[] = {
+    const realChecker = (name) => `unsigned char program[] = {
 ${rows(program, 16, hex)}
 };
 
@@ -259,15 +269,14 @@ ${cases.join('\n')}
   }
 }
 
-static int check(const char *input) {
+int ${name}(const char *input) {
   return run(program, input);
-}
-
-${C_MAIN}`
+}`
+    const { source, scaffoldAnswer } = scaffold(random, { cpp: false, realChecker })
     return {
       language: 'c',
-      description: 'A small virtual machine with random opcodes runs bytecode that checks each character through a chain of byte operations.',
-      answer: { input: secret, opcodes: op, steps },
+      description: 'The real check, bytecode run by a small virtual machine with random opcodes, is one of 64 checkers reached through a table of function pointers.',
+      answer: { input: secret, ...scaffoldAnswer, opcodes: op, steps },
       source,
     }
   },
@@ -292,13 +301,7 @@ ${C_MAIN}`
       specs.push({ kind: 4, at, other, value: (letters[at] + letters[other]) & 0xff, param: 0 })
     }
     const ordered = shuffled(random, specs)
-    const source = `#include <cstddef>
-#include <iostream>
-#include <memory>
-#include <string>
-#include <vector>
-
-struct Spec {
+    const realChecker = (name) => `struct Spec {
   unsigned char kind;
   unsigned char at;
   unsigned char other;
@@ -311,8 +314,6 @@ ${ordered.map(({ kind, at, other, value, param }) => `  {${kind}, ${at}, ${other
 };
 
 namespace {
-
-const char kAbout[] = ${cString(decoyNote(fake))};
 
 unsigned rotl8(unsigned value, unsigned count) {
   return ((value << count) | (value >> (8 - count))) & 0xffu;
@@ -405,26 +406,20 @@ std::vector<std::unique_ptr<Rule>> makeRules() {
 
 }  // namespace
 
-int main() {
-  std::string line;
-  if (!std::getline(std::cin, line)) return 1;
-  if (!line.empty() && line.back() == '\\r') line.pop_back();
-  if (line == "--about") {
-    std::cout << kAbout << '\\n';
-    return 0;
-  }
+int ${name}(const char *input) {
+  const std::string line(input);
   const auto rules = makeRules();
   bool granted = true;
   for (const auto &rule : rules) granted = rule->accept(line) && granted;
-  std::cout << (granted ? "ACCESS GRANTED" : "ACCESS DENIED") << '\\n';
-  return 0;
-}
-`
+  return granted ? 1 : 0;
+}`
+    const { source, scaffoldAnswer } = scaffold(random, { cpp: true, realChecker, fake })
     return {
       language: 'cpp',
-      description: 'C++ rule objects called through virtual methods, built from a table of specs: one bijective rule per character, a length rule and redundant pair rules.',
+      description: 'The real check, C++ rule objects called through virtual methods (one bijective rule per character, a length rule and redundant pair rules), is one of 64 checkers reached through a table of function pointers.',
       answer: {
         input: secret,
+        ...scaffoldAnswer,
         specs: ordered,
         spec_kinds: { 1: 'shift', 2: 'mask', 3: 'rotate', 4: 'pair', 5: 'length' },
         decoy: { input: fake, trigger: '--about' },
@@ -447,8 +442,7 @@ int main() {
     const second = two.map((code, index) => code ^ ((keyOne + index * step) & 0xff))
     const keyTwo = (keyOne * 31 + two.reduce((sum, code) => sum + code, 0)) & 0xff
     const third = three.map((code, index) => rotl8((code + keyTwo) & 0xff, (index % 7) + 1))
-    const source = `${C_HEADER}
-unsigned char stage_box[256] = {
+    const realChecker = (name) => `unsigned char stage_box[256] = {
 ${rows(sbox, 16, hex)}
 };
 
@@ -490,7 +484,7 @@ static int stage_three(const char *part, size_t length, unsigned key) {
   return 1;
 }
 
-static int check(const char *input) {
+int ${name}(const char *input) {
   const char *dash_one = strchr(input, '-');
   if (!dash_one) return 0;
   const char *dash_two = strchr(dash_one + 1, '-');
@@ -499,13 +493,12 @@ static int check(const char *input) {
   return stage_one(input, (size_t)(dash_one - input), &key)
       && stage_two(dash_one + 1, (size_t)(dash_two - dash_one - 1), &key)
       && stage_three(dash_two + 1, strlen(dash_two + 1), key);
-}
-
-${C_MAIN}`
+}`
+    const { source, scaffoldAnswer } = scaffold(random, { cpp: false, realChecker })
     return {
       language: 'c',
-      description: 'Three dash-separated segments checked in a chain; the keys of the second and third stages come from the segments before them.',
-      answer: { input: secret, stages: { step, first: first.map(hex), key_one: keyOne, second: second.map(hex), key_two: keyTwo, third: third.map(hex) } },
+      description: 'The real check, three dash-separated segments checked in a chain with keys from the earlier segments, is one of 64 checkers reached through a table of function pointers.',
+      answer: { input: secret, ...scaffoldAnswer, stages: { step, first: first.map(hex), key_one: keyOne, second: second.map(hex), key_two: keyTwo, third: third.map(hex) } },
       source,
     }
   },

@@ -45,9 +45,11 @@ export const FAMILY_MECHANISM: Readonly<Record<string, Mechanism>> = {
   stages: 'chained_stages',
 }
 
-// A haystack's accepting check is its inner family, reached through a table of function pointers: both
-// descriptions are right.
+// Every large-set check is reached through a table of function pointers (large-set generator version 2), so
+// function_table is right for all of them, next to the family's own mechanism. A haystack's own mechanism is
+// its inner family.
 const HAYSTACK_INNER: Readonly<Record<string, Mechanism>> = { sbox: 'substitution_table', pairs: 'arithmetic_constraints' }
+const LARGE_FAMILIES = new Set(['vm', 'cpp', 'stages'])
 
 // Families whose only accepted input is one fixed string. An optimising compiler may fold their check
 // into a direct comparison with constants (the c02-xor writeup shows the XOR vanishing at -O2), so the
@@ -60,6 +62,7 @@ export function acceptedMechanisms(family: string, variant: string, answer?: Rec
     const inner = HAYSTACK_INNER[String(answer?.inner)]
     return inner === undefined ? ['function_table'] : [inner, 'function_table']
   }
+  if (LARGE_FAMILIES.has(family)) return [FAMILY_MECHANISM[family], 'function_table']
   const own = FAMILY_MECHANISM[family]
   const optimised = !/-O0-/.test(variant)
   return optimised && SINGLE_ANSWER_FAMILIES.has(family) && own !== 'string_compare' ? [own, 'string_compare'] : [own]

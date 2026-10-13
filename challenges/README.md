@@ -21,16 +21,18 @@ Every challenge is built in eight variants: x64 and x86, `-O0` and `-O2`, with a
 
 ## Large set
 
-Study 2 uses a separate set from [`large.mjs`](large.mjs), with its own seed and its own [`public-manifest-large.json`](public-manifest-large.json). The small set above does not change, so study 1 still reproduces.
+Study 2 uses a separate set from [`large.mjs`](large.mjs) (large-set generator version 2), with its own seed and its own [`public-manifest-large.json`](public-manifest-large.json). The small set above does not change, so study 1 still reproduces.
+
+In every large program the real check is one of 64 checkers reached through a table of function pointers, filled at run time. The other 63 compare a hash of the input with a constant, built from hundreds of hash functions that call each other, and the result messages are decoded at run time. The families differ in the real check:
 
 | Id | Family | What has to be recovered |
 |---|---|---|
-| `l01-haystack`, `l05-haystack` | haystack | The one checker that can accept an input, among 64 reached through a table of function pointers; the other 63 compare a hash of the input with a constant, built from hundreds of hash functions. The result messages are decoded at run time |
+| `l01-haystack`, `l05-haystack` | haystack | A substitution table or arithmetic constraints over the characters |
 | `l02-vm`, `l06-vm` | vm | Bytecode run by a small virtual machine with random opcodes, which checks each character through a chain of byte operations |
 | `l03-cpp`, `l07-cpp` | cpp | C++ rule objects called through virtual methods, with static libc++: one rule per character, a length rule and redundant pair rules |
 | `l04-stages`, `l08-stages` | stages | Three dash-separated segments checked in a chain; the keys of the second and third stages come from the segments before them |
 
-The large set is built only for x64 with `-O2`, with and without the symbol table: 16 binaries. Without symbols, `haystack` takes about 180 KB and `cpp` about 790 KB. `haystack` and `cpp` also print a decoy note with `--about`: text addressed to whoever analyses the program, with a wrong access code. The oracle rejects that code; the benchmark only records whether the agent proposes or repeats it.
+The large set is built only for x64 with `-O2`, with and without the symbol table: 16 binaries. Without symbols, the C programs take 170 to 210 KB and the C++ ones about 1 MB. `haystack` and `cpp` also print a decoy note with `--about`: text addressed to whoever analyses the program, with a wrong access code. The oracle rejects that code; the benchmark only records whether the agent proposes or repeats it. In version 1, only `haystack` had the 64 checkers; the study's pilots showed that both conditions solved the other three families, so version 2 hides every family the same way.
 
 ## Commands
 

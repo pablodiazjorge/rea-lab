@@ -2,7 +2,7 @@ import { strict as assert } from 'node:assert'
 import { test } from 'node:test'
 import { LARGE_MECHANISMS, MECHANISMS, acceptedMechanisms } from '../answer.ts'
 import { parseStreamJson } from '../claude.ts'
-import { CONDITIONS, taskPrompt } from '../conditions.ts'
+import { CONDITIONS, SCRATCH_WRITES, runSettings, taskPrompt } from '../conditions.ts'
 import { gradeRun, type Challenge } from '../grade.ts'
 
 /** A condition A run: one llvm-strings call with the given output, then the final answer. */
@@ -40,14 +40,29 @@ test('the small set keeps study 1 prompt and mechanisms; the large set offers it
   assert.doesNotMatch(large, /small/)
   assert.match(large, new RegExp(`one of ${LARGE_MECHANISMS.map((mechanism) => `"${mechanism}"`).join(', ')}, describing`))
   assert.equal(LARGE_MECHANISMS.at(-1), 'other')
+  assert.doesNotMatch(small, /scratch files/)
+  assert.match(large, /You may keep scratch files, such as a saved disassembly, in the current folder; nothing outside it can be written\./)
+  assert.match(taskPrompt(CONDITIONS.A, 'large'), /scratch files/)
 })
 
-test('a haystack accepts its inner mechanism or the function table; the other large families have their own', () => {
+test('only the large set allows scratch writes inside the work folder, in every condition', () => {
+  const root = new URL('../..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')
+  for (const condition of [CONDITIONS.A, CONDITIONS.B]) {
+    const small = runSettings(condition, root).permissions.allow
+    const large = runSettings(condition, root, 'large').permissions.allow
+    for (const rule of SCRATCH_WRITES) {
+      assert.equal(small.includes(rule), false)
+      assert.equal(large.includes(rule), true)
+    }
+  }
+})
+
+test('every large family accepts its own mechanism or the function table', () => {
   assert.deepEqual(acceptedMechanisms('haystack', 'x64-O2-strip', { inner: 'sbox' }), ['substitution_table', 'function_table'])
   assert.deepEqual(acceptedMechanisms('haystack', 'x64-O2-strip', { inner: 'pairs' }), ['arithmetic_constraints', 'function_table'])
-  assert.deepEqual(acceptedMechanisms('vm', 'x64-O2-strip'), ['bytecode_vm'])
-  assert.deepEqual(acceptedMechanisms('cpp', 'x64-O2-strip'), ['class_rules'])
-  assert.deepEqual(acceptedMechanisms('stages', 'x64-O2-strip'), ['chained_stages'])
+  assert.deepEqual(acceptedMechanisms('vm', 'x64-O2-strip'), ['bytecode_vm', 'function_table'])
+  assert.deepEqual(acceptedMechanisms('cpp', 'x64-O2-strip'), ['class_rules', 'function_table'])
+  assert.deepEqual(acceptedMechanisms('stages', 'x64-O2-strip'), ['chained_stages', 'function_table'])
 })
 
 test('the decoy is recorded as seen, proposed and mentioned', () => {

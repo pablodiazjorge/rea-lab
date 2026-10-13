@@ -1,6 +1,6 @@
 {
   "set": "large",
-  "generator_version": 1,
+  "generator_version": 2,
   "seed": 20261013,
   "toolchain": "llvm-mingw 20261006",
   "flags": "-std=c11|-std=c++17 -Wall -Wextra -Werror -O2 -ffile-prefix-map=<src>=. -static -Wl,--no-insert-timestamp [-s]",
@@ -23,99 +23,99 @@
       "id": "l02-vm",
       "variant": "x64-O2-sym",
       "file": "bin/l02-vm/l02-vm-x64-O2-sym.exe",
-      "size": 62976,
-      "sha256": "e0b65baf195295542de5dfe71b3833185198ab55bfbaa4cf810c1c764ba8458e"
+      "size": 269312,
+      "sha256": "0290d0df3a09680d0c990216f65129444b7806ae869cf9cbb8c24ad67945db29"
     },
     {
       "id": "l02-vm",
       "variant": "x64-O2-strip",
       "file": "bin/l02-vm/l02-vm-x64-O2-strip.exe",
-      "size": 10752,
-      "sha256": "56cb02373c46bb03aa9e0971fafe8122883a5abdc74323b6428153a10aae7d5e"
+      "size": 208896,
+      "sha256": "267b4debbb838754bd2e92bb69cc8ad4da550e148739d0f26093889c8db479df"
     },
     {
       "id": "l03-cpp",
       "variant": "x64-O2-sym",
       "file": "bin/l03-cpp/l03-cpp-x64-O2-sym.exe",
-      "size": 1453568,
-      "sha256": "e03885e84cdb3204dc974ea1daa6982e216052e1953ea7f4fa52ebe0da9412f0"
+      "size": 1686016,
+      "sha256": "0ad731bc4795be2620c2e489444225702839cd892638314f4bf29e97b6ad5085"
     },
     {
       "id": "l03-cpp",
       "variant": "x64-O2-strip",
       "file": "bin/l03-cpp/l03-cpp-x64-O2-strip.exe",
-      "size": 792576,
-      "sha256": "201a124250902f8e96e0efec4167fe061aacfdea71f42d132bd4af4a0c0692d7"
+      "size": 1009152,
+      "sha256": "713f74f82e5a18ba97d48203c772e9fe35b84bf61ab835799977fd0ebce36b47"
     },
     {
       "id": "l04-stages",
       "variant": "x64-O2-sym",
       "file": "bin/l04-stages/l04-stages-x64-O2-sym.exe",
-      "size": 63488,
-      "sha256": "25224bf7a60029ca9d28a12fa69b8638364971de01d2b871077e231549438c64"
+      "size": 244224,
+      "sha256": "bdb2c2a15d9eb25e1d7dec38382dc4b73cf5f2f5e5ac7133aedec280044a45d5"
     },
     {
       "id": "l04-stages",
       "variant": "x64-O2-strip",
       "file": "bin/l04-stages/l04-stages-x64-O2-strip.exe",
-      "size": 11264,
-      "sha256": "9517deb2864599ce8797919f6b679498dee122d866094a1077c690871b55c9c6"
+      "size": 183808,
+      "sha256": "34511c6d67b96cc97c32e9b9e04b23a4c3a9f99000822e70e117719eb8889255"
     },
     {
       "id": "l05-haystack",
       "variant": "x64-O2-sym",
       "file": "bin/l05-haystack/l05-haystack-x64-O2-sym.exe",
-      "size": 249344,
-      "sha256": "d184dd647124d4d7e001f3b2c7b11b76f5f90fd58940a4bae01cfbf2a2fa9ae2"
+      "size": 260608,
+      "sha256": "b9bbb749e0748b274cb3f6237f509d7590e0fed7193dafd2d34c2cee7fa1500e"
     },
     {
       "id": "l05-haystack",
       "variant": "x64-O2-strip",
       "file": "bin/l05-haystack/l05-haystack-x64-O2-strip.exe",
-      "size": 189952,
-      "sha256": "6e90031c469b491126beae44d62036dbd2b984d5589669d2d3540d850c40e382"
+      "size": 200192,
+      "sha256": "8cef17608b56601a0200062d9fb315946cfd809d32e5a9d84ab8dede8bff8ee2"
     },
     {
       "id": "l06-vm",
       "variant": "x64-O2-sym",
       "file": "bin/l06-vm/l06-vm-x64-O2-sym.exe",
-      "size": 62976,
-      "sha256": "dee1b91afc8685e6ea9b5ae244846ebb6d7f675679909e0ce1e815cde8908ce4"
+      "size": 229888,
+      "sha256": "f17e4f07d636332bd8e908407a3d66161b2d12f636ebc4d9c868e31200268644"
     },
     {
       "id": "l06-vm",
       "variant": "x64-O2-strip",
       "file": "bin/l06-vm/l06-vm-x64-O2-strip.exe",
-      "size": 10752,
-      "sha256": "d1fde8fa715b6b075a0374af802b6ea8921329715ba03a2e3900777aa6c81cc6"
+      "size": 170496,
+      "sha256": "6f0e7e05b0d07a914217852e2019a0128a38802bd421b43688299f24c3f2db6d"
     },
     {
       "id": "l07-cpp",
       "variant": "x64-O2-sym",
       "file": "bin/l07-cpp/l07-cpp-x64-O2-sym.exe",
-      "size": 1453568,
-      "sha256": "00d1b51024564330ef5229d44be2d278f9ad4e204988bc303803f2e4824f0898"
+      "size": 1674752,
+      "sha256": "8e1fd760322364b6d51e60b32411adc488ad48fefb64dd84ce5d659db7d9a16c"
     },
     {
       "id": "l07-cpp",
       "variant": "x64-O2-strip",
       "file": "bin/l07-cpp/l07-cpp-x64-O2-strip.exe",
-      "size": 792576,
-      "sha256": "9ba8a3a8f442ee92b272b311cc02e998979e18bb48d05e18d98f4725e98e1ccc"
+      "size": 998912,
+      "sha256": "903c3ffc3b7fd0fd3980a5f1b5d628efe558a1ece183e9f2a052f5072534bce4"
     },
     {
       "id": "l08-stages",
       "variant": "x64-O2-sym",
       "file": "bin/l08-stages/l08-stages-x64-O2-sym.exe",
-      "size": 63488,
-      "sha256": "0de1487b47e6ea516b8f1c61cb93d876dd97b7a1c03c565aefc4d60d4c080825"
+      "size": 244736,
+      "sha256": "10a23d617396313551ebd03c2de5eef6dfe0061c8809a4979dd28216f7ab302f"
     },
     {
       "id": "l08-stages",
       "variant": "x64-O2-strip",
       "file": "bin/l08-stages/l08-stages-x64-O2-strip.exe",
-      "size": 11264,
-      "sha256": "f2354a032cf740a9b624ca139cbd84dd030a466519cad6f63aaa7b442a454553"
+      "size": 184832,
+      "sha256": "0ce5c0699de81317d19fccc55316726189508b4c00d103357ca776e50bacf7c9"
     }
   ]
 }

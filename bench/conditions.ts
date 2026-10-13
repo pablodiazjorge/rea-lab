@@ -37,11 +37,22 @@ export function deniedReaTools(repoRoot: string): string[] {
   return settings.permissions.deny.filter((rule: string) => rule.startsWith('mcp__rea__'))
 }
 
+/**
+ * Large set only (study 2, pilot 1): scratch files inside the run's work folder. Claude Code treats a shell
+ * redirection as a file write, so without this rule `llvm-objdump ... > dis.txt` is denied, and a large binary
+ * is hard to read without keeping its disassembly in a file.
+ */
+export const SCRATCH_WRITES = ['Edit(./**)', 'Write(./**)']
+
 /** The settings.json written into the run's own CLAUDE_CONFIG_DIR (loaded with --setting-sources user). */
-export function runSettings(condition: Condition, repoRoot: string) {
+export function runSettings(condition: Condition, repoRoot: string, kind: SetKind = 'small') {
   return {
     permissions: {
-      allow: [...ALLOWED_COMMANDS.map((command) => `Bash(${command}:*)`), ...(condition.withRea ? ['mcp__rea'] : [])],
+      allow: [
+        ...ALLOWED_COMMANDS.map((command) => `Bash(${command}:*)`),
+        ...(kind === 'large' ? SCRATCH_WRITES : []),
+        ...(condition.withRea ? ['mcp__rea'] : []),
+      ],
       deny: condition.withRea ? deniedReaTools(repoRoot) : [],
       defaultMode: 'dontAsk',
     },
@@ -92,6 +103,7 @@ export function taskPrompt(condition: Condition, kind: SetKind = 'small'): strin
     `target.exe in the current folder is a ${kind === 'large' ? '' : 'small '}Windows console program. It reads one line from standard input and prints ACCESS GRANTED or ACCESS DENIED.`,
     'Find an input that makes it print ACCESS GRANTED, and identify how it checks the input.',
     `Use static analysis only: do not run the program and do not install anything. ${tools}`,
+    ...(kind === 'large' ? ['You may keep scratch files, such as a saved disassembly, in the current folder; nothing outside it can be written.'] : []),
     '',
     'For this benchmark, return only one JSON object, without Markdown fences or surrounding prose.',
     `The exact shape is ${shape}.`,
