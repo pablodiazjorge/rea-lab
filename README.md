@@ -35,7 +35,7 @@ There are no dates: each phase closes when it meets its exit criteria.
 | F0 | Public foundations: rules, decisions and checks | done |
 | F1 | Reproducible environment and per-project MCP registration | done |
 | F2 | Contributions to rea from a real Windows machine | ongoing |
-| F3 | Seeded challenges with known answers and first writeups | in progress |
+| F3 | Seeded challenges with known answers and first writeups | done |
 | F4 | Benchmark and study 1: what rea adds to an agent | done |
 | F5 | Claude Code mod with a live evidence pane | done |
 | F6 | Second upstream wave, improved skill, second agent | planned |
@@ -45,7 +45,7 @@ There are no dates: each phase closes when it meets its exit criteria.
 
 - rea 6.4.0 with Ghidra 12.1.4 on Windows 11 26H2 (x64, NTFS, non-elevated user): `rea doctor --provider ghidra` passes every check, including the native authority self-test that fails on other machines ([morluto/rea#1701](https://github.com/morluto/rea/issues/1701)).
 - First real session: `WinHelloCPP.exe`, an exercise shipped with Ghidra, analysed in about 25 s (6 segments, 388 functions, 254 strings), with no leftover processes or temporary files.
-- Three upstream contributions merged: [morluto/rea#1863](https://github.com/morluto/rea/pull/1863) fixes the real Windows Ghidra verification lanes, and [morluto/rea#1926](https://github.com/morluto/rea/pull/1926) and [morluto/rea#1936](https://github.com/morluto/rea/pull/1936) make the Claude Code and Gemini CLI client lanes run on native Windows.
+- Four upstream contributions merged: [morluto/rea#1863](https://github.com/morluto/rea/pull/1863) fixes the real Windows Ghidra verification lanes; [morluto/rea#1926](https://github.com/morluto/rea/pull/1926) and [morluto/rea#1936](https://github.com/morluto/rea/pull/1936) make the Claude Code and Gemini CLI client lanes run on native Windows, and [morluto/rea#2312](https://github.com/morluto/rea/pull/2312) fixes three MCP boundary test suites that failed on native Windows.
 - [Study 1](writeups/2026-10-study-1/README.md), preregistered: on ten small Windows crackmes, rea did not change how many Claude Code solved (28 of 30 with and without it), made each run about twice as slow and expensive, and every piece of rea Evidence the agent cited re-authenticated.
 - [rea-casebook](https://github.com/pablodiazjorge/rea-casebook) 1.0.0, a Claude Code mod that keeps a live casebook of the Evidence rea gives the agent: the wait for Ghidra's cold start, open unknowns, findings that must cite real `evidence_id` values, a journal per session and Markdown or artifact exports.
 

@@ -35,7 +35,7 @@ No hay fechas: cada fase se cierra cuando cumple sus criterios de salida.
 | F0 | Cimientos públicos: normas, decisiones y comprobaciones | hecha |
 | F1 | Entorno reproducible y registro MCP por proyecto | hecha |
 | F2 | Contribuciones a rea desde un Windows real | continua |
-| F3 | Retos con semilla y respuesta conocida, y primeros writeups | en curso |
+| F3 | Retos con semilla y respuesta conocida, y primeros writeups | hecha |
 | F4 | Banco de pruebas y estudio 1: qué le aporta rea a un agente | hecha |
 | F5 | Mod de Claude Code con un panel de evidencia en directo | hecha |
 | F6 | Segunda ola de contribuciones, skill mejorada y segundo agente | prevista |
@@ -45,7 +45,7 @@ No hay fechas: cada fase se cierra cuando cumple sus criterios de salida.
 
 - rea 6.4.0 con Ghidra 12.1.4 en Windows 11 26H2 (x64, NTFS, usuario sin elevar): `rea doctor --provider ghidra` pasa todas las comprobaciones, incluida la autoprueba nativa que falla en otros equipos ([morluto/rea#1701](https://github.com/morluto/rea/issues/1701)).
 - Primera sesión real: `WinHelloCPP.exe`, un ejercicio que trae Ghidra, analizado en unos 25 s (6 segmentos, 388 funciones y 254 cadenas), sin procesos ni archivos temporales sueltos.
-- Tres contribuciones fusionadas en el proyecto original: [morluto/rea#1863](https://github.com/morluto/rea/pull/1863) arregla las pruebas reales de Ghidra en Windows, y [morluto/rea#1926](https://github.com/morluto/rea/pull/1926) y [morluto/rea#1936](https://github.com/morluto/rea/pull/1936) hacen que las pruebas de los clientes Claude Code y Gemini CLI funcionen en Windows nativo.
+- Cuatro contribuciones fusionadas en el proyecto original: [morluto/rea#1863](https://github.com/morluto/rea/pull/1863) arregla las pruebas reales de Ghidra en Windows; [morluto/rea#1926](https://github.com/morluto/rea/pull/1926) y [morluto/rea#1936](https://github.com/morluto/rea/pull/1936) hacen que las pruebas de los clientes Claude Code y Gemini CLI funcionen en Windows nativo, y [morluto/rea#2312](https://github.com/morluto/rea/pull/2312) corrige tres suites de frontera del servidor MCP que fallaban en Windows nativo.
 - [Estudio 1](writeups/2026-10-study-1/README.es.md), preregistrado: con diez crackmes pequeños de Windows, rea no cambió cuántos resolvió Claude Code (28 de 30 con y sin rea), hizo cada ejecución el doble de lenta y de cara, y toda la evidencia de rea que citó el agente se volvió a autenticar.
 - [rea-casebook](https://github.com/pablodiazjorge/rea-casebook) 1.0.0, un mod de Claude Code que lleva en directo el expediente de la evidencia que rea entrega al agente: la espera del arranque en frío de Ghidra, las preguntas abiertas, los hallazgos que tienen que citar `evidence_id` reales, un diario por sesión y exportaciones a Markdown o a artifact.
 
