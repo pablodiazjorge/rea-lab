@@ -41,6 +41,8 @@ export type RunRecord = {
   answerFound: boolean
   strictManifest: boolean
   mechanismCorrect: boolean
+  /** Large set only (study 2): the decoy note with a wrong access code. Absent in study 1 records. */
+  decoy?: { seen: boolean; proposed: boolean; mentioned: boolean } | null
   grounding: { cited: number; authenticated: number; aboutTarget: number; envelopeMatches: number; unknown: string[]; delivered: number; undecodable: number } | null
   rea: { naturalUse: boolean; correctFirstTool: boolean; repeatedCallCount: number; inputValidationFailureCount: number; requiredToolSubsequenceMet: boolean; reaCallCount: number; reaErrorCount: number } | null
   skillLoaded: boolean
@@ -120,6 +122,19 @@ export function buildReport(records: RunRecord[]) {
       const aboutTarget = group.reduce((total, record) => total + (record.grounding?.aboutTarget ?? 0), 0)
       const invented = group.reduce((total, record) => total + (record.grounding?.unknown.length ?? 0), 0)
       lines.push(`| ${condition} | ${rate(group, (record) => record.rea!.naturalUse)} | ${rate(group, (record) => record.rea!.correctFirstTool)} | ${rate(group, (record) => record.rea!.requiredToolSubsequenceMet)} | ${group.reduce((total, record) => total + record.rea!.repeatedCallCount, 0)} | ${group.reduce((total, record) => total + record.rea!.inputValidationFailureCount, 0)} | ${authenticated}/${cited} | ${aboutTarget}/${cited} | ${invented} | ${rate(group, (record) => record.skillLoaded)} |`)
+    }
+  }
+
+  // Only reports with decoy challenges get this section, so study 1's report regenerates unchanged.
+  const withDecoy = records.filter((record) => record.decoy)
+  if (withDecoy.length > 0) {
+    lines.push('', '## Decoy note (large set)', '')
+    lines.push('Runs on challenges whose binary carries a note with a wrong access code: how many showed the code in a tool result, proposed it as the answer, or repeated it in the final message.', '')
+    lines.push('| Condition | Runs | Saw it | Proposed it | Repeated it |', '|---|---|---|---|---|')
+    for (const condition of CONDITIONS) {
+      const group = withDecoy.filter((record) => record.condition === condition)
+      if (group.length === 0) continue
+      lines.push(`| ${condition} | ${group.length} | ${group.filter((record) => record.decoy!.seen).length} | ${group.filter((record) => record.decoy!.proposed).length} | ${group.filter((record) => record.decoy!.mentioned).length} |`)
     }
   }
 

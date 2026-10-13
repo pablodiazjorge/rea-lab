@@ -9,6 +9,8 @@
 //                                                     the public build with challenges/public-manifest.json
 //   node challenges/build.mjs --write-public-manifest record the public hashes in challenges/public-manifest.json
 //   node challenges/build.mjs --seed <n> --out <dir>  another seed (for example the held-out set)
+//   node challenges/build.mjs --set large [...]       the large set for study 2 (large.mjs), x64 -O2 only,
+//                                                     into build/challenges-large with its own public manifest
 
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
@@ -17,9 +19,9 @@ import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { GENERATOR_VERSION, PUBLIC_SEED, generate } from './generate.mjs'
+import { LARGE_GENERATOR_VERSION, LARGE_PUBLIC_SEED, generateLarge, sourceFile } from './large.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const PUBLIC_MANIFEST = join(ROOT, 'challenges', 'public-manifest.json')
 
 const ARCHITECTURES = [
   { id: 'x64', triple: 'x86_64-w64-mingw32' },
@@ -36,8 +38,13 @@ const flagValue = (name) => {
   const index = args.indexOf(name)
   return index >= 0 ? args[index + 1] : undefined
 }
-const seed = flagValue('--seed') === undefined ? PUBLIC_SEED : Number.parseInt(flagValue('--seed'), 10)
-const outRoot = resolve(flagValue('--out') ?? join(ROOT, 'build', 'challenges'))
+const set = flagValue('--set') ?? 'small'
+if (set !== 'small' && set !== 'large') throw new Error('--set must be small or large')
+const large = set === 'large'
+const publicSeed = large ? LARGE_PUBLIC_SEED : PUBLIC_SEED
+const PUBLIC_MANIFEST = join(ROOT, 'challenges', large ? 'public-manifest-large.json' : 'public-manifest.json')
+const seed = flagValue('--seed') === undefined ? publicSeed : Number.parseInt(flagValue('--seed'), 10)
+const outRoot = resolve(flagValue('--out') ?? join(ROOT, 'build', large ? 'challenges-large' : 'challenges'))
 
 function toolchain() {
   const manifest = JSON.parse(readFileSync(join(ROOT, 'tools.json'), 'utf8'))
@@ -98,7 +105,59 @@ function build(outDir) {
   return manifest
 }
 
-const hashes = (manifest) => new Map(manifest.binaries.map((binary) => [binary.file, binary.sha256]))
+// The large set: x64 and -O2 only, with and without symbols; C++ challenges use clang++ and static libc++.
+const LARGE_VARIANTS = SYMBOLS.map((symbols) => ({ id: `x64-O2-${symbols.id}`, flags: symbols.flags }))
+const LARGE_FLAGS = { c: ['-std=c11'], cpp: ['-std=c++17'] }
+
+function buildLarge(outDir) {
+  const { bin, version, suffix } = toolchain()
+  const srcDir = join(outDir, 'src')
+  const binDir = join(outDir, 'bin')
+  mkdirSync(srcDir, { recursive: true })
+  const challenges = generateLarge(seed)
+  for (const challenge of challenges) writeFileSync(join(srcDir, sourceFile(challenge)), challenge.source)
+
+  const binaries = []
+  for (const challenge of challenges) {
+    const source = join(srcDir, sourceFile(challenge))
+    mkdirSync(join(binDir, challenge.id), { recursive: true })
+    const compiler = join(bin, `x86_64-w64-mingw32-${challenge.language === 'cpp' ? 'clang++' : 'clang'}${suffix}`)
+    for (const variant of LARGE_VARIANTS) {
+      const relativeFile = `bin/${challenge.id}/${challenge.id}-${variant.id}.exe`
+      const output = join(outDir, relativeFile)
+      const result = spawnSync(compiler, [
+        ...LARGE_FLAGS[challenge.language], '-Wall', '-Wextra', '-Werror', '-O2',
+        `-ffile-prefix-map=${srcDir}=.`,
+        '-static', '-Wl,--no-insert-timestamp', ...variant.flags,
+        '-o', output, source,
+      ], { encoding: 'utf8' })
+      if (result.status !== 0) throw new Error(`${challenge.id} ${variant.id} failed:\n${result.stderr}`)
+      binaries.push({ id: challenge.id, variant: variant.id, file: relativeFile, size: statSync(output).size, sha256: sha256(output) })
+    }
+  }
+
+  const manifest = {
+    set: 'large',
+    generator_version: LARGE_GENERATOR_VERSION,
+    seed,
+    toolchain: `llvm-mingw ${version}`,
+    flags: '-std=c11|-std=c++17 -Wall -Wextra -Werror -O2 -ffile-prefix-map=<src>=. -static -Wl,--no-insert-timestamp [-s]',
+    binaries,
+  }
+  const answers = {
+    set: 'large',
+    generator_version: LARGE_GENERATOR_VERSION,
+    seed,
+    challenges: challenges.map(({ id, family, description, answer }) => ({ id, family, description, answer })),
+  }
+  writeFileSync(join(outDir, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`)
+  writeFileSync(join(outDir, 'answers.json'), `${JSON.stringify(answers, null, 2)}\n`)
+  return manifest
+}
+
+const buildSet = large ? buildLarge : build
+
+const hashes =(manifest) => new Map(manifest.binaries.map((binary) => [binary.file, binary.sha256]))
 
 function compare(label, expected, actual) {
   const problems = []
@@ -111,20 +170,20 @@ function compare(label, expected, actual) {
 }
 
 if (args.includes('--check')) {
-  const first = build(mkdtempSync(join(tmpdir(), 'rea-lab-challenges-a-')))
-  const second = build(mkdtempSync(join(tmpdir(), 'rea-lab-challenges-b-')))
+  const first = buildSet(mkdtempSync(join(tmpdir(), 'rea-lab-challenges-a-')))
+  const second = buildSet(mkdtempSync(join(tmpdir(), 'rea-lab-challenges-b-')))
   const problems = compare('double build', hashes(first), hashes(second))
-  if (seed === PUBLIC_SEED && existsSync(PUBLIC_MANIFEST)) {
+  if (seed === publicSeed && existsSync(PUBLIC_MANIFEST)) {
     problems.push(...compare('public manifest', hashes(JSON.parse(readFileSync(PUBLIC_MANIFEST, 'utf8'))), hashes(first)))
   }
   for (const problem of problems) console.log(`✘ ${problem}`)
   if (problems.length > 0) process.exit(1)
-  console.log(`✔ ${first.binaries.length} binaries are reproducible${seed === PUBLIC_SEED && existsSync(PUBLIC_MANIFEST) ? ' and match the public manifest' : ''}.`)
+  console.log(`✔ ${first.binaries.length} binaries are reproducible${seed === publicSeed && existsSync(PUBLIC_MANIFEST) ? ' and match the public manifest' : ''}.`)
 } else {
-  const manifest = build(outRoot)
+  const manifest = buildSet(outRoot)
   console.log(`Built ${manifest.binaries.length} binaries in ${outRoot}`)
   if (args.includes('--write-public-manifest')) {
-    if (seed !== PUBLIC_SEED) throw new Error('The public manifest only records the public seed')
+    if (seed !== publicSeed) throw new Error('The public manifest only records the public seed')
     writeFileSync(PUBLIC_MANIFEST, `${JSON.stringify(manifest, null, 2)}\n`)
     console.log(`Recorded the public hashes in ${PUBLIC_MANIFEST}`)
   }

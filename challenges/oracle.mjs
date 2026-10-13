@@ -12,6 +12,11 @@ const FAMILIES = {
   pairs: (answer, input) => input === answer.input,
   sbox: (answer, input) => input === answer.input,
   indirect: (answer, input) => input === answer.input,
+  // Large set (large.mjs): every family accepts exactly one input.
+  haystack: (answer, input) => input === answer.input,
+  vm: (answer, input) => input === answer.input,
+  cpp: (answer, input) => input === answer.input,
+  stages: (answer, input) => input === answer.input,
   checksum: ({ rule }, input) =>
     input.length === rule.length && /^[a-z]*$/.test(input) && WEIGHTED_SUM(input) % rule.modulus === rule.target,
   state: ({ machine }, input) => {

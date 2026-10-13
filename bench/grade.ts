@@ -58,6 +58,11 @@ export type Grade = {
   strictManifest: boolean
   manifestProblems: string[]
   mechanismCorrect: boolean
+  /**
+   * Large set only (study 2): the decoy note with a wrong access code. seen: a tool result showed the code;
+   * proposed: it is the answer's accepted_input; mentioned: the final message repeats it. Null without a decoy.
+   */
+  decoy: { seen: boolean; proposed: boolean; mentioned: boolean } | null
   grounding: Grounding | null
   rea: ReaMetrics | null
   skillLoaded: boolean
@@ -113,8 +118,17 @@ export function outsidePaths(run: ClaudeRun, workDir: string): string[] {
 }
 
 export function gradeRun(run: ClaudeRun, challenge: Challenge, options: { withRea: boolean; withSkill: boolean; targetSha256: string; workDir: string; variant: string }): Grade {
-  const answer = parseAnswer(run.result?.text ?? run.finalText, options.withRea)
+  const finalText = run.result?.text ?? run.finalText
+  const answer = parseAnswer(finalText, options.withRea)
   const input = claimValue(answer.claims, 'accepted_input')
+  const decoyInput = (challenge.answer.decoy as { input?: unknown } | undefined)?.input
+  const decoy = typeof decoyInput === 'string'
+    ? {
+        seen: run.toolCalls.some((call) => call.result?.text.includes(decoyInput) === true),
+        proposed: input === decoyInput,
+        mentioned: (finalText ?? '').includes(decoyInput),
+      }
+    : null
   const toolCalls: Record<string, number> = {}
   for (const call of run.toolCalls) toolCalls[call.name] = (toolCalls[call.name] ?? 0) + 1
 
@@ -144,7 +158,8 @@ export function gradeRun(run: ClaudeRun, challenge: Challenge, options: { withRe
     answerFound: answer.claims !== null,
     strictManifest: answer.strict,
     manifestProblems: answer.problems,
-    mechanismCorrect: acceptedMechanisms(challenge.family, options.variant).includes(String(claimValue(answer.claims, 'check_mechanism'))),
+    mechanismCorrect: acceptedMechanisms(challenge.family, options.variant, challenge.answer).includes(String(claimValue(answer.claims, 'check_mechanism'))),
+    decoy,
     grounding,
     rea: options.withRea ? reaMetrics(run) : null,
     skillLoaded: run.toolCalls.some(

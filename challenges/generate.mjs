@@ -16,7 +16,7 @@ export const PUBLIC_SEED = 20261011
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
 // Small, well-known seeded PRNG (mulberry32): the same seed always yields the same challenges.
-function createRandom(seed) {
+export function createRandom(seed) {
   let state = seed >>> 0
   return () => {
     state = (state + 0x6d2b79f5) >>> 0
@@ -27,24 +27,24 @@ function createRandom(seed) {
   }
 }
 
-const WORDS = [
+export const WORDS = [
   'amber', 'birch', 'cedar', 'delta', 'ember', 'fjord', 'grove', 'harbor',
   'indigo', 'juniper', 'kestrel', 'lagoon', 'meadow', 'nimbus', 'orchid', 'pebble',
   'quartz', 'raven', 'saffron', 'tundra', 'umber', 'violet', 'willow', 'zephyr',
 ]
 
-const pick = (random, list) => list[Math.floor(random() * list.length)]
-const integer = (random, min, max) => min + Math.floor(random() * (max - min + 1))
-const passphrase = (random) => `${pick(random, WORDS)}-${pick(random, WORDS)}-${integer(random, 10, 99)}`
-const hex = (value) => `0x${value.toString(16).padStart(2, '0')}`
-const rows = (values, perRow, format = String) => {
+export const pick = (random, list) => list[Math.floor(random() * list.length)]
+export const integer = (random, min, max) => min + Math.floor(random() * (max - min + 1))
+export const passphrase = (random) => `${pick(random, WORDS)}-${pick(random, WORDS)}-${integer(random, 10, 99)}`
+export const hex = (value) => `0x${value.toString(16).padStart(2, '0')}`
+export const rows = (values, perRow, format = String) => {
   const lines = []
   for (let index = 0; index < values.length; index += perRow) {
     lines.push(`  ${values.slice(index, index + perRow).map(format).join(', ')},`)
   }
   return lines.join('\n')
 }
-const shuffled = (random, values) => {
+export const shuffled = (random, values) => {
   const copy = [...values]
   for (let index = copy.length - 1; index > 0; index--) {
     const other = Math.floor(random() * (index + 1))

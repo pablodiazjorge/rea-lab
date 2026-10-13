@@ -41,6 +41,8 @@ jobs:
         run: node challenges/build.mjs --check
       - name: Challenge answers are correct
         run: node challenges/build.mjs && node challenges/verify-answers.mjs
+      - name: Large challenges are reproducible, match their public manifest and have correct answers
+        run: npm run challenges:large:check
       - name: rea doctor for the Ghidra provider
         shell: pwsh
         run: |

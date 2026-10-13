@@ -24,7 +24,8 @@ function main() {
   const study = value('--study')
   if (!study) throw new Error('--study is required')
   const set = value('--set') ?? 'public'
-  const setFolder = set === 'public' ? join(ROOT, 'build', 'challenges') : resolve(set)
+  const publicFolders: Record<string, string> = { public: 'challenges', 'public-large': 'challenges-large' }
+  const setFolder = set in publicFolders ? join(ROOT, 'build', publicFolders[set]) : resolve(set)
   const challenges: Challenge[] = JSON.parse(readFileSync(join(setFolder, 'answers.json'), 'utf8')).challenges
   const studyDir = join(benchHome(), 'runs', study)
   if (!existsSync(studyDir)) throw new Error(`No study folder ${studyDir}`)

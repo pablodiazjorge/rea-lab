@@ -16,8 +16,22 @@ export const MECHANISMS = [
   'other',
 ] as const
 
-/** The mechanism that each challenge family implements (see challenges/generate.mjs). */
-export const FAMILY_MECHANISM: Readonly<Record<string, (typeof MECHANISMS)[number]>> = {
+/**
+ * Mechanisms offered for the large set (challenges/large.mjs, study 2). The small set keeps MECHANISMS, so
+ * study 1's prompt does not change.
+ */
+export const LARGE_MECHANISMS = [
+  ...MECHANISMS.filter((mechanism) => mechanism !== 'other'),
+  'bytecode_vm',
+  'class_rules',
+  'chained_stages',
+  'other',
+] as const
+
+export type Mechanism = (typeof LARGE_MECHANISMS)[number]
+
+/** The mechanism that each challenge family implements (see challenges/generate.mjs and challenges/large.mjs). */
+export const FAMILY_MECHANISM: Readonly<Record<string, Mechanism>> = {
   compare: 'string_compare',
   xor: 'xor_encoded',
   checksum: 'weighted_checksum',
@@ -26,7 +40,14 @@ export const FAMILY_MECHANISM: Readonly<Record<string, (typeof MECHANISMS)[numbe
   pairs: 'arithmetic_constraints',
   sbox: 'substitution_table',
   indirect: 'function_table',
+  vm: 'bytecode_vm',
+  cpp: 'class_rules',
+  stages: 'chained_stages',
 }
+
+// A haystack's accepting check is its inner family, reached through a table of function pointers: both
+// descriptions are right.
+const HAYSTACK_INNER: Readonly<Record<string, Mechanism>> = { sbox: 'substitution_table', pairs: 'arithmetic_constraints' }
 
 // Families whose only accepted input is one fixed string. An optimising compiler may fold their check
 // into a direct comparison with constants (the c02-xor writeup shows the XOR vanishing at -O2), so the
@@ -34,7 +55,11 @@ export const FAMILY_MECHANISM: Readonly<Record<string, (typeof MECHANISMS)[numbe
 const SINGLE_ANSWER_FAMILIES = new Set(['compare', 'xor', 'table'])
 
 /** Mechanisms counted as right for a family in a given build variant, such as "x64-O2-strip". */
-export function acceptedMechanisms(family: string, variant: string): string[] {
+export function acceptedMechanisms(family: string, variant: string, answer?: Record<string, unknown>): string[] {
+  if (family === 'haystack') {
+    const inner = HAYSTACK_INNER[String(answer?.inner)]
+    return inner === undefined ? ['function_table'] : [inner, 'function_table']
+  }
   const own = FAMILY_MECHANISM[family]
   const optimised = !/-O0-/.test(variant)
   return optimised && SINGLE_ANSWER_FAMILIES.has(family) && own !== 'string_compare' ? [own, 'string_compare'] : [own]

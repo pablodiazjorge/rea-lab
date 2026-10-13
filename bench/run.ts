@@ -19,7 +19,7 @@ import { homedir } from 'node:os'
 import { delimiter, dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseStreamJson } from './claude.ts'
-import { CONDITIONS, BUILT_IN_TOOLS, mcpConfig, runSettings, taskPrompt, type ConditionId } from './conditions.ts'
+import { CONDITIONS, BUILT_IN_TOOLS, mcpConfig, runSettings, taskPrompt, type ConditionId, type SetKind } from './conditions.ts'
 import { gradeRun, type Challenge } from './grade.ts'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -138,15 +138,22 @@ function authenticationToken(home: string): string {
   return readFileSync(file, 'utf8').trim()
 }
 
-type ChallengeSet = { name: string; folder: string; seed: number; challenges: Challenge[]; binaries: Array<{ id: string; variant: string; file: string; sha256: string }> }
+type ChallengeSet = { name: string; kind: SetKind; folder: string; seed: number; challenges: Challenge[]; binaries: Array<{ id: string; variant: string; file: string; sha256: string }> }
+
+// "public" and "public-large" are the public builds in build/; any other value is the folder of a held-out set.
+const PUBLIC_SETS: Readonly<Record<string, string>> = { public: 'challenges', 'public-large': 'challenges-large' }
 
 function loadSet(set: string): ChallengeSet {
-  const folder = set === 'public' ? join(ROOT, 'build', 'challenges') : resolve(set)
+  const publicFolder = PUBLIC_SETS[set]
+  const folder = publicFolder === undefined ? resolve(set) : join(ROOT, 'build', publicFolder)
   const manifestFile = join(folder, 'manifest.json')
-  if (!existsSync(manifestFile)) throw new Error(`No built challenges in ${folder}. Run: node challenges/build.mjs${set === 'public' ? '' : ' --seed <n> --out <folder>'}`)
+  const hint = set === 'public-large' ? ' --set large' : publicFolder === undefined ? ' [--set large] --seed <n> --out <folder>' : ''
+  if (!existsSync(manifestFile)) throw new Error(`No built challenges in ${folder}. Run: node challenges/build.mjs${hint}`)
   const manifest = JSON.parse(readFileSync(manifestFile, 'utf8'))
   const answers = JSON.parse(readFileSync(join(folder, 'answers.json'), 'utf8'))
-  return { name: set === 'public' ? 'public' : 'held-out', folder, seed: manifest.seed, challenges: answers.challenges, binaries: manifest.binaries }
+  const kind: SetKind = answers.set === 'large' ? 'large' : 'small'
+  const name = publicFolder === undefined ? (kind === 'large' ? 'held-out-large' : 'held-out') : set
+  return { name, kind, folder, seed: manifest.seed, challenges: answers.challenges, binaries: manifest.binaries }
 }
 
 // Same small PRNG as the challenge generator (mulberry32), used here to shuffle the run order.
@@ -257,7 +264,7 @@ async function executeRun(run: PlannedRun, set: ChallengeSet, options: Options, 
       windowsHide: true,
     })
     // The prompt goes through stdin: no quoting or length limits on the Windows command line.
-    child.stdin.end(context.prompt ?? taskPrompt(condition))
+    child.stdin.end(context.prompt ?? taskPrompt(condition, set.kind))
     child.stdout.pipe(createWriteStream(eventsFile))
     child.stderr.pipe(createWriteStream(join(runDir, 'stderr.txt')))
     let timedOut = false
@@ -285,7 +292,7 @@ async function executeRun(run: PlannedRun, set: ChallengeSet, options: Options, 
     study: options.study,
     key: run.key,
     set: set.name,
-    seed: set.name === 'public' ? set.seed : null,
+    seed: set.name in PUBLIC_SETS ? set.seed : null,
     challenge: run.challenge.id,
     family: run.challenge.family,
     variant: run.variant,
@@ -347,7 +354,7 @@ async function main() {
   console.log(`Benchmark home: ${home}`)
   if (options.dryRun) {
     for (const run of runs) console.log(`  ${run.key}`)
-    console.log(`\nPrompt for condition B:\n${taskPrompt(CONDITIONS.B)}`)
+    console.log(`\nPrompt for condition B:\n${taskPrompt(CONDITIONS.B, set.kind)}`)
     return
   }
   const token = authenticationToken(home)

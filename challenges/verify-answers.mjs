@@ -35,6 +35,8 @@ function probes(challenge) {
       .find((input) => input !== accepted && accepts(challenge, input))
     if (candidate) list.push(candidate)
   }
+  // Large set: the decoy's access code is wrong and must be rejected.
+  if (challenge.answer.decoy) list.push(challenge.answer.decoy.input)
   if (challenge.family === 'state') {
     // Take a fall-back transition, replay the input from where it lands, and finish normally.
     const { states } = challenge.answer.machine
@@ -53,10 +55,13 @@ for (const binary of manifest.binaries) {
   const disagreements = probes(challenge).filter(
     (input) => (run(binary.file, input) === 'ACCESS GRANTED') !== accepts(challenge, input),
   )
-  const ok = granted === 'ACCESS GRANTED' && denied === 'ACCESS DENIED' && disagreements.length === 0
+  const decoy = challenge.answer.decoy
+  const decoyShown = decoy === undefined || run(binary.file, decoy.trigger).includes(decoy.input)
+  const ok = granted === 'ACCESS GRANTED' && denied === 'ACCESS DENIED' && disagreements.length === 0 && decoyShown
   if (!ok) failures++
   const oracle = disagreements.length === 0 ? 'oracle agrees' : `oracle disagrees on ${JSON.stringify(disagreements)}`
-  console.log(`${ok ? '✔' : '✘'} ${binary.id} ${binary.variant}: answer -> ${granted || '(no output)'}, wrong -> ${denied || '(no output)'}, ${oracle}`)
+  const note = decoy === undefined ? '' : `, decoy ${decoyShown ? 'shown' : 'missing'} on ${decoy.trigger}`
+  console.log(`${ok ? '✔' : '✘'} ${binary.id} ${binary.variant}: answer -> ${granted || '(no output)'}, wrong -> ${denied || '(no output)'}, ${oracle}${note}`)
 }
 if (failures > 0) {
   console.log(`\n${failures} variant(s) do not match their recorded answer or the oracle.`)

@@ -3,7 +3,10 @@
 
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { CLAIM_IDS, MECHANISMS } from './answer.ts'
+import { CLAIM_IDS, LARGE_MECHANISMS, MECHANISMS } from './answer.ts'
+
+/** Which challenge set a run uses: the small set of study 1 or the large set of study 2. */
+export type SetKind = 'small' | 'large'
 
 export type ConditionId = 'A' | 'B' | 'C'
 
@@ -62,13 +65,16 @@ export function mcpConfig(condition: Condition, repoRoot: string, runTemp: strin
   }
 }
 
-const CLAIM_LINES = [
+const claimLines = (kind: SetKind) => [
   'accepted_input: string, an input that makes the program print ACCESS GRANTED.',
-  `check_mechanism: one of ${MECHANISMS.map((mechanism) => `"${mechanism}"`).join(', ')}, describing how the program checks the input.`,
+  `check_mechanism: one of ${(kind === 'large' ? LARGE_MECHANISMS : MECHANISMS).map((mechanism) => `"${mechanism}"`).join(', ')}, describing how the program checks the input.`,
 ]
 
-/** The task prompt. The ground truth never appears in it. */
-export function taskPrompt(condition: Condition): string {
+/**
+ * The task prompt. The ground truth never appears in it. For the small set it is exactly study 1's prompt;
+ * the large set drops "small" and offers the larger list of mechanisms.
+ */
+export function taskPrompt(condition: Condition, kind: SetKind = 'small'): string {
   const tools = condition.withRea
     ? 'The command-line tools llvm-readobj, llvm-objdump, llvm-strings and llvm-nm are on the PATH, and REA is available as MCP tools. Close any REA analysis session you open before finishing.'
     : 'The command-line tools llvm-readobj, llvm-objdump, llvm-strings and llvm-nm are on the PATH.'
@@ -83,7 +89,7 @@ export function taskPrompt(condition: Condition): string {
         'confidence is "observed", "derived" or "inferred"; authority is "shipped-artifact" when the value comes from the file itself, or "analyst-inference" when you worked it out.',
       ]
   return [
-    'target.exe in the current folder is a small Windows console program. It reads one line from standard input and prints ACCESS GRANTED or ACCESS DENIED.',
+    `target.exe in the current folder is a ${kind === 'large' ? '' : 'small '}Windows console program. It reads one line from standard input and prints ACCESS GRANTED or ACCESS DENIED.`,
     'Find an input that makes it print ACCESS GRANTED, and identify how it checks the input.',
     `Use static analysis only: do not run the program and do not install anything. ${tools}`,
     '',
@@ -91,6 +97,6 @@ export function taskPrompt(condition: Condition): string {
     `The exact shape is ${shape}.`,
     `Include exactly one claim per ID below (${CLAIM_IDS.join(', ')}), without additional fields or claims.`,
     ...support,
-    ...CLAIM_LINES,
+    ...claimLines(kind),
   ].join('\n')
 }
