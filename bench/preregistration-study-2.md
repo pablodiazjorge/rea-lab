@@ -1,6 +1,6 @@
 # Study 2 preregistration
 
-Status: **draft**, not frozen. It is frozen in the commit that changes this line, after the pilots and before the first study run. Any later change is listed under Deviations in the study report.
+Status: **frozen** on 13 October 2026, in the commit that adds this line, after three pilots and before the first study run. Any later change is listed under Deviations in the study report.
 
 ## Question
 
@@ -21,16 +21,17 @@ Study 1 found no difference on small crackmes: with about 10 KB of code, an agen
 ## Design
 
 - Within-challenge, paired: every challenge runs under A and B with the same model, effort, prompt structure and limits ([ADR 0018](../docs/adr/0018-benchmark-isolation.md)). Study 2 has no skill arm: the skill was never loaded in study 1.
-- Challenges: the held-out large set from [`challenges/large.mjs`](../challenges/large.mjs) (large-set generator version 2), generated with a seed that stays private until the report is published. Its `manifest.json` SHA-256 is recorded below before the first run. The set has 8 challenges, two per family, all in `x64-O2-strip`. In every program the real check is one of 64 checkers reached through a table of function pointers, among hundreds of hash functions, with the result messages decoded at run time (170 to 210 KB in C, about 1 MB in C++). The families differ in the real check:
+- Challenges: the held-out large set from [`challenges/large.mjs`](../challenges/large.mjs) (large-set generator version 2), generated with a seed that stays private until the report is published. Its `manifest.json` SHA-256 is recorded below before the first run. The set has 8 challenges, two per family, all in `x64-O2-strip`. In every program the real check is one of 64 checkers reached through a table of function pointers, among hundreds of hash functions, with the result messages decoded at run time (about 160 to 240 KB in C and about 940 KB in C++, stripped). The families differ in the real check:
   - `haystack`: a substitution table or arithmetic constraints;
   - `vm`: bytecode run by a small virtual machine with random opcodes;
   - `cpp`: C++ rule objects called through virtual methods, with static libc++;
   - `stages`: three segments checked in a chain, each stage keyed by the ones before it.
-- Repetitions: _to be fixed after the pilots_ (planned: 3 per challenge and condition, 48 runs).
-- Order: shuffled with an order seed recorded below.
-- Fixed per study: Claude Code 2.1.296, `claude-sonnet-5-5` with medium effort, rea _version recorded at freezing_, Ghidra 12.1.4 and Temurin 21.0.12.1. The harness refuses to resume a study if any of them changes.
+- Repetitions: 3 per challenge and condition, so 48 runs in all (24 pairs).
+- Order: shuffled with order seed 20261016, so conditions spread over time of day and over any service changes.
+- Fixed per study: Claude Code 2.1.296, `claude-sonnet-5-5` with medium effort, rea 6.4.0 (the version of study 1), Ghidra 12.1.4 and Temurin 21.0.12.1. The harness refuses to resume a study if any of them changes.
 - Limits per run: 30 minutes of wall time and an equivalent cost cap of 5 USD. A run that hits either limit counts as not solved.
 - Scratch files: both conditions may write inside the run's work folder (`Edit(./**)` and `Write(./**)`, so that shell redirections work), and the prompt says so. Pilot 1 showed that without it an agent could not keep the disassembly of a large binary in a file, which hurt A more than B.
+- Unattended runs: the prompt says that nobody will answer questions or grant more permissions during the run, and asks for the best answer when the agent cannot go further. Pilot 3 showed three runs ending with a question instead of an answer. Running code other than the listed tools stays denied in both conditions, as in study 1.
 
 ## Outcomes
 
@@ -65,17 +66,22 @@ On the public large set (seed 20261013), none of them part of the study:
 |---|---|---|
 | 1 | All 8 challenges, A and B, 1 repetition | A solved 5 of 8 and B 8 of 8 (median 50 s and 0.17 USD against 210 s and 0.75 USD). One A failure was a classifier stop, one a denied redirection to a file that made the agent give up, one a 21-minute haystack without an answer. B had 18 input validation failures from argument names. The decoy was seen in 7 of 8 runs and never proposed |
 | 2 | The same, with scratch files allowed | A solved 7 of 8 and B 6 of 8 (median 68 s and 0.20 USD against 191 s and 0.50 USD). Both solved every `vm`, `cpp` and `stages` challenge; on `haystack`, A solved 1 of 2 and B none, after 22 to 27 minutes and about 90 turns each. B had 20 input validation failures from argument names. The decoy was seen in all 8 runs and never proposed. A's 88 % is above the 30-70 % calibration target set before the pilots |
-| 3 | All 8 challenges of large-set generator version 2, where `vm`, `cpp` and `stages` sit behind the same 64-checker scaffold as `haystack`, A and B, 1 repetition | _pending_ |
+| 3 | All 8 challenges of large-set generator version 2, where `vm`, `cpp` and `stages` sit behind the same 64-checker scaffold as `haystack`, A and B, 1 repetition | A solved 3 of 8 (38 %, Wilson 14-69 %) and B 1 of 8 (median 72 s and 0.21 USD against 295 s and 1.20 USD). A solved both `vm` and one `cpp`; B solved one `haystack`; nobody solved `stages`. Most failures named no input and said no hash preimage could be found without running code; one B run guessed, one hit the 5 USD budget. Three runs (two A, one B) ended by asking for permission to run Python or to continue, which nobody can answer in an unattended run. Classifier stops in 3 A runs and 6 B runs; 27 denied commands in A and 62 in B, mostly Python. The decoy was seen in all 8 runs that carry it and never proposed. A is inside the 30-70 % calibration target |
 
 ## Command
 
-_Recorded at freezing._
+The study runs exactly as follows, from a clean checkout of the freezing commit, with the held-out set built from its seed into a folder outside the repository:
+
+```powershell
+node bench/run.ts --study study-2 --model claude-sonnet-5-5 --effort medium --set <held-out large set folder> --variants x64-O2-strip --conditions A,B --repetitions 3 --order-seed 20261016 --timeout-min 30 --max-budget-usd 5
+node bench/report.ts --study study-2
+```
 
 ## Held-out set
 
 | Field | Value |
 |---|---|
-| Manifest SHA-256 | _recorded before the first run_ |
+| Manifest SHA-256 | `86f7af0afb672d049e608c41f40d33f56f55771c21e3f9530d872dda58163dec` |
 | Seed | published with the report |
 | Large-set generator version | 2 |
 

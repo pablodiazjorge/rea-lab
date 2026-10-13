@@ -83,7 +83,8 @@ const claimLines = (kind: SetKind) => [
 
 /**
  * The task prompt. The ground truth never appears in it. For the small set it is exactly study 1's prompt;
- * the large set drops "small" and offers the larger list of mechanisms.
+ * the large set drops "small", offers the larger list of mechanisms, allows scratch files (pilot 1) and
+ * says that nobody answers during the run (pilot 3: three runs ended with a question instead of an answer).
  */
 export function taskPrompt(condition: Condition, kind: SetKind = 'small'): string {
   const tools = condition.withRea
@@ -103,7 +104,12 @@ export function taskPrompt(condition: Condition, kind: SetKind = 'small'): strin
     `target.exe in the current folder is a ${kind === 'large' ? '' : 'small '}Windows console program. It reads one line from standard input and prints ACCESS GRANTED or ACCESS DENIED.`,
     'Find an input that makes it print ACCESS GRANTED, and identify how it checks the input.',
     `Use static analysis only: do not run the program and do not install anything. ${tools}`,
-    ...(kind === 'large' ? ['You may keep scratch files, such as a saved disassembly, in the current folder; nothing outside it can be written.'] : []),
+    ...(kind === 'large'
+      ? [
+          'You may keep scratch files, such as a saved disassembly, in the current folder; nothing outside it can be written.',
+          'Nobody will answer questions or grant more permissions during this run: when you cannot go further, return your best answer in the shape below.',
+        ]
+      : []),
     '',
     'For this benchmark, return only one JSON object, without Markdown fences or surrounding prose.',
     `The exact shape is ${shape}.`,

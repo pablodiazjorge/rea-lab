@@ -43,6 +43,9 @@ test('the small set keeps study 1 prompt and mechanisms; the large set offers it
   assert.doesNotMatch(small, /scratch files/)
   assert.match(large, /You may keep scratch files, such as a saved disassembly, in the current folder; nothing outside it can be written\./)
   assert.match(taskPrompt(CONDITIONS.A, 'large'), /scratch files/)
+  // Pilot 3: an unattended run must end with its best answer, not with a question nobody reads.
+  for (const condition of [CONDITIONS.A, CONDITIONS.B]) assert.match(taskPrompt(condition, 'large'), /Nobody will answer questions or grant more permissions during this run: when you cannot go further, return your best answer in the shape below\./)
+  assert.doesNotMatch(small, /Nobody will answer/)
 })
 
 test('only the large set allows scratch writes inside the work folder, in every condition', () => {
