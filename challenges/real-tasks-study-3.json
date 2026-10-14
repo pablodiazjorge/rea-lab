@@ -1,0 +1,1967 @@
+{
+  "set": "real",
+  "role": "study",
+  "version": 3,
+  "seed": 1344467450,
+  "build": {
+    "build_version": 1,
+    "manifest_sha256": "996a69f7b215aca561936617a206000226a4a723d89059b47f62ef895b3789eb"
+  },
+  "quotas": {
+    "string": 1,
+    "behaviour": 3,
+    "chain": 1,
+    "data": 1
+  },
+  "program_quotas": {
+    "sgiemu": {
+      "string": 1,
+      "behaviour": 3,
+      "chain": 1,
+      "data": 1
+    },
+    "c5xtools": {
+      "string": 1,
+      "behaviour": 4,
+      "chain": 1,
+      "data": 0
+    },
+    "moppe-emu": {
+      "string": 1,
+      "behaviour": 3,
+      "chain": 1,
+      "data": 1
+    },
+    "flint": {
+      "string": 1,
+      "behaviour": 3,
+      "chain": 1,
+      "data": 1
+    }
+  },
+  "tasks": [
+    {
+      "id": "r01",
+      "program": "sgiemu",
+      "family": "string",
+      "target": {
+        "function": "setup_proc",
+        "string": "Disk SCSI 2"
+      },
+      "question": "Exactly one function in target.exe references the string \"Disk SCSI 2\" from its code. Give the address where that function starts."
+    },
+    {
+      "id": "r02",
+      "program": "sgiemu",
+      "family": "behaviour",
+      "target": {
+        "function": "fp_check_flags"
+      },
+      "question": "In target.exe, find the function that emits, in the translator from MIPS code to x86-64 code, the check that sends a translated floating-point instruction back to the interpreter when the host reported an invalid operation, a division by zero, an overflow or an underflow. Give the address where that function starts."
+    },
+    {
+      "id": "r03",
+      "program": "sgiemu",
+      "family": "behaviour",
+      "target": {
+        "function": "r4k_cache_op"
+      },
+      "question": "In target.exe, find the function that executes the MIPS CACHE instruction on the emulated processor: it checks that the system coprocessor is usable, computes the address, and invalidates, reads or writes the tag of a line of the instruction, data or secondary cache, with a separate path for the R10000 model. Give the address where that function starts."
+    },
+    {
+      "id": "r04",
+      "program": "sgiemu",
+      "family": "behaviour",
+      "target": {
+        "function": "pm_map_io"
+      },
+      "question": "In target.exe, find the function that registers a memory-mapped device in the emulated physical address space, with its base address, size, read and write handlers and name, so that accesses to those pages reach the device instead of memory. Give the address where that function starts."
+    },
+    {
+      "id": "r05",
+      "program": "sgiemu",
+      "family": "chain",
+      "target": {
+        "function": "emit_cop1",
+        "callee": "fp_finish"
+      },
+      "question": "In target.exe, one function emits, in the translator from MIPS code to x86-64 code, the code that runs after a translated floating-point instruction: it clears the cause bits of the emulated floating-point control and status register and records an inexact result there, or returns to the interpreter when the inexact exception is enabled. Exactly one other function calls it directly. Give the address where that calling function starts."
+    },
+    {
+      "id": "r06",
+      "program": "sgiemu",
+      "family": "data",
+      "target": {
+        "object": "emit_thunk.fbit"
+      },
+      "question": "In target.exe, find the small table that the translated-code dispatcher uses to pack three processor mode bits (the floating-point register mode, whether coprocessor 1 is usable, and the rounding mode) into one flags word, giving for each one where it sits, where it goes and how many bits it takes. Give the address where that table starts."
+    },
+    {
+      "id": "r07",
+      "program": "c5xtools",
+      "family": "string",
+      "target": {
+        "function": "sect_use",
+        "string": "too many sections"
+      },
+      "question": "Exactly one function in target.exe references the string \"too many sections\" from its code. Give the address where that function starts."
+    },
+    {
+      "id": "r08",
+      "program": "c5xtools",
+      "family": "behaviour",
+      "target": {
+        "function": "cf_wsym"
+      },
+      "question": "In target.exe, find the function that writes one entry of the symbol table of the COFF object file being produced: the name, value, section number, type, storage class and number of auxiliary entries. Give the address where that function starts."
+    },
+    {
+      "id": "r09",
+      "program": "c5xtools",
+      "family": "behaviour",
+      "target": {
+        "function": "p_add"
+      },
+      "question": "In target.exe, find the function that handles addition and subtraction between terms in the evaluator of the expressions written in instruction operands, the evaluator that resolves symbols and labels. Give the address where that function starts."
+    },
+    {
+      "id": "r10",
+      "program": "c5xtools",
+      "family": "behaviour",
+      "target": {
+        "function": "pp_rel"
+      },
+      "question": "In target.exe, find the function that handles the comparisons (equal, not equal, less, greater, less or equal, greater or equal) in the evaluator of the expressions of preprocessor directives such as the conditional and assignment ones, returning 1 or 0. Give the address where that function starts."
+    },
+    {
+      "id": "r11",
+      "program": "c5xtools",
+      "family": "behaviour",
+      "target": {
+        "function": "c5xcoff_w_aux_scn"
+      },
+      "question": "In target.exe, find the function that writes the auxiliary entry that follows a section symbol in the COFF object file: the length of the section and its number of relocations, padded to the fixed size of an entry. Give the address where that function starts."
+    },
+    {
+      "id": "r12",
+      "program": "c5xtools",
+      "family": "chain",
+      "target": {
+        "function": "pp_expand",
+        "callee": "pp_call_macro"
+      },
+      "question": "In target.exe, one function expands one invocation of a user-defined macro: it splits the arguments, binds them to the macro parameters while keeping their previous values to restore them afterwards, and expands the macro body. Exactly one other function calls it directly. Give the address where that calling function starts."
+    },
+    {
+      "id": "r13",
+      "program": "moppe-emu",
+      "family": "string",
+      "target": {
+        "function": "sio_init",
+        "string": "SIO A TX"
+      },
+      "question": "Exactly one function in target.exe references the string \"SIO A TX\" from its code. Give the address where that function starts."
+    },
+    {
+      "id": "r14",
+      "program": "moppe-emu",
+      "family": "behaviour",
+      "target": {
+        "function": "bus_edge"
+      },
+      "question": "In target.exe, find the function that follows the two-wire serial bus (a clock line and a data line) of the radio's control unit on every change of the lines: it recognises the start and stop conditions and shifts in the bits of each byte on the rising clock edge. Give the address where that function starts."
+    },
+    {
+      "id": "r15",
+      "program": "moppe-emu",
+      "family": "behaviour",
+      "target": {
+        "function": "pit_read"
+      },
+      "question": "In target.exe, find the function that returns a byte read from one counter of the programmable interval timer: the latched status if there is one, otherwise the current or latched count, as its low or high byte depending on the counter's access mode. Give the address where that function starts."
+    },
+    {
+      "id": "r16",
+      "program": "moppe-emu",
+      "family": "behaviour",
+      "target": {
+        "function": "pio_set_input"
+      },
+      "question": "In target.exe, find the function that updates the levels of the input pins of one port of the parallel input and output controller, and re-evaluates the port only when the levels changed. Give the address where that function starts."
+    },
+    {
+      "id": "r17",
+      "program": "moppe-emu",
+      "family": "chain",
+      "target": {
+        "function": "r58_run",
+        "callee": "z80_step"
+      },
+      "question": "In target.exe, one function executes one instruction of the emulated Z80 processor, first taking a pending non-maskable or maskable interrupt, and returns the number of cycles it took. Exactly one other function calls it directly. Give the address where that calling function starts."
+    },
+    {
+      "id": "r18",
+      "program": "moppe-emu",
+      "family": "data",
+      "target": {
+        "object": "r58_display_text.f"
+      },
+      "question": "In target.exe, find the table that pairs each displayable character with its segment pattern on the 14-segment display cells, used to turn the display memory back into text. Give the address where that table starts."
+    },
+    {
+      "id": "r19",
+      "program": "flint",
+      "family": "string",
+      "target": {
+        "function": "str_native",
+        "string": "<object>"
+      },
+      "question": "Exactly one function in target.exe references the string \"<object>\" from its code. Give the address where that function starts."
+    },
+    {
+      "id": "r20",
+      "program": "flint",
+      "family": "behaviour",
+      "target": {
+        "function": "emit_indexed"
+      },
+      "question": "In target.exe, find the function that emits, in the compiler, an instruction that takes an index operand, choosing the short form with a one-byte index or the long form with a three-byte index. Give the address where that function starts."
+    },
+    {
+      "id": "r21",
+      "program": "flint",
+      "family": "behaviour",
+      "target": {
+        "function": "similar_language_name"
+      },
+      "question": "In target.exe, find the function that suggests, for an unknown name in an error message, the closest language keyword or global variable within a small edit distance, and suggests nothing when two candidates are equally close. Give the address where that function starts."
+    },
+    {
+      "id": "r22",
+      "program": "flint",
+      "family": "behaviour",
+      "target": {
+        "function": "free_objects"
+      },
+      "question": "In target.exe, find the function that releases every object that the virtual machine still owns when it shuts down, together with the garbage collector's work list. Give the address where that function starts."
+    },
+    {
+      "id": "r23",
+      "program": "flint",
+      "family": "chain",
+      "target": {
+        "function": "import_file_native",
+        "callee": "bag_add"
+      },
+      "question": "In target.exe, one function appends a name and a value to an insertion-ordered table of module members, growing its storage when it is full. Exactly one other function calls it directly. Give the address where that calling function starts."
+    },
+    {
+      "id": "r24",
+      "program": "flint",
+      "family": "data",
+      "target": {
+        "object": "k"
+      },
+      "question": "In target.exe, find the table of the 64 round constants of the SHA-256 hash function. Give the address where that table starts."
+    }
+  ],
+  "reserves": {
+    "sgiemu": {
+      "string": [
+        {
+          "function": "r4k_jit_init",
+          "string": "R4K_JIT_NOFPU"
+        },
+        {
+          "function": "hpc_write32",
+          "string": "[hpc3 %05X = %08X]\n"
+        },
+        {
+          "function": "reg_write",
+          "string": "[MC %04X = %08X pc=%llX]\n"
+        },
+        {
+          "function": "np_io_read",
+          "string": "[np R%d %04X -> %llX pc=%llX]\n"
+        },
+        {
+          "function": "go",
+          "string": "[go k%d dm0=%08X dm1=%08X (%d,%d)-(%d,%d) host=%08X ci=%X win=%08X clip=%X mv=%X wm=%X rgb=%X,%X,%X]\n"
+        },
+        {
+          "function": "np_io_write",
+          "string": "[np W%d %04X = %llX pc=%llX]\n"
+        },
+        {
+          "function": "indy_mc_read",
+          "string": "[MC %04X -> %08X pc=%llX]\n"
+        },
+        {
+          "function": "scsi_dev_exec",
+          "string": "snapshot: memoria\n"
+        },
+        {
+          "function": "scsi_dma",
+          "string": "[scsi dma %s %u byte]\n"
+        },
+        {
+          "function": "indy_hpc3_write",
+          "string": "[8042 W cmd %02X t=%.3f pc=%llX]\n"
+        },
+        {
+          "function": "indy_hpc3_read",
+          "string": "[nvram %04X -> %02X pc=%llX]\n"
+        }
+      ],
+      "behaviour": [
+        {
+          "function": "pm_write"
+        },
+        {
+          "function": "translate"
+        },
+        {
+          "function": "browse"
+        },
+        {
+          "function": "lwr"
+        },
+        {
+          "function": "emit_store"
+        },
+        {
+          "function": "r4k_set_model"
+        },
+        {
+          "function": "r4k_fast_protect"
+        },
+        {
+          "function": "present"
+        },
+        {
+          "function": "tlb_read"
+        },
+        {
+          "function": "wd_write"
+        },
+        {
+          "function": "pit_read"
+        },
+        {
+          "function": "r4k_cp0_write"
+        },
+        {
+          "function": "emit_helper_call"
+        },
+        {
+          "function": "cache_free"
+        },
+        {
+          "function": "indy_free"
+        },
+        {
+          "function": "r4k_jit_find"
+        },
+        {
+          "function": "xlate_core"
+        },
+        {
+          "function": "rw_args"
+        },
+        {
+          "function": "pm_map_ram"
+        },
+        {
+          "function": "fp_check_result"
+        },
+        {
+          "function": "indy_run"
+        },
+        {
+          "function": "pit_reset"
+        },
+        {
+          "function": "pm_read"
+        },
+        {
+          "function": "ee_pins"
+        },
+        {
+          "function": "r4k_write_slow"
+        },
+        {
+          "function": "rtc_write"
+        },
+        {
+          "function": "wd_read"
+        },
+        {
+          "function": "indy_update_irq"
+        },
+        {
+          "function": "pit_write"
+        },
+        {
+          "function": "emit_insn"
+        },
+        {
+          "function": "emit_stubs"
+        },
+        {
+          "function": "np_render"
+        },
+        {
+          "function": "emit_exit_chain"
+        },
+        {
+          "function": "eret"
+        },
+        {
+          "function": "dcb_read"
+        },
+        {
+          "function": "exec"
+        },
+        {
+          "function": "r4k_cop1"
+        },
+        {
+          "function": "r4k_fetch_fill"
+        },
+        {
+          "function": "pit_poll"
+        },
+        {
+          "function": "ld8"
+        },
+        {
+          "function": "r4k_set_irq"
+        },
+        {
+          "function": "gpr_st"
+        },
+        {
+          "function": "r4k_cop0"
+        },
+        {
+          "function": "pm_unmap"
+        },
+        {
+          "function": "st_qi"
+        },
+        {
+          "function": "st16"
+        },
+        {
+          "function": "ld16"
+        },
+        {
+          "function": "r4k_jit_free"
+        },
+        {
+          "function": "put_pixel"
+        },
+        {
+          "function": "r4k_fetch_slow"
+        },
+        {
+          "function": "r4k_run"
+        },
+        {
+          "function": "tlb_probe"
+        },
+        {
+          "function": "kbc_read"
+        },
+        {
+          "function": "swr"
+        },
+        {
+          "function": "gpr_ld"
+        },
+        {
+          "function": "r4k_translate"
+        },
+        {
+          "function": "rtc_read"
+        },
+        {
+          "function": "fp_after"
+        },
+        {
+          "function": "emit_cop1"
+        },
+        {
+          "function": "regimm"
+        },
+        {
+          "function": "indy_attach_scsi"
+        },
+        {
+          "function": "indy_reset"
+        },
+        {
+          "function": "ldr"
+        },
+        {
+          "function": "r4k_fast_flush_tlb_entry"
+        },
+        {
+          "function": "pm_dma_write"
+        },
+        {
+          "function": "scsi_dev_close"
+        },
+        {
+          "function": "indy_hpc3_init"
+        },
+        {
+          "function": "reg_read"
+        },
+        {
+          "function": "pm_set_code"
+        },
+        {
+          "function": "r4k_cop1x"
+        },
+        {
+          "function": "tlb_write"
+        },
+        {
+          "function": "kbc_mouse"
+        },
+        {
+          "function": "emit_lookup"
+        },
+        {
+          "function": "clock_to_regs"
+        },
+        {
+          "function": "scc_irq"
+        },
+        {
+          "function": "kbc_key"
+        },
+        {
+          "function": "np_init"
+        },
+        {
+          "function": "madd"
+        },
+        {
+          "function": "emit_load"
+        },
+        {
+          "function": "data_phase"
+        },
+        {
+          "function": "swl"
+        },
+        {
+          "function": "ldl"
+        },
+        {
+          "function": "indy_mc_remap"
+        },
+        {
+          "function": "vdma_run"
+        },
+        {
+          "function": "rex_read"
+        },
+        {
+          "function": "scsi_dev_data_len"
+        },
+        {
+          "function": "scc_write"
+        },
+        {
+          "function": "load_file"
+        },
+        {
+          "function": "gpr_reload"
+        },
+        {
+          "function": "pm_init"
+        },
+        {
+          "function": "to_int"
+        },
+        {
+          "function": "pack_rgb"
+        },
+        {
+          "function": "emit_fmem"
+        },
+        {
+          "function": "gpr_ldsx"
+        },
+        {
+          "function": "r4k_timer_fire"
+        },
+        {
+          "function": "special"
+        },
+        {
+          "function": "emit_load_lr"
+        },
+        {
+          "function": "np_write"
+        },
+        {
+          "function": "emit_call"
+        },
+        {
+          "function": "wd_init"
+        },
+        {
+          "function": "r4k_reset"
+        },
+        {
+          "function": "kbc_write"
+        },
+        {
+          "function": "scc_read"
+        },
+        {
+          "function": "r4k_read_slow"
+        },
+        {
+          "function": "emit_fast"
+        },
+        {
+          "function": "read_pixels"
+        },
+        {
+          "function": "draw_color"
+        },
+        {
+          "function": "lwl"
+        },
+        {
+          "function": "fp_finish"
+        },
+        {
+          "function": "gpr_alu"
+        },
+        {
+          "function": "raise_xlate"
+        },
+        {
+          "function": "pm_dma_read"
+        }
+      ],
+      "chain": [
+        {
+          "function": "r4k_cop0",
+          "callee": "tlb_read"
+        },
+        {
+          "function": "indy_mc_remap",
+          "callee": "pm_unmap"
+        },
+        {
+          "function": "indy_hpc3_read",
+          "callee": "scc_read"
+        },
+        {
+          "function": "indy_free",
+          "callee": "scsi_dev_close"
+        },
+        {
+          "function": "emit_insn",
+          "callee": "emit_load_lr"
+        },
+        {
+          "function": "exec",
+          "callee": "ldr"
+        },
+        {
+          "function": "emit_insn",
+          "callee": "gpr_ldsx"
+        },
+        {
+          "function": "r4k_jit_find",
+          "callee": "r4k_fetch_fill"
+        },
+        {
+          "function": "exec",
+          "callee": "ld8"
+        },
+        {
+          "function": "indy_init",
+          "callee": "np_init"
+        },
+        {
+          "function": "indy_update_irq",
+          "callee": "scc_irq"
+        },
+        {
+          "function": "indy_hpc3_read",
+          "callee": "rtc_read"
+        },
+        {
+          "function": "exec",
+          "callee": "lwr"
+        },
+        {
+          "function": "exec",
+          "callee": "lwl"
+        },
+        {
+          "function": "indy_update_irq",
+          "callee": "r4k_set_irq"
+        },
+        {
+          "function": "indy_hpc3_read",
+          "callee": "wd_read"
+        },
+        {
+          "function": "wndproc",
+          "callee": "kbc_key"
+        },
+        {
+          "function": "go",
+          "callee": "put_pixel"
+        },
+        {
+          "function": "indy_hpc3_write",
+          "callee": "kbc_write"
+        },
+        {
+          "function": "r4k_cop0",
+          "callee": "eret"
+        },
+        {
+          "function": "indy_run",
+          "callee": "pit_poll"
+        },
+        {
+          "function": "indy_hpc3_write",
+          "callee": "wd_write"
+        },
+        {
+          "function": "indy_hpc3_write",
+          "callee": "scc_write"
+        },
+        {
+          "function": "r4k_run",
+          "callee": "r4k_jit_find"
+        },
+        {
+          "function": "exec",
+          "callee": "swr"
+        },
+        {
+          "function": "go",
+          "callee": "draw_color"
+        },
+        {
+          "function": "emit_insn",
+          "callee": "emit_load"
+        },
+        {
+          "function": "indy_reset",
+          "callee": "indy_hpc3_init"
+        },
+        {
+          "function": "indy_init",
+          "callee": "indy_reset"
+        },
+        {
+          "function": "translate",
+          "callee": "emit_insn"
+        },
+        {
+          "function": "indy_hpc3_read",
+          "callee": "kbc_read"
+        },
+        {
+          "function": "tlb_write",
+          "callee": "r4k_fast_flush_tlb_entry"
+        },
+        {
+          "function": "exec",
+          "callee": "ld16"
+        },
+        {
+          "function": "r4k_cop0",
+          "callee": "tlb_probe"
+        },
+        {
+          "function": "r4k_run",
+          "callee": "r4k_fetch_slow"
+        },
+        {
+          "function": "r4k_init",
+          "callee": "r4k_set_model"
+        },
+        {
+          "function": "emit_insn",
+          "callee": "emit_fmem"
+        },
+        {
+          "function": "exec",
+          "callee": "special"
+        },
+        {
+          "function": "exec",
+          "callee": "st16"
+        },
+        {
+          "function": "exec",
+          "callee": "r4k_cop0"
+        },
+        {
+          "function": "indy_hpc3_write",
+          "callee": "pit_write"
+        },
+        {
+          "function": "r4k_jit_find",
+          "callee": "translate"
+        },
+        {
+          "function": "exec",
+          "callee": "regimm"
+        },
+        {
+          "function": "r4k_cop0",
+          "callee": "tlb_write"
+        },
+        {
+          "function": "emit_insn",
+          "callee": "emit_helper_call"
+        },
+        {
+          "function": "emit_insn",
+          "callee": "emit_store"
+        },
+        {
+          "function": "r4k_cop1x",
+          "callee": "madd"
+        },
+        {
+          "function": "r4k_run",
+          "callee": "r4k_timer_fire"
+        },
+        {
+          "function": "wd_write",
+          "callee": "scsi_dev_data_len"
+        },
+        {
+          "function": "exec",
+          "callee": "r4k_cop1"
+        },
+        {
+          "function": "rex_read",
+          "callee": "read_pixels"
+        },
+        {
+          "function": "exec",
+          "callee": "r4k_cop1x"
+        },
+        {
+          "function": "indy_hpc3_read",
+          "callee": "pit_read"
+        },
+        {
+          "function": "r4k_jit_find",
+          "callee": "r4k_fast_protect"
+        },
+        {
+          "function": "exec",
+          "callee": "ldl"
+        },
+        {
+          "function": "r4k_cop0",
+          "callee": "r4k_cp0_write"
+        },
+        {
+          "function": "indy_run",
+          "callee": "r4k_run"
+        },
+        {
+          "function": "np_io_write",
+          "callee": "np_write"
+        },
+        {
+          "function": "r4k_jit_find",
+          "callee": "emit_stubs"
+        },
+        {
+          "function": "reg_write",
+          "callee": "vdma_run"
+        },
+        {
+          "function": "indy_hpc3_init",
+          "callee": "pit_reset"
+        },
+        {
+          "function": "present",
+          "callee": "np_render"
+        },
+        {
+          "function": "indy_init",
+          "callee": "pm_init"
+        },
+        {
+          "function": "exec",
+          "callee": "swl"
+        },
+        {
+          "function": "r4k_cop1",
+          "callee": "to_int"
+        },
+        {
+          "function": "indy_init",
+          "callee": "wd_init"
+        }
+      ],
+      "data": []
+    },
+    "c5xtools": {
+      "string": [
+        {
+          "function": "ctrl_field",
+          "string": "unknown control bit"
+        },
+        {
+          "function": "parse_cond",
+          "string": "unknown condition"
+        },
+        {
+          "function": "pprim",
+          "string": "missing ')'"
+        },
+        {
+          "function": "pp_expand",
+          "string": "preprocessor: nesting too deep\n"
+        },
+        {
+          "function": "load_src",
+          "string": "%s: cannot open include '%s'\n"
+        },
+        {
+          "function": "indirect_byte",
+          "string": "invalid auxiliary register (AR0-AR7)"
+        },
+        {
+          "function": "sym_intern",
+          "string": "symbol table full"
+        },
+        {
+          "function": "c5x_banner",
+          "string": "C5x ISA 229 mnem. - COFF v1/v2 out"
+        },
+        {
+          "function": "encode",
+          "string": "BSAR shift out of range 1-16"
+        }
+      ],
+      "behaviour": [
+        {
+          "function": "isa_find"
+        },
+        {
+          "function": "shift_after"
+        },
+        {
+          "function": "pp_call_macro"
+        },
+        {
+          "function": "dma_operand"
+        },
+        {
+          "function": "pp_prim"
+        },
+        {
+          "function": "c5xcoff_w_reloc"
+        },
+        {
+          "function": "p_and"
+        },
+        {
+          "function": "sec_next_arg"
+        },
+        {
+          "function": "apply_sub"
+        },
+        {
+          "function": "pp_e"
+        },
+        {
+          "function": "split"
+        },
+        {
+          "function": "p_or"
+        },
+        {
+          "function": "emit_sym"
+        },
+        {
+          "function": "sec_name"
+        },
+        {
+          "function": "value_before_arp"
+        },
+        {
+          "function": "emit"
+        },
+        {
+          "function": "first_tok"
+        }
+      ],
+      "chain": [
+        {
+          "function": "encode",
+          "callee": "emit_sym"
+        },
+        {
+          "function": "encode",
+          "callee": "value_before_arp"
+        },
+        {
+          "function": "p_or",
+          "callee": "p_and"
+        },
+        {
+          "function": "field_at",
+          "callee": "dma_operand"
+        },
+        {
+          "function": "encode",
+          "callee": "shift_after"
+        }
+      ]
+    },
+    "moppe-emu": {
+      "string": [],
+      "behaviour": [
+        {
+          "function": "cu58af_init"
+        },
+        {
+          "function": "sio_add_irqs"
+        },
+        {
+          "function": "cu58af_int"
+        },
+        {
+          "function": "hw_reset"
+        },
+        {
+          "function": "r58_load_rom"
+        },
+        {
+          "function": "r58_run"
+        },
+        {
+          "function": "z80_reset"
+        },
+        {
+          "function": "pit_write"
+        },
+        {
+          "function": "pit_clock"
+        },
+        {
+          "function": "exec_main"
+        },
+        {
+          "function": "daisy_ack"
+        },
+        {
+          "function": "add16"
+        },
+        {
+          "function": "sio_read_ctrl"
+        },
+        {
+          "function": "r58_synth_vco_hz"
+        },
+        {
+          "function": "modem_tick"
+        },
+        {
+          "function": "advance"
+        },
+        {
+          "function": "serial_tick"
+        },
+        {
+          "function": "daisy_reset"
+        },
+        {
+          "function": "r58_load_nv"
+        },
+        {
+          "function": "cu53an_out2"
+        },
+        {
+          "function": "sio_tick"
+        },
+        {
+          "function": "r58_display_text"
+        },
+        {
+          "function": "sio_read_data"
+        },
+        {
+          "function": "sio_write_ctrl"
+        },
+        {
+          "function": "pit_init"
+        },
+        {
+          "function": "sio_rx_byte"
+        },
+        {
+          "function": "write_byte"
+        },
+        {
+          "function": "update_lines"
+        },
+        {
+          "function": "alu"
+        },
+        {
+          "function": "daa"
+        },
+        {
+          "function": "r58_init"
+        },
+        {
+          "function": "z80_step"
+        },
+        {
+          "function": "pio_write_ctrl"
+        }
+      ],
+      "chain": [
+        {
+          "function": "r58_init",
+          "callee": "cu58af_init"
+        },
+        {
+          "function": "hw_reset",
+          "callee": "daisy_reset"
+        },
+        {
+          "function": "exec_main",
+          "callee": "add16"
+        },
+        {
+          "function": "r58_init",
+          "callee": "sio_add_irqs"
+        },
+        {
+          "function": "io_read",
+          "callee": "sio_read_data"
+        },
+        {
+          "function": "exec_main",
+          "callee": "daa"
+        },
+        {
+          "function": "io_write",
+          "callee": "pio_write_ctrl"
+        },
+        {
+          "function": "serial_tick",
+          "callee": "sio_rx_byte"
+        },
+        {
+          "function": "serial_tick",
+          "callee": "sio_tick"
+        },
+        {
+          "function": "update_lines",
+          "callee": "cu58af_int"
+        },
+        {
+          "function": "exec_main",
+          "callee": "alu"
+        },
+        {
+          "function": "io_write",
+          "callee": "pit_write"
+        },
+        {
+          "function": "r58_init",
+          "callee": "pit_init"
+        },
+        {
+          "function": "hw_reset",
+          "callee": "z80_reset"
+        },
+        {
+          "function": "io_read",
+          "callee": "sio_read_ctrl"
+        },
+        {
+          "function": "io_write",
+          "callee": "sio_write_ctrl"
+        }
+      ],
+      "data": [
+        {
+          "object": "cyc_main"
+        },
+        {
+          "object": "cu53_glyph_of.font"
+        }
+      ]
+    },
+    "flint": {
+      "string": [
+        {
+          "function": "import_push_env",
+          "string": "modules nested more than %d deep. is an import loop that the cycle check missed?"
+        },
+        {
+          "function": "starts_with_native",
+          "string": "argument to starts_with() must be a string."
+        },
+        {
+          "function": "write_file_native",
+          "string": "Both arguments to write_file() must be strings."
+        },
+        {
+          "function": "grouping",
+          "string": "expect ')' after expression."
+        },
+        {
+          "function": "collect_tests",
+          "string": "_test.fl"
+        },
+        {
+          "function": "const_declaration",
+          "string": "expect '=' after const name."
+        },
+        {
+          "function": "read_stdin",
+          "string": "Not enough memory to read stdin.\n"
+        },
+        {
+          "function": "declaration",
+          "string": "no match arm matched."
+        },
+        {
+          "function": "sys_resolve_module",
+          "string": "[package]"
+        },
+        {
+          "function": "pkg_collect_deps",
+          "string": "dependency '%s' has both path and git -- pick one"
+        },
+        {
+          "function": "isdir_native",
+          "string": "Argument to isdir() must be a string."
+        },
+        {
+          "function": "os_chdir_native",
+          "string": "argument to chdir() must be a string."
+        },
+        {
+          "function": "process_run_native",
+          "string": "process.run() needs a POSIX system in this release."
+        },
+        {
+          "function": "listdir_native",
+          "string": "out of memory in listdir()."
+        },
+        {
+          "function": "compile_and_maybe_run",
+          "string": "functions: %d\n"
+        },
+        {
+          "function": "consume_terminator",
+          "string": "expect ';' or newline after statement."
+        },
+        {
+          "function": "ldexp_native",
+          "string": "Exponent to ldexp() must be a whole number."
+        },
+        {
+          "function": "pop_native",
+          "string": "argument to pop() must be a list."
+        },
+        {
+          "function": "os_lookupenv_native",
+          "string": "argument to lookupenv() must be a string."
+        },
+        {
+          "function": "error_at",
+          "string": "scientific notation"
+        },
+        {
+          "function": "run_test_suite",
+          "string": "a test file is named *_test.fl\n"
+        },
+        {
+          "function": "print_test_usage",
+          "string": "VM so globals and imports cannot leak between\n"
+        },
+        {
+          "function": "stringify_native",
+          "string": "Out of memory in json.stringify."
+        },
+        {
+          "function": "parse_string",
+          "string": "truncated escape"
+        },
+        {
+          "function": "list_literal",
+          "string": "can't have more than 255 elements in a list literal."
+        },
+        {
+          "function": "print_usage",
+          "string": "diagnostics:\n"
+        },
+        {
+          "function": "lower_native",
+          "string": "argument to lower() must be a string."
+        },
+        {
+          "function": "hex4",
+          "string": "bad hex digit"
+        },
+        {
+          "function": "range_step_error_native",
+          "string": "a range step cannot be zero."
+        },
+        {
+          "function": "sleep_native",
+          "string": "Argument to sleep() must be a number."
+        },
+        {
+          "function": "url_parse",
+          "string": "https://"
+        },
+        {
+          "function": "join_native",
+          "string": "argument to join() must be a string."
+        },
+        {
+          "function": "exit_native",
+          "string": "exit() status must be a whole number."
+        },
+        {
+          "function": "register_natives",
+          "string": "__debug_frames"
+        },
+        {
+          "function": "read_file_native",
+          "string": "out of memory reading '%s'."
+        },
+        {
+          "function": "delete_native",
+          "string": "first argument to delete() must be a table."
+        },
+        {
+          "function": "exec_native",
+          "string": "exec() needs a POSIX system in this release."
+        },
+        {
+          "function": "fl_diag_emit",
+          "string": ",\"start\":%u,\"end\":%u,\"line_start\":%zu,\"column_start\":%zu,\"line_end\":%zu,\"column_end\":%zu,\"is_primary\":%s,\"label\":"
+        },
+        {
+          "function": "scan_token",
+          "string": "unexpected character."
+        },
+        {
+          "function": "http_request_native",
+          "string": "status_text"
+        },
+        {
+          "function": "sync_stdlib",
+          "string": "  %-12s updated\n"
+        },
+        {
+          "function": "parse_value",
+          "string": "expected a value"
+        },
+        {
+          "function": "let_list_destructure",
+          "string": "expect ']' after destructured names."
+        },
+        {
+          "function": "read_file",
+          "string": "Could not size \"%s\".\n"
+        },
+        {
+          "function": "replace_native",
+          "string": "replace() result is too long."
+        },
+        {
+          "function": "print_fmt_usage",
+          "string": "usage: flint fmt [--check] <files>\n\n"
+        },
+        {
+          "function": "os_getenv_native",
+          "string": "arguments to getenv() must be strings."
+        },
+        {
+          "function": "assert_native",
+          "string": "assert() takes one or two arguments."
+        },
+        {
+          "function": "as_",
+          "string": "unknown type name after 'as'. Expected one of: number, string, bool, nil, list, table, function."
+        },
+        {
+          "function": "pkg_satisfies",
+          "string": "does not satisfy '%s'"
+        },
+        {
+          "function": "ord_native",
+          "string": "argument to ord() must be a single character."
+        },
+        {
+          "function": "resolve_upvalue",
+          "string": "too many closure variables in function."
+        },
+        {
+          "function": "stringify_pretty_native",
+          "string": "Out of memory in json.pretty."
+        },
+        {
+          "function": "json_parse_native",
+          "string": "invalid json: trailing data at offset %d"
+        },
+        {
+          "function": "import_file_native",
+          "string": "import_file() takes one argument."
+        },
+        {
+          "function": "insert_native",
+          "string": "first argument to insert() must be a list."
+        },
+        {
+          "function": "optional_dot",
+          "string": "can't assign through '?.'."
+        },
+        {
+          "function": "disassemble_instruction",
+          "string": "OP_DEFINE_GLOBAL_EXPORT"
+        },
+        {
+          "function": "copysign_native",
+          "string": "copysign_y"
+        },
+        {
+          "function": "vm_throw_value",
+          "string": "undefined name"
+        },
+        {
+          "function": "values_native",
+          "string": "argument to values() must be a table."
+        },
+        {
+          "function": "json_write",
+          "string": "json: cannot stringify a function"
+        },
+        {
+          "function": "declare_variable",
+          "string": "first defined here"
+        },
+        {
+          "function": "remainder_native",
+          "string": "remainder_y"
+        },
+        {
+          "function": "register_string_natives",
+          "string": "__strcmp"
+        },
+        {
+          "function": "sys_fetch_url",
+          "string": "flint sync: downloads need a POSIX system in this release.\n"
+        },
+        {
+          "function": "find_native",
+          "string": "argument to find() must be a string."
+        },
+        {
+          "function": "env_native",
+          "string": "argument to env() must be a string."
+        },
+        {
+          "function": "register_http_natives",
+          "string": "__http_request"
+        },
+        {
+          "function": "chunk_add_constant",
+          "string": "Too many constants in one chunk.\n"
+        },
+        {
+          "function": "chr_native",
+          "string": "argument to chr() must be between 0 and 255."
+        },
+        {
+          "function": "pkg_expand_deps",
+          "string": "dependency path is too long"
+        },
+        {
+          "function": "flint_fmt",
+          "string": "flint fmt: cannot read '%s'\n"
+        },
+        {
+          "function": "verify_chunk",
+          "string": "upvalue slot is out of range"
+        },
+        {
+          "function": "split_native",
+          "string": "argument to split() must be a string."
+        },
+        {
+          "function": "pkg_string",
+          "string": "expected a quoted string here"
+        },
+        {
+          "function": "from_bits_native",
+          "string": "Arguments to from_bits() must be whole numbers from 0 to 4294967295."
+        },
+        {
+          "function": "register_sys_natives",
+          "string": "__os_pathlistsep"
+        },
+        {
+          "function": "exists_native",
+          "string": "Argument to exists() must be a string."
+        },
+        {
+          "function": "ends_with_native",
+          "string": "argument to ends_with() must be a string."
+        },
+        {
+          "function": "compile_named",
+          "string": "\nerror: could not compile due to %d error%s\n"
+        },
+        {
+          "function": "os_setenv_native",
+          "string": "invalid environment variable name."
+        },
+        {
+          "function": "contains_native",
+          "string": "argument to contains() must be a string."
+        },
+        {
+          "function": "push_native",
+          "string": "first argument to push() must be a list."
+        },
+        {
+          "function": "statement",
+          "string": "expect '{' after try."
+        },
+        {
+          "function": "fn_signature",
+          "string": "can't have more than 255 parameters."
+        },
+        {
+          "function": "argument_list",
+          "string": "can't have more than 255 arguments."
+        },
+        {
+          "function": "fn_declaration",
+          "string": "expect function name."
+        },
+        {
+          "function": "print_object_to",
+          "string": "<struct %s>"
+        },
+        {
+          "function": "if_statement",
+          "string": "expect '{' after else."
+        },
+        {
+          "function": "fl_profile_report",
+          "string": "lists created"
+        },
+        {
+          "function": "trim_native",
+          "string": "argument to trim() must be a string."
+        },
+        {
+          "function": "table_literal",
+          "string": "expect '}' after table literal."
+        },
+        {
+          "function": "print_native_unload_usage",
+          "string": "0 -- it is the structured answer, not a failure.\n\n"
+        },
+        {
+          "function": "has_native",
+          "string": "first argument to has() must be a table."
+        },
+        {
+          "function": "parse_precedence",
+          "string": "expect expression."
+        },
+        {
+          "function": "pkg_usage",
+          "string": "  install           resolve manifest dependencies into flint_modules/\n"
+        },
+        {
+          "function": "os_unsetenv_native",
+          "string": "argument to unsetenv() must be a string."
+        },
+        {
+          "function": "items_native",
+          "string": "argument to items() must be a table."
+        },
+        {
+          "function": "closure_long_instruction",
+          "string": "OP_CLOSURE_LONG"
+        },
+        {
+          "function": "register_math_natives",
+          "string": "__remainder"
+        },
+        {
+          "function": "slice_native",
+          "string": "__slice() bounds must be whole numbers."
+        },
+        {
+          "function": "seed_native",
+          "string": "Argument to seed() must be a number."
+        },
+        {
+          "function": "num_native",
+          "string": "argument to num() must be a number or a string, but got a %s."
+        },
+        {
+          "function": "strcmp_native",
+          "string": "argument to __strcmp() must be a string."
+        },
+        {
+          "function": "pkg_load",
+          "string": "inline tables hold string values: { path = \"...\", version = \"...\" }"
+        },
+        {
+          "function": "input_native",
+          "string": "argument to input() must be a string."
+        },
+        {
+          "function": "vm_interpret_function",
+          "string": "can only index lists, strings and tables."
+        },
+        {
+          "function": "vm_value_to_index",
+          "string": "%s index must be a whole number."
+        },
+        {
+          "function": "flint_pkg",
+          "string": "flint pkg: that path is too long\n"
+        },
+        {
+          "function": "pkg_read_identity",
+          "string": "%s: version '%s' is not X.Y.Z"
+        },
+        {
+          "function": "signal_send_native",
+          "string": "signal.send() needs a POSIX system in this release."
+        },
+        {
+          "function": "keys_native",
+          "string": "argument to keys() must be a table."
+        },
+        {
+          "function": "closure_instruction",
+          "string": "OP_CLOSURE"
+        },
+        {
+          "function": "os_homedir_native",
+          "string": "HOMEPATH"
+        },
+        {
+          "function": "time_str_native",
+          "string": "%Y-%m-%d %H:%M:%S"
+        },
+        {
+          "function": "emit_loop",
+          "string": "loop body too large."
+        },
+        {
+          "function": "char_at_native",
+          "string": "char_at() index %d out of bounds (len %d)."
+        },
+        {
+          "function": "print_value_brief",
+          "string": "<obj %p>"
+        },
+        {
+          "function": "upper_native",
+          "string": "argument to upper() must be a string."
+        },
+        {
+          "function": "register_json_natives",
+          "string": "__json_parse"
+        },
+        {
+          "function": "pkg_install_core",
+          "string": "flint pkg: cannot clear '%s' -- remove it by hand and retry\n"
+        },
+        {
+          "function": "mkdir_native",
+          "string": "Argument to mkdir() must be a string."
+        },
+        {
+          "function": "vm_runtime_error",
+          "string": "http error:"
+        },
+        {
+          "function": "pkg_project_root",
+          "string": "%s/flint_modules"
+        },
+        {
+          "function": "write_string",
+          "string": "0123456789abcdef"
+        },
+        {
+          "function": "let_destructure",
+          "string": "expect '{' after 'let'."
+        }
+      ],
+      "behaviour": [
+        {
+          "function": "sys_make_dirs"
+        },
+        {
+          "function": "vm_define_native"
+        },
+        {
+          "function": "new_function"
+        },
+        {
+          "function": "pkg_free_locked"
+        },
+        {
+          "function": "new_closure"
+        },
+        {
+          "function": "emit_variable_op"
+        },
+        {
+          "function": "vm_free"
+        },
+        {
+          "function": "bag_add"
+        },
+        {
+          "function": "pkg_free_deps"
+        },
+        {
+          "function": "pkg_version_parse"
+        },
+        {
+          "function": "set_table_field"
+        },
+        {
+          "function": "new_struct_ctor"
+        },
+        {
+          "function": "sys_set_source_dir_for_file"
+        },
+        {
+          "function": "flint_lookup_enum"
+        },
+        {
+          "function": "table_remove_white"
+        },
+        {
+          "function": "pkg_set"
+        },
+        {
+          "function": "pkg_table"
+        },
+        {
+          "function": "table_find_string"
+        },
+        {
+          "function": "entry_for_write"
+        },
+        {
+          "function": "sys_set_args"
+        },
+        {
+          "function": "debug_frame_set"
+        },
+        {
+          "function": "new_native"
+        },
+        {
+          "function": "table_define_const"
+        },
+        {
+          "function": "chunk_free"
+        },
+        {
+          "function": "pkg_copy_file"
+        },
+        {
+          "function": "table_get_with_fallback"
+        },
+        {
+          "function": "compiler_mark_roots"
+        },
+        {
+          "function": "concat_strings"
+        },
+        {
+          "function": "report_pending"
+        },
+        {
+          "function": "parse_variable"
+        },
+        {
+          "function": "ascii_case_eq"
+        },
+        {
+          "function": "new_string"
+        },
+        {
+          "function": "fl_sha256_final"
+        },
+        {
+          "function": "free_object"
+        },
+        {
+          "function": "take_string"
+        },
+        {
+          "function": "new_list"
+        },
+        {
+          "function": "compress"
+        },
+        {
+          "function": "chunk_write"
+        },
+        {
+          "function": "flint_value_to_string"
+        },
+        {
+          "function": "flint_register_enum"
+        },
+        {
+          "function": "pkg_hash_file"
+        },
+        {
+          "function": "new_enum_value"
+        },
+        {
+          "function": "new_upvalue"
+        },
+        {
+          "function": "value_has_type"
+        },
+        {
+          "function": "pkg_free_manifest"
+        },
+        {
+          "function": "table_define_exported"
+        },
+        {
+          "function": "fl_stats_walk"
+        }
+      ],
+      "chain": [
+        {
+          "function": "vm_interpret_function",
+          "callee": "concat_strings"
+        },
+        {
+          "function": "vm_interpret_function",
+          "callee": "new_enum_value"
+        },
+        {
+          "function": "vm_interpret_function",
+          "callee": "new_closure"
+        },
+        {
+          "function": "http_request_native",
+          "callee": "set_table_field"
+        },
+        {
+          "function": "compile_and_maybe_run",
+          "callee": "fl_stats_walk"
+        },
+        {
+          "function": "free_object",
+          "callee": "chunk_free"
+        },
+        {
+          "function": "pkg_install_core",
+          "callee": "pkg_free_locked"
+        },
+        {
+          "function": "vm_interpret_function",
+          "callee": "value_has_type"
+        },
+        {
+          "function": "pkg_copy_tree",
+          "callee": "pkg_copy_file"
+        },
+        {
+          "function": "collect_garbage",
+          "callee": "compiler_mark_roots"
+        },
+        {
+          "function": "collect_garbage",
+          "callee": "table_remove_white"
+        },
+        {
+          "function": "named_variable",
+          "callee": "emit_variable_op"
+        },
+        {
+          "function": "declaration",
+          "callee": "flint_register_enum"
+        },
+        {
+          "function": "vm_define_native",
+          "callee": "new_native"
+        },
+        {
+          "function": "vm_interpret_function",
+          "callee": "table_define_const"
+        },
+        {
+          "function": "debug_frames_native",
+          "callee": "debug_frame_set"
+        },
+        {
+          "function": "vm_interpret_function",
+          "callee": "table_get_with_fallback"
+        },
+        {
+          "function": "url_parse",
+          "callee": "ascii_case_eq"
+        },
+        {
+          "function": "pkg_hash_walk",
+          "callee": "pkg_hash_file"
+        },
+        {
+          "function": "vm_interpret_function",
+          "callee": "new_upvalue"
+        },
+        {
+          "function": "vm_interpret_function",
+          "callee": "table_define_exported"
+        },
+        {
+          "function": "vm_interpret_function",
+          "callee": "new_struct_ctor"
+        },
+        {
+          "function": "vm_interpret_function",
+          "callee": "report_pending"
+        }
+      ],
+      "data": []
+    }
+  },
+  "rejected": []
+}

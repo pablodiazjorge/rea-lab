@@ -1,6 +1,6 @@
 # Real-software tasks
 
-Status: proposed (study 3), to be accepted after the pilot
+Status: accepted (study 3)
 
 Study 3 asks where code lives in real open-source programs instead of asking for a crackme input. The sources are official release archives listed in `sources.json` with their SHA-256 and licence, downloaded and verified by `scripts/setup.mjs --manifest sources.json` into the ignored `tools/sources/`; no third-party executable is ever downloaded. `challenges/real.mjs` compiles every translation unit with llvm-mingw (x64, `-O2`, `-static`, no LTO, `-ffunction-sections -fdata-sections`, `-g`, prefix maps, `NDEBUG`) in a fixed order and links with `--icf=none`, `--gc-sections`, a linker map, no timestamp and no build id. lld keeps the per-function sections in input order, not sorted by name, so the layout tells nothing about the source names. The target is the same image after `llvm-objcopy --strip-all`: the build checks that every non-debug section is identical and that a second build gives the same target hash, so addresses in the target are the addresses of the full build. lld still writes one CodeView debug record, all zeros, without a path or an identifier; the check accepts it only in that form.
 

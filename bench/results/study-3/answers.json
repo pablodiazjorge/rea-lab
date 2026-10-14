@@ -1,0 +1,320 @@
+{
+  "set": "real",
+  "role": "study",
+  "version": 3,
+  "tasks_sha256": "ae8175807a521028d82984b668ab49bf3e4a42f7a28ddd6dae09af8c2bcd21aa",
+  "tasks": [
+    {
+      "id": "r01",
+      "program": "sgiemu",
+      "family": "string",
+      "question": "Exactly one function in target.exe references the string \"Disk SCSI 2\" from its code. Give the address where that function starts.",
+      "answer": {
+        "kind": "function",
+        "name": "setup_proc",
+        "start": "0x140022230",
+        "end": "0x140022ab2",
+        "image_base": "0x140000000"
+      }
+    },
+    {
+      "id": "r02",
+      "program": "sgiemu",
+      "family": "behaviour",
+      "question": "In target.exe, find the function that emits, in the translator from MIPS code to x86-64 code, the check that sends a translated floating-point instruction back to the interpreter when the host reported an invalid operation, a division by zero, an overflow or an underflow. Give the address where that function starts.",
+      "answer": {
+        "kind": "function",
+        "name": "fp_check_flags",
+        "start": "0x140015d50",
+        "end": "0x140016044",
+        "image_base": "0x140000000"
+      }
+    },
+    {
+      "id": "r03",
+      "program": "sgiemu",
+      "family": "behaviour",
+      "question": "In target.exe, find the function that executes the MIPS CACHE instruction on the emulated processor: it checks that the system coprocessor is usable, computes the address, and invalidates, reads or writes the tag of a line of the instruction, data or secondary cache, with a separate path for the R10000 model. Give the address where that function starts.",
+      "answer": {
+        "kind": "function",
+        "name": "r4k_cache_op",
+        "start": "0x140005ae0",
+        "end": "0x140005e29",
+        "image_base": "0x140000000"
+      }
+    },
+    {
+      "id": "r04",
+      "program": "sgiemu",
+      "family": "behaviour",
+      "question": "In target.exe, find the function that registers a memory-mapped device in the emulated physical address space, with its base address, size, read and write handlers and name, so that accesses to those pages reach the device instead of memory. Give the address where that function starts.",
+      "answer": {
+        "kind": "function",
+        "name": "pm_map_io",
+        "start": "0x140001760",
+        "end": "0x1400018a5",
+        "image_base": "0x140000000"
+      }
+    },
+    {
+      "id": "r05",
+      "program": "sgiemu",
+      "family": "chain",
+      "question": "In target.exe, one function emits, in the translator from MIPS code to x86-64 code, the code that runs after a translated floating-point instruction: it clears the cause bits of the emulated floating-point control and status register and records an inexact result there, or returns to the interpreter when the inexact exception is enabled. Exactly one other function calls it directly. Give the address where that calling function starts.",
+      "answer": {
+        "kind": "function",
+        "name": "emit_cop1",
+        "start": "0x140012460",
+        "end": "0x140014a47",
+        "image_base": "0x140000000"
+      }
+    },
+    {
+      "id": "r06",
+      "program": "sgiemu",
+      "family": "data",
+      "question": "In target.exe, find the small table that the translated-code dispatcher uses to pack three processor mode bits (the floating-point register mode, whether coprocessor 1 is usable, and the rounding mode) into one flags word, giving for each one where it sits, where it goes and how many bits it takes. Give the address where that table starts.",
+      "answer": {
+        "kind": "data",
+        "name": "emit_thunk.fbit",
+        "start": "0x140026710",
+        "end": "0x140026734",
+        "image_base": "0x140000000"
+      }
+    },
+    {
+      "id": "r07",
+      "program": "c5xtools",
+      "family": "string",
+      "question": "Exactly one function in target.exe references the string \"too many sections\" from its code. Give the address where that function starts.",
+      "answer": {
+        "kind": "function",
+        "name": "sect_use",
+        "start": "0x1400086a0",
+        "end": "0x1400087de",
+        "image_base": "0x140000000"
+      }
+    },
+    {
+      "id": "r08",
+      "program": "c5xtools",
+      "family": "behaviour",
+      "question": "In target.exe, find the function that writes one entry of the symbol table of the COFF object file being produced: the name, value, section number, type, storage class and number of auxiliary entries. Give the address where that function starts.",
+      "answer": {
+        "kind": "function",
+        "name": "cf_wsym",
+        "start": "0x14000b480",
+        "end": "0x14000b51b",
+        "image_base": "0x140000000"
+      }
+    },
+    {
+      "id": "r09",
+      "program": "c5xtools",
+      "family": "behaviour",
+      "question": "In target.exe, find the function that handles addition and subtraction between terms in the evaluator of the expressions written in instruction operands, the evaluator that resolves symbols and labels. Give the address where that function starts.",
+      "answer": {
+        "kind": "function",
+        "name": "p_add",
+        "start": "0x1400052f0",
+        "end": "0x140005530",
+        "image_base": "0x140000000"
+      }
+    },
+    {
+      "id": "r10",
+      "program": "c5xtools",
+      "family": "behaviour",
+      "question": "In target.exe, find the function that handles the comparisons (equal, not equal, less, greater, less or equal, greater or equal) in the evaluator of the expressions of preprocessor directives such as the conditional and assignment ones, returning 1 or 0. Give the address where that function starts.",
+      "answer": {
+        "kind": "function",
+        "name": "pp_rel",
+        "start": "0x1400070b0",
+        "end": "0x140008428",
+        "image_base": "0x140000000"
+      }
+    },
+    {
+      "id": "r11",
+      "program": "c5xtools",
+      "family": "behaviour",
+      "question": "In target.exe, find the function that writes the auxiliary entry that follows a section symbol in the COFF object file: the length of the section and its number of relocations, padded to the fixed size of an entry. Give the address where that function starts.",
+      "answer": {
+        "kind": "function",
+        "name": "c5xcoff_w_aux_scn",
+        "start": "0x14000c090",
+        "end": "0x14000c11c",
+        "image_base": "0x140000000"
+      }
+    },
+    {
+      "id": "r12",
+      "program": "c5xtools",
+      "family": "chain",
+      "question": "In target.exe, one function expands one invocation of a user-defined macro: it splits the arguments, binds them to the macro parameters while keeping their previous values to restore them afterwards, and expands the macro body. Exactly one other function calls it directly. Give the address where that calling function starts.",
+      "answer": {
+        "kind": "function",
+        "name": "pp_expand",
+        "start": "0x140005c40",
+        "end": "0x140006a64",
+        "image_base": "0x140000000"
+      }
+    },
+    {
+      "id": "r13",
+      "program": "moppe-emu",
+      "family": "string",
+      "question": "Exactly one function in target.exe references the string \"SIO A TX\" from its code. Give the address where that function starts.",
+      "answer": {
+        "kind": "function",
+        "name": "sio_init",
+        "start": "0x140004a00",
+        "end": "0x140004b4f",
+        "image_base": "0x140000000"
+      }
+    },
+    {
+      "id": "r14",
+      "program": "moppe-emu",
+      "family": "behaviour",
+      "question": "In target.exe, find the function that follows the two-wire serial bus (a clock line and a data line) of the radio's control unit on every change of the lines: it recognises the start and stop conditions and shifts in the bits of each byte on the rising clock edge. Give the address where that function starts.",
+      "answer": {
+        "kind": "function",
+        "name": "bus_edge",
+        "start": "0x140005f60",
+        "end": "0x1400060fe",
+        "image_base": "0x140000000"
+      }
+    },
+    {
+      "id": "r15",
+      "program": "moppe-emu",
+      "family": "behaviour",
+      "question": "In target.exe, find the function that returns a byte read from one counter of the programmable interval timer: the latched status if there is one, otherwise the current or latched count, as its low or high byte depending on the counter's access mode. Give the address where that function starts.",
+      "answer": {
+        "kind": "function",
+        "name": "pit_read",
+        "start": "0x140005580",
+        "end": "0x1400055eb",
+        "image_base": "0x140000000"
+      }
+    },
+    {
+      "id": "r16",
+      "program": "moppe-emu",
+      "family": "behaviour",
+      "question": "In target.exe, find the function that updates the levels of the input pins of one port of the parallel input and output controller, and re-evaluates the port only when the levels changed. Give the address where that function starts.",
+      "answer": {
+        "kind": "function",
+        "name": "pio_set_input",
+        "start": "0x140004980",
+        "end": "0x1400049f1",
+        "image_base": "0x140000000"
+      }
+    },
+    {
+      "id": "r17",
+      "program": "moppe-emu",
+      "family": "chain",
+      "question": "In target.exe, one function executes one instruction of the emulated Z80 processor, first taking a pending non-maskable or maskable interrupt, and returns the number of cycles it took. Exactly one other function calls it directly. Give the address where that calling function starts.",
+      "answer": {
+        "kind": "function",
+        "name": "r58_run",
+        "start": "0x140007b70",
+        "end": "0x140007e99",
+        "image_base": "0x140000000"
+      }
+    },
+    {
+      "id": "r18",
+      "program": "moppe-emu",
+      "family": "data",
+      "question": "In target.exe, find the table that pairs each displayable character with its segment pattern on the 14-segment display cells, used to turn the display memory back into text. Give the address where that table starts.",
+      "answer": {
+        "kind": "data",
+        "name": "r58_display_text.f",
+        "start": "0x14000ae70",
+        "end": "0x14000af58",
+        "image_base": "0x140000000"
+      }
+    },
+    {
+      "id": "r19",
+      "program": "flint",
+      "family": "string",
+      "question": "Exactly one function in target.exe references the string \"<object>\" from its code. Give the address where that function starts.",
+      "answer": {
+        "kind": "function",
+        "name": "str_native",
+        "start": "0x140020700",
+        "end": "0x140020b3e",
+        "image_base": "0x140000000"
+      }
+    },
+    {
+      "id": "r20",
+      "program": "flint",
+      "family": "behaviour",
+      "question": "In target.exe, find the function that emits, in the compiler, an instruction that takes an index operand, choosing the short form with a one-byte index or the long form with a three-byte index. Give the address where that function starts.",
+      "answer": {
+        "kind": "function",
+        "name": "emit_indexed",
+        "start": "0x14000c9b0",
+        "end": "0x14000ca99",
+        "image_base": "0x140000000"
+      }
+    },
+    {
+      "id": "r21",
+      "program": "flint",
+      "family": "behaviour",
+      "question": "In target.exe, find the function that suggests, for an unknown name in an error message, the closest language keyword or global variable within a small edit distance, and suggests nothing when two candidates are equally close. Give the address where that function starts.",
+      "answer": {
+        "kind": "function",
+        "name": "similar_language_name",
+        "start": "0x14002ec90",
+        "end": "0x14002f100",
+        "image_base": "0x140000000"
+      }
+    },
+    {
+      "id": "r22",
+      "program": "flint",
+      "family": "behaviour",
+      "question": "In target.exe, find the function that releases every object that the virtual machine still owns when it shuts down, together with the garbage collector's work list. Give the address where that function starts.",
+      "answer": {
+        "kind": "function",
+        "name": "free_objects",
+        "start": "0x140002060",
+        "end": "0x1400020b1",
+        "image_base": "0x140000000"
+      }
+    },
+    {
+      "id": "r23",
+      "program": "flint",
+      "family": "chain",
+      "question": "In target.exe, one function appends a name and a value to an insertion-ordered table of module members, growing its storage when it is full. Exactly one other function calls it directly. Give the address where that calling function starts.",
+      "answer": {
+        "kind": "function",
+        "name": "import_file_native",
+        "start": "0x140020fe0",
+        "end": "0x140021678",
+        "image_base": "0x140000000"
+      }
+    },
+    {
+      "id": "r24",
+      "program": "flint",
+      "family": "data",
+      "question": "In target.exe, find the table of the 64 round constants of the SHA-256 hash function. Give the address where that table starts.",
+      "answer": {
+        "kind": "data",
+        "name": "k",
+        "start": "0x14004c4e0",
+        "end": "0x14004c5e0",
+        "image_base": "0x140000000"
+      }
+    }
+  ]
+}
