@@ -18,6 +18,10 @@ El modelo, el esfuerzo, la estructura del prompt y los límites son los mismos e
 
 Cada ejecución recibe un reto de [`challenges/`](../challenges/README.es.md), renombrado como `target.exe`, y tiene que encontrar una entrada que le haga escribir `ACCESS GRANTED` y explicar cómo la comprueba el programa. La respuesta es el manifiesto cerrado de reclamaciones de rea, un único objeto JSON y nada más, con dos reclamaciones: `accepted_input` y `check_mechanism`. En las condiciones B y C cada reclamación cita el `evidence_id` del resultado de rea que la respalda.
 
+## Tareas con software real
+
+El estudio 3 cambia los crackmes por programas libres reales compilados sin símbolos ([ADR 0024](../docs/adr/0024-real-software-tasks.md)). Cada ejecución hace una pregunta sobre dónde está una función o una tabla, y la respuesta tiene dos reclamaciones: `answer_address`, la dirección virtual donde empieza, y `source_name`, una suposición de su nombre en el código fuente. La respuesta es correcta si la dirección cae dentro del rango del objetivo en el mapa del build completo; el inicio exacto, una dirección dada sin la base de imagen, el nombre en el código y, en B, si la Evidence citada recoge esa dirección se informan aparte. Una ejecución puede leer además los archivos donde Claude Code guarda los resultados demasiado grandes para devolverlos directamente. Las tareas salen de [`challenges/real-tasks.mjs`](../challenges/real-tasks.mjs) y el [prerregistro del estudio 3](preregistration-study-3.md) describe el diseño.
+
 ## Calificación
 
 No interviene ningún LLM como juez.

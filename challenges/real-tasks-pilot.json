@@ -1,16 +1,16 @@
 {
   "set": "real",
   "role": "pilot",
-  "version": 1,
+  "version": 2,
   "seed": 20261014,
   "build": {
     "build_version": 1,
-    "manifest_sha256": "9862984d30f16a0ee724d53d84ce4b35c3d8391d46a67119e08cfbf7c48378fe"
+    "manifest_sha256": "6f1967da6124d0ad50cc59e6f64e39ee18cb2d3b9277efe4e6b998eb0a2c790b"
   },
   "quotas": {
     "string": 1,
-    "behaviour": 2,
-    "caller": 2,
+    "behaviour": 3,
+    "chain": 1,
     "data": 1
   },
   "tasks": [
@@ -31,7 +31,7 @@
       "target": {
         "function": "gz_zero"
       },
-      "question": "In target.exe, find the function that writes a pending run of zero bytes into a gzip file opened for writing, as requested by an earlier seek forward: it first compresses whatever is left in the input buffer, then fills the input buffer with zeros once and compresses buffer-sized chunks until the requested count is consumed, advancing the file position. Give the address where that function starts."
+      "question": "In target.exe, find the function that fills the gap that a forward seek left in a gzip file opened for writing, so the skipped bytes are compressed before any new data. Give the address where that function starts."
     },
     {
       "id": "p03",
@@ -40,38 +40,35 @@
       "target": {
         "function": "_tr_stored_block"
       },
-      "question": "In target.exe, find the function that emits a deflate stored (uncompressed) block: it writes the 3-bit block header, aligns the bit buffer to a byte boundary, writes the 16-bit block length followed by its one's complement, and copies the raw bytes into the pending output buffer. Give the address where that function starts."
+      "question": "In target.exe, find the function that adds to the compressor's output a block whose data is stored as it is, without compression. Give the address where that function starts."
     },
     {
       "id": "p04",
       "program": "zlib",
-      "family": "caller",
+      "family": "behaviour",
       "target": {
-        "function": "gz_read",
-        "callee": "gz_fetch",
-        "string": "state corrupt"
+        "function": "crc32_z"
       },
-      "question": "Exactly one function in target.exe references the string \"state corrupt\" from its code, and exactly one other function calls that function directly. Give the address where the calling function starts."
+      "question": "In target.exe, find the function that computes the CRC-32 check value of a buffer, continuing from the value of the data before it. Give the address where that function starts."
     },
     {
       "id": "p05",
       "program": "zlib",
-      "family": "caller",
+      "family": "chain",
       "target": {
-        "function": "gz_uncompress",
-        "callee": "gzread",
-        "string": "request does not fit in an int"
+        "function": "deflateReset",
+        "callee": "deflateResetKeep"
       },
-      "question": "Exactly one function in target.exe references the string \"request does not fit in an int\" from its code, and exactly one other function calls that function directly. Give the address where the calling function starts."
+      "question": "In target.exe, one function resets the per-stream state of a compressor for a new stream (byte counters, pending output, header state and running check value) while keeping its settings and memory, and without touching its match-finding state. Exactly one other function calls it directly. Give the address where that calling function starts."
     },
     {
       "id": "p06",
       "program": "zlib",
       "family": "data",
       "target": {
-        "object": "_dist_code"
+        "object": "inflate_table.dbase"
       },
-      "question": "In target.exe, find the 512-byte table that maps a match distance to its deflate distance code: the first 256 entries are indexed by the distance itself and the last 256 by the distance shifted right by 7. Give the address where that table starts."
+      "question": "In target.exe, find the table, used when the decompressor builds its decoding tables, that gives the smallest distance each distance code of the deflate format stands for. Give the address where that table starts."
     }
   ],
   "reserves": {
@@ -103,9 +100,6 @@
         }
       ],
       "behaviour": [
-        {
-          "function": "crc32_z"
-        },
         {
           "function": "_tr_init"
         },
@@ -194,66 +188,120 @@
           "function": "fill_window"
         }
       ],
-      "caller": [
+      "chain": [
         {
-          "function": "gz_compress",
-          "callee": "gzwrite",
-          "string": "requested length does not fit in int"
+          "function": "inflateInit2_",
+          "callee": "inflateReset2"
         },
         {
-          "function": "gz_decomp",
-          "callee": "inflate",
-          "string": "invalid code -- missing end-of-block"
+          "function": "gzclose",
+          "callee": "gzclose_r"
+        },
+        {
+          "function": "gzclose",
+          "callee": "gzclose_w"
+        },
+        {
+          "function": "gzread",
+          "callee": "gz_read"
+        },
+        {
+          "function": "gz_init",
+          "callee": "deflateInit2_"
+        },
+        {
+          "function": "_tr_flush_block",
+          "callee": "send_tree"
+        },
+        {
+          "function": "_tr_flush_block",
+          "callee": "build_tree"
+        },
+        {
+          "function": "gzclose_r",
+          "callee": "inflateEnd"
+        },
+        {
+          "function": "inflate",
+          "callee": "inflate_table"
+        },
+        {
+          "function": "_tr_flush_block",
+          "callee": "compress_block"
+        },
+        {
+          "function": "deflate",
+          "callee": "_tr_align"
+        },
+        {
+          "function": "gzwrite",
+          "callee": "gz_write"
+        },
+        {
+          "function": "inflate",
+          "callee": "updatewindow"
+        },
+        {
+          "function": "deflate",
+          "callee": "deflate_rle"
+        },
+        {
+          "function": "deflate",
+          "callee": "deflate_huff"
+        },
+        {
+          "function": "gz_look",
+          "callee": "inflateInit2_"
         }
       ],
       "data": [
         {
-          "object": "distfix"
-        },
-        {
-          "object": "extra_dbits"
-        },
-        {
-          "object": "lenfix"
+          "object": "inflate_table.lext"
         },
         {
           "object": "static_ltree"
         },
         {
-          "object": "configuration_table"
+          "object": "inflate_table.lbase"
+        },
+        {
+          "object": "lenfix"
+        },
+        {
+          "object": "inflate.order"
         },
         {
           "object": "crc_braid_table"
         },
         {
-          "object": "base_length"
+          "object": "extra_dbits"
         },
         {
-          "object": "_length_code"
-        },
-        {
-          "object": "static_d_desc"
-        },
-        {
-          "object": "static_bl_desc"
+          "object": "inflate_table.dext"
         },
         {
           "object": "static_dtree"
         },
         {
-          "object": "static_l_desc"
+          "object": "extra_lbits"
+        },
+        {
+          "object": "distfix"
+        },
+        {
+          "object": "_length_code"
         },
         {
           "object": "crc_table"
         },
         {
-          "object": "z_errmsg"
-        },
-        {
-          "object": "extra_lbits"
-        },
-        {
           "object": "base_dist"
+        },
+        {
+          "object": "_dist_code"
+        },
+        {
+          "object": "base_length"
         }
       ]
     }

@@ -168,6 +168,7 @@ test('each family gets the candidates its definition allows', () => {
   assert.deepEqual(truth.candidates.string, [{ function: 'beta', strings: ['unexpected end of file'] }])
   assert.deepEqual(truth.candidates.caller, [{ function: 'alpha', callee: 'beta', strings: ['unexpected end of file'] }])
   assert.deepEqual(truth.candidates.behaviour, [{ function: 'gamma' }])
+  assert.deepEqual(truth.candidates.chain, [{ function: 'alpha', callee: 'gamma' }])
   assert.deepEqual(truth.candidates.data, [{ object: 'table' }])
   const gamma = truth.functions.find((fn: { name: string }) => fn.name === 'gamma')
   assert.deepEqual(gamma, {
@@ -224,7 +225,7 @@ test('task files are checked against the ground truth and resolved into address 
     ],
     rejected: [],
   }
-  assert.deepEqual(QUOTAS, { string: 1, behaviour: 2, caller: 2, data: 1 })
+  assert.deepEqual(QUOTAS, { string: 1, behaviour: 3, chain: 1, data: 1 })
   assert.deepEqual(verifyTasks(tasks, { demo: truth }), [])
 
   const broken = structuredClone(tasks)

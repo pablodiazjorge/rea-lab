@@ -326,6 +326,13 @@ export function analyse(input) {
     }
   }
 
+  // A data object that holds absolute pointers is a table of strings or functions, not of numbers.
+  const pointersIn = new Map(data.map((item) => [item, 0]))
+  for (const relocation of relocations) {
+    const owner = dataAt(pe.imageBase + relocation)
+    if (owner) pointersIn.set(owner, pointersIn.get(owner) + 1)
+  }
+
   for (const relocation of relocations) {
     const address = pe.imageBase + relocation
     const value = readPointer(address)
@@ -388,13 +395,23 @@ export function analyse(input) {
           stringRefs.get(string).length === 1,
       )
 
-  const candidates = { string: [], behaviour: [], caller: [], data: [] }
+  const candidates = { string: [], behaviour: [], caller: [], chain: [], data: [] }
+  // A function that only its behaviour can identify: no string reference, address never taken, called directly.
+  const describable = (fn) => {
+    const fact = facts.get(fn)
+    return fact.stringRefs.length === 0 && !fact.addressTaken && fact.callers.size >= 1 && fn.size >= 64
+  }
   for (const fn of functions) {
     if (!eligible(fn)) continue
-    const fact = facts.get(fn)
     const anchors = anchorsOf(fn)
     if (anchors.length > 0) candidates.string.push({ function: fn.name, strings: anchors.map((string) => string.text) })
-    if (fact.stringRefs.length === 0 && !fact.addressTaken && fact.callers.size >= 1 && fn.size >= 64) candidates.behaviour.push({ function: fn.name })
+    if (describable(fn)) candidates.behaviour.push({ function: fn.name })
+  }
+  // Two steps: the only direct caller of a function that is described by its behaviour.
+  for (const callee of functions) {
+    if (!eligible(callee) || !describable(callee) || facts.get(callee).callers.size !== 1) continue
+    const [caller] = facts.get(callee).callers
+    if (caller !== callee && eligible(caller)) candidates.chain.push({ function: caller.name, callee: callee.name })
   }
   for (const callee of functions) {
     const fact = facts.get(callee)
@@ -404,8 +421,9 @@ export function analyse(input) {
     if (caller !== callee && eligible(caller)) candidates.caller.push({ function: caller.name, callee: callee.name, strings: anchors.map((string) => string.text) })
   }
   for (const item of data) {
-    if (item.name.startsWith('.') || item.name.includes('.') || dataNameCount.get(item.name) > 1 || item.size < 32) continue
-    if (dataRefs.get(item).size === 0) continue
+    // A plain name or a function-local static (function.table); compiler-made names start with a dot.
+    if (!/^[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)?$/.test(item.name) || dataNameCount.get(item.name) > 1 || item.size < 32) continue
+    if (dataRefs.get(item).size === 0 || pointersIn.get(item) > 0) continue
     const bytes = bytesAt(buffer, pe, item.start - pe.imageBase, item.size)
     if (!bytes) continue
     const printableShare = bytes.filter(printable).length / bytes.length
@@ -426,7 +444,7 @@ export function analyse(input) {
       string_refs: fact.stringRefs.length,
       reasons,
     })),
-    data: data.map((item) => ({ name: item.name, section: item.section, object: item.object, start: hex(item.start), end: hex(item.end), size: item.size, referenced_by: [...dataRefs.get(item)].map((fn) => fn.name).sort() })),
+    data: data.map((item) => ({ name: item.name, section: item.section, object: item.object, start: hex(item.start), end: hex(item.end), size: item.size, pointers: pointersIn.get(item), referenced_by: [...dataRefs.get(item)].map((fn) => fn.name).sort() })),
     strings: stringItems.map((string) => ({ address: hex(string.address), text: string.text, referenced_by: stringRefs.get(string).map((fn) => fn.name) })),
     candidates,
   }

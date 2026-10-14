@@ -18,6 +18,10 @@ The model, effort, prompt structure and limits are the same in every condition. 
 
 Each run gets one challenge from [`challenges/`](../challenges/README.md), renamed to `target.exe`, and has to find an input that makes it print `ACCESS GRANTED` and say how the program checks it. The answer is rea's closed claims manifest, one JSON object and nothing else, with two claims: `accepted_input` and `check_mechanism`. In conditions B and C each claim cites the `evidence_id` of the rea result that supports it.
 
+## Real-software tasks
+
+Study 3 swaps the crackmes for real open-source programs compiled without symbols ([ADR 0024](../docs/adr/0024-real-software-tasks.md)). Each run asks one question about where a function or table lives, and the answer has two claims: `answer_address`, the virtual address where it starts, and `source_name`, a guess at its name in the source. The answer is correct when the address falls inside the target's range in the full build's map; the exact start, an address given without the image base, the source name and, in B, whether the cited Evidence states that address are reported apart. A run may also read the files where Claude Code saves tool results too large to return inline. The tasks come from [`challenges/real-tasks.mjs`](../challenges/real-tasks.mjs) and the [study 3 preregistration](preregistration-study-3.md) describes the design.
+
 ## Grading
 
 No LLM judge is involved.

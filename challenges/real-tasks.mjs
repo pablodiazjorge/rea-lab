@@ -7,6 +7,8 @@
 //
 // Usage:
 //   node challenges/real-tasks.mjs draw --role study|pilot --seed <n> --out <file> [--build build/real]
+//       [--programs lua,md4c] [--quotas behaviour=1,chain=1,data=1] [--exclude <task file>] [--id-prefix q]
+//       a pilot on study programs: other programs, other quotas, and no target or described function of the excluded file
 //   node challenges/real-tasks.mjs replace <file> <task id> --reason "<why>"   take the next candidate in the seeded order
 //   node challenges/real-tasks.mjs verify <file> [--build build/real]           every task still matches the ground truth
 //   node challenges/real-tasks.mjs resolve <file> [--build build/real]          write <build>/answers.json for the benchmark
@@ -16,8 +18,10 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { ROOT } from './toolchain.mjs'
 
-export const TASKS_VERSION = 1
-export const QUOTAS = { string: 1, behaviour: 2, caller: 2, data: 1 }
+// Version 2 (after pilot 1, where command-line tools alone answered every task): more behaviour questions,
+// a two-step chain instead of a string-anchored caller, and numeric tables only.
+export const TASKS_VERSION = 2
+export const QUOTAS = { string: 1, behaviour: 3, chain: 1, data: 1 }
 const FAMILIES = Object.keys(QUOTAS)
 
 const args = process.argv.slice(2)
@@ -59,6 +63,7 @@ function shuffled(list, random) {
 function pick(family, candidate, random) {
   if (family === 'data') return { object: candidate.object }
   if (family === 'behaviour') return { function: candidate.function }
+  if (family === 'chain') return { function: candidate.function, callee: candidate.callee }
   const string = candidate.strings[Math.floor(random() * candidate.strings.length)]
   return family === 'caller' ? { function: candidate.function, callee: candidate.callee, string } : { function: candidate.function, string }
 }
@@ -87,29 +92,39 @@ function draw() {
   const out = flagValue('--out')
   if (!['study', 'pilot'].includes(role) || !Number.isSafeInteger(seed) || !out) throw new Error('draw needs --role study|pilot, --seed <n> and --out <file>')
   const manifest = readJson(join(buildRoot, 'manifest.json'))
-  const programs = manifest.programs.filter((program) => program.role === role)
-  if (programs.length === 0) throw new Error(`no ${role} programs in ${buildRoot}/manifest.json`)
+  const only = flagValue('--programs')?.split(',').filter(Boolean)
+  const programs = manifest.programs.filter((program) => (only ? only.includes(program.id) : program.role === role))
+  if (programs.length === 0) throw new Error(`no ${only ? only.join(', ') : role} programs in ${buildRoot}/manifest.json`)
+  const quotas = flagValue('--quotas')
+    ? Object.fromEntries(flagValue('--quotas').split(',').map((pair) => [pair.split('=')[0], Number.parseInt(pair.split('=')[1], 10)]))
+    : QUOTAS
+  for (const family of Object.keys(quotas)) if (!(family in QUOTAS) || !(quotas[family] >= 1)) throw new Error(`bad quota for ${family}`)
+  // Targets and described functions of another task file (the study's) never appear here.
+  const excluded = flagValue('--exclude') ? readJson(flagValue('--exclude')).tasks : []
   const tasks = []
   const reserves = {}
   for (const program of programs) {
     const truth = truthOf(program.id)
     reserves[program.id] = {}
     // A function or table answers at most one task per program: a repeated answer adds a run, not a sample.
-    const used = new Set()
-    for (const family of FAMILIES) {
+    const used = new Set(excluded.filter((task) => task.program === program.id).flatMap((task) => [answerOf(task.target), task.target.callee].filter(Boolean)))
+    for (const family of Object.keys(quotas)) {
       const random = createRandom(streamSeed(seed, program.id, family))
       const order = shuffled(truth.candidates[family], random)
         .map((candidate) => pick(family, candidate, random))
-        .filter((target) => !used.has(answerOf(target)))
-      if (order.length <= QUOTAS[family]) throw new Error(`${program.id} has ${order.length} unused ${family} candidates; the draw needs more than ${QUOTAS[family]}`)
-      for (const target of order.slice(0, QUOTAS[family])) {
+        .filter((target) => !used.has(answerOf(target)) && !(target.callee && used.has(target.callee)))
+      // A family with exactly as many candidates as tasks is taken whole: no draw, but no choice by the author either.
+      if (order.length < quotas[family]) throw new Error(`${program.id} has ${order.length} unused ${family} candidates; the draw needs ${quotas[family]}`)
+      for (const target of order.slice(0, quotas[family])) {
         used.add(answerOf(target))
+        // The function a chain or caller question describes is not the answer of another task either.
+        if (target.callee) used.add(target.callee)
         tasks.push({ program: program.id, family, target, question: templateQuestion(family, target) })
       }
-      reserves[program.id][family] = order.slice(QUOTAS[family]).filter((target) => !used.has(answerOf(target)))
+      reserves[program.id][family] = order.slice(quotas[family]).filter((target) => !used.has(answerOf(target)) && !(target.callee && used.has(target.callee)))
     }
   }
-  const prefix = role === 'study' ? 'r' : 'p'
+  const prefix = flagValue('--id-prefix') ?? (role === 'study' ? 'r' : 'p')
   tasks.forEach((task, index) => {
     task.id = `${prefix}${String(index + 1).padStart(2, '0')}`
   })
@@ -119,7 +134,7 @@ function draw() {
     version: TASKS_VERSION,
     seed,
     build: { build_version: manifest.build_version, manifest_sha256: sha256(readFileSync(join(buildRoot, 'manifest.json'))) },
-    quotas: QUOTAS,
+    quotas,
     tasks: tasks.map(({ id, program, family, target, question }) => ({ id, program, family, target, question })),
     reserves,
     rejected: [],
@@ -149,8 +164,8 @@ function replace() {
 const sameTarget = (family, target, candidate) => {
   if (family === 'data') return candidate.object === target.object
   if (candidate.function !== target.function) return false
-  if (family === 'caller' && candidate.callee !== target.callee) return false
-  return family === 'behaviour' || candidate.strings.includes(target.string)
+  if ((family === 'caller' || family === 'chain') && candidate.callee !== target.callee) return false
+  return family === 'behaviour' || family === 'chain' || candidate.strings.includes(target.string)
 }
 
 /** Problems with a task file against the current build; empty when every task is sound. */
@@ -179,7 +194,7 @@ export function verifyTasks(tasks, truths) {
     }
   }
   for (const program of new Set(tasks.tasks.map((task) => task.program))) {
-    for (const family of FAMILIES) {
+    for (const family of Object.keys(tasks.quotas)) {
       const count = counts[`${program}/${family}`] ?? 0
       if (count !== tasks.quotas[family]) problems.push(`${program}: ${count} ${family} tasks instead of ${tasks.quotas[family]}`)
     }

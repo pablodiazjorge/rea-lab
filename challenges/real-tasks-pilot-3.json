@@ -1,0 +1,877 @@
+{
+  "set": "real",
+  "role": "pilot",
+  "version": 2,
+  "seed": 20261015,
+  "build": {
+    "build_version": 1,
+    "manifest_sha256": "6f1967da6124d0ad50cc59e6f64e39ee18cb2d3b9277efe4e6b998eb0a2c790b"
+  },
+  "quotas": {
+    "behaviour": 1,
+    "chain": 1,
+    "data": 1
+  },
+  "tasks": [
+    {
+      "id": "q01",
+      "program": "lua",
+      "family": "behaviour",
+      "target": {
+        "function": "luaF_findupval"
+      },
+      "question": "In target.exe, find the function that finds the open upvalue that refers to a given stack slot of the running thread, or creates it when there is none yet, so that closures sharing a local variable share one upvalue. Give the address where that function starts."
+    },
+    {
+      "id": "q02",
+      "program": "lua",
+      "family": "chain",
+      "target": {
+        "function": "mainpositionTV",
+        "callee": "luaS_hashlongstr"
+      },
+      "question": "In target.exe, one function returns the hash of a long string, computing it the first time it is needed and remembering it in the string. Exactly one other function calls it directly. Give the address where that calling function starts."
+    },
+    {
+      "id": "q03",
+      "program": "lua",
+      "family": "data",
+      "target": {
+        "object": "luai_ctype_"
+      },
+      "question": "In target.exe, find the table that classifies every byte value for the lexer: whether it is a letter, a digit, a hexadecimal digit, a space or printable. Give the address where that table starts."
+    },
+    {
+      "id": "q04",
+      "program": "md4c",
+      "family": "behaviour",
+      "target": {
+        "function": "md_is_html_block_start_condition"
+      },
+      "question": "In target.exe, find the function that decides whether a line opens a raw HTML block, and which of the seven kinds of HTML block it opens, from the markup at its start. Give the address where that function starts."
+    },
+    {
+      "id": "q05",
+      "program": "md4c",
+      "family": "chain",
+      "target": {
+        "function": "md_parse",
+        "callee": "md_leave_child_containers"
+      },
+      "question": "In target.exe, one function closes the innermost open containers (block quotes, lists and list items) until only a given number of them remain open, reporting each one as it is left. Exactly one other function calls it directly. Give the address where that calling function starts."
+    },
+    {
+      "id": "q06",
+      "program": "md4c",
+      "family": "data",
+      "target": {
+        "object": "md_get_unicode_fold_info.FOLD_MAP_2"
+      },
+      "question": "In target.exe, find the table of Unicode code points whose case folding is two code points. Give the address where that table starts."
+    }
+  ],
+  "reserves": {
+    "lua": {
+      "behaviour": [
+        {
+          "function": "lua_getstack"
+        },
+        {
+          "function": "lua_newuserdatauv"
+        },
+        {
+          "function": "singlematch"
+        },
+        {
+          "function": "lua_isinteger"
+        },
+        {
+          "function": "luaL_pushresultsize"
+        },
+        {
+          "function": "luaC_step"
+        },
+        {
+          "function": "luaC_fullgc"
+        },
+        {
+          "function": "luaD_shrinkstack"
+        },
+        {
+          "function": "luaO_rawarith"
+        },
+        {
+          "function": "mainpositionTV"
+        },
+        {
+          "function": "lua_tolstring"
+        },
+        {
+          "function": "luaG_traceexec"
+        },
+        {
+          "function": "luaC_checkfinalizer"
+        },
+        {
+          "function": "luaT_getvarargs"
+        },
+        {
+          "function": "luaL_optnumber"
+        },
+        {
+          "function": "luaT_callTM"
+        },
+        {
+          "function": "lua_callk"
+        },
+        {
+          "function": "luaF_freeproto"
+        },
+        {
+          "function": "lua_rawlen"
+        },
+        {
+          "function": "luaD_hookcall"
+        },
+        {
+          "function": "lua_createtable"
+        },
+        {
+          "function": "lua_gc"
+        },
+        {
+          "function": "luaH_new"
+        },
+        {
+          "function": "luaF_newLclosure"
+        },
+        {
+          "function": "constfolding"
+        },
+        {
+          "function": "luaV_lessthan"
+        },
+        {
+          "function": "close_func"
+        },
+        {
+          "function": "luaL_gsub"
+        },
+        {
+          "function": "lua_tointegerx"
+        },
+        {
+          "function": "luaH_getstr"
+        },
+        {
+          "function": "lua_xmove"
+        },
+        {
+          "function": "lua_newthread"
+        },
+        {
+          "function": "findfield"
+        },
+        {
+          "function": "lua_seti"
+        },
+        {
+          "function": "luaD_inctop"
+        },
+        {
+          "function": "lua_pcallk"
+        },
+        {
+          "function": "freeobj"
+        },
+        {
+          "function": "runafewfinalizers"
+        },
+        {
+          "function": "lua_rawseti"
+        },
+        {
+          "function": "luaS_resize"
+        },
+        {
+          "function": "luaD_poscall"
+        },
+        {
+          "function": "traverseephemeron"
+        },
+        {
+          "function": "rethook"
+        },
+        {
+          "function": "luaS_newlstr"
+        },
+        {
+          "function": "lua_len"
+        },
+        {
+          "function": "lua_geti"
+        },
+        {
+          "function": "luaZ_read"
+        },
+        {
+          "function": "lua_closethread"
+        },
+        {
+          "function": "luaU_dump"
+        },
+        {
+          "function": "l_str2dloc"
+        },
+        {
+          "function": "lua_pushvalue"
+        },
+        {
+          "function": "lua_arith"
+        },
+        {
+          "function": "intarith"
+        },
+        {
+          "function": "lua_pushfstring"
+        },
+        {
+          "function": "luaL_optinteger"
+        },
+        {
+          "function": "luaF_getlocalname"
+        },
+        {
+          "function": "lua_toclose"
+        },
+        {
+          "function": "luaD_call"
+        },
+        {
+          "function": "luaD_hook"
+        },
+        {
+          "function": "luaD_callnoyield"
+        },
+        {
+          "function": "lua_iscfunction"
+        },
+        {
+          "function": "lua_isnumber"
+        },
+        {
+          "function": "luaF_newproto"
+        },
+        {
+          "function": "luaV_equalobj"
+        },
+        {
+          "function": "lua_toboolean"
+        },
+        {
+          "function": "recfield"
+        },
+        {
+          "function": "luaT_callorderiTM"
+        },
+        {
+          "function": "luaX_next"
+        },
+        {
+          "function": "auxsetstr"
+        },
+        {
+          "function": "luaS_new"
+        },
+        {
+          "function": "lua_rawget"
+        },
+        {
+          "function": "luaH_get"
+        },
+        {
+          "function": "lua_copy"
+        },
+        {
+          "function": "lua_concat"
+        },
+        {
+          "function": "luaF_initupvals"
+        },
+        {
+          "function": "luaD_precall"
+        },
+        {
+          "function": "lua_getiuservalue"
+        },
+        {
+          "function": "lua_load"
+        },
+        {
+          "function": "luaX_newstring"
+        },
+        {
+          "function": "lua_pushlstring"
+        },
+        {
+          "function": "read_line"
+        },
+        {
+          "function": "luaD_checkminstack"
+        },
+        {
+          "function": "lua_setmetatable"
+        },
+        {
+          "function": "atomic"
+        },
+        {
+          "function": "skipcomment"
+        },
+        {
+          "function": "luaD_rawrunprotected"
+        },
+        {
+          "function": "aux_rawset"
+        },
+        {
+          "function": "luaK_exp2val"
+        },
+        {
+          "function": "exp2RK"
+        },
+        {
+          "function": "luaH_free"
+        },
+        {
+          "function": "lua_setfield"
+        },
+        {
+          "function": "luaL_callmeta"
+        },
+        {
+          "function": "luaE_freethread"
+        },
+        {
+          "function": "lua_topointer"
+        },
+        {
+          "function": "lua_next"
+        },
+        {
+          "function": "luaL_newstate"
+        },
+        {
+          "function": "lua_upvalueid"
+        },
+        {
+          "function": "luaH_getn"
+        },
+        {
+          "function": "lua_isstring"
+        },
+        {
+          "function": "match_class"
+        },
+        {
+          "function": "lua_tothread"
+        },
+        {
+          "function": "lua_getfield"
+        },
+        {
+          "function": "dumpFunction"
+        },
+        {
+          "function": "lua_compare"
+        },
+        {
+          "function": "luaV_finishOp"
+        },
+        {
+          "function": "luaK_exp2const"
+        },
+        {
+          "function": "lua_tonumberx"
+        },
+        {
+          "function": "luaT_adjustvarargs"
+        },
+        {
+          "function": "luaC_barrier_"
+        },
+        {
+          "function": "lua_getglobal"
+        },
+        {
+          "function": "lua_sethook"
+        },
+        {
+          "function": "tryagain"
+        },
+        {
+          "function": "luaC_barrierback_"
+        },
+        {
+          "function": "luaD_pretailcall"
+        },
+        {
+          "function": "luaK_infix"
+        },
+        {
+          "function": "luaD_reallocstack"
+        },
+        {
+          "function": "clearbyvalues"
+        },
+        {
+          "function": "lua_getmetatable"
+        },
+        {
+          "function": "lua_rotate"
+        },
+        {
+          "function": "luaT_init"
+        },
+        {
+          "function": "luaK_settablesize"
+        },
+        {
+          "function": "entergen"
+        },
+        {
+          "function": "finishgencycle"
+        },
+        {
+          "function": "lua_pushcclosure"
+        },
+        {
+          "function": "lua_type"
+        },
+        {
+          "function": "setseed"
+        },
+        {
+          "function": "luaS_newudata"
+        },
+        {
+          "function": "correctgraylist"
+        },
+        {
+          "function": "lua_checkstack"
+        },
+        {
+          "function": "lua_gettable"
+        },
+        {
+          "function": "singlestep"
+        },
+        {
+          "function": "lua_touserdata"
+        },
+        {
+          "function": "luaD_protectedparser"
+        },
+        {
+          "function": "luaS_hashlongstr"
+        },
+        {
+          "function": "lua_pushstring"
+        },
+        {
+          "function": "singlevar"
+        },
+        {
+          "function": "luaG_errormsg"
+        },
+        {
+          "function": "lua_rawgeti"
+        },
+        {
+          "function": "luaG_tracecall"
+        },
+        {
+          "function": "luaF_close"
+        },
+        {
+          "function": "tryfuncTM"
+        },
+        {
+          "function": "luaL_buffinitsize"
+        },
+        {
+          "function": "luaM_shrinkvector_"
+        },
+        {
+          "function": "luaK_indexed"
+        },
+        {
+          "function": "callbinTM"
+        },
+        {
+          "function": "lessthanothers"
+        },
+        {
+          "function": "propagatemark"
+        },
+        {
+          "function": "lua_rawequal"
+        },
+        {
+          "function": "close_state"
+        },
+        {
+          "function": "luaL_addgsub"
+        },
+        {
+          "function": "luaO_chunkid"
+        },
+        {
+          "function": "lessequalothers"
+        },
+        {
+          "function": "luaK_exp2anyregup"
+        },
+        {
+          "function": "sort_comp"
+        },
+        {
+          "function": "luaS_clearcache"
+        },
+        {
+          "function": "luaM_malloc_"
+        },
+        {
+          "function": "luaT_tryconcatTM"
+        },
+        {
+          "function": "luaD_closeprotected"
+        },
+        {
+          "function": "lua_upvaluejoin"
+        },
+        {
+          "function": "markmt"
+        },
+        {
+          "function": "luaE_extendCI"
+        },
+        {
+          "function": "luaE_shrinkCI"
+        },
+        {
+          "function": "getgeneric"
+        },
+        {
+          "function": "luaC_freeallobjects"
+        },
+        {
+          "function": "luaV_lessequal"
+        },
+        {
+          "function": "atomic2gen"
+        },
+        {
+          "function": "precallC"
+        },
+        {
+          "function": "luaO_arith"
+        },
+        {
+          "function": "lua_settop"
+        },
+        {
+          "function": "luaD_throw"
+        },
+        {
+          "function": "luaK_exp2K"
+        }
+      ],
+      "chain": [
+        {
+          "function": "statement",
+          "callee": "luaK_exp2const"
+        },
+        {
+          "function": "subexpr",
+          "callee": "luaK_infix"
+        },
+        {
+          "function": "close_func",
+          "callee": "luaM_shrinkvector_"
+        },
+        {
+          "function": "freeobj",
+          "callee": "luaE_freethread"
+        },
+        {
+          "function": "math_atan",
+          "callee": "luaL_optnumber"
+        },
+        {
+          "function": "pushglobalfuncname",
+          "callee": "findfield"
+        },
+        {
+          "function": "f_luaopen",
+          "callee": "luaT_init"
+        },
+        {
+          "function": "lua_setmetatable",
+          "callee": "luaC_checkfinalizer"
+        },
+        {
+          "function": "luaO_str2num",
+          "callee": "l_str2dloc"
+        },
+        {
+          "function": "luaV_finishset",
+          "callee": "luaT_callTM"
+        },
+        {
+          "function": "lua_dump",
+          "callee": "luaU_dump"
+        },
+        {
+          "function": "db_upvaluejoin",
+          "callee": "lua_upvaluejoin"
+        },
+        {
+          "function": "singlestep",
+          "callee": "runafewfinalizers"
+        },
+        {
+          "function": "luaV_execute",
+          "callee": "luaT_getvarargs"
+        },
+        {
+          "function": "luaL_len",
+          "callee": "lua_len"
+        },
+        {
+          "function": "freeobj",
+          "callee": "luaF_freeproto"
+        },
+        {
+          "function": "db_getuservalue",
+          "callee": "lua_getiuservalue"
+        },
+        {
+          "function": "constructor",
+          "callee": "luaK_settablesize"
+        },
+        {
+          "function": "auxsort",
+          "callee": "sort_comp"
+        },
+        {
+          "function": "lua_rawset",
+          "callee": "aux_rawset"
+        },
+        {
+          "function": "luaV_execute",
+          "callee": "luaG_tracecall"
+        },
+        {
+          "function": "luaV_concat",
+          "callee": "luaT_tryconcatTM"
+        },
+        {
+          "function": "luaV_execute",
+          "callee": "luaT_adjustvarargs"
+        },
+        {
+          "function": "prepbuffsize",
+          "callee": "lua_toclose"
+        },
+        {
+          "function": "lua_compare",
+          "callee": "luaV_lessthan"
+        },
+        {
+          "function": "lua_arith",
+          "callee": "luaO_arith"
+        },
+        {
+          "function": "luaD_shrinkstack",
+          "callee": "luaE_shrinkCI"
+        },
+        {
+          "function": "str_gsub",
+          "callee": "lua_gettable"
+        },
+        {
+          "function": "interror",
+          "callee": "lua_isnumber"
+        },
+        {
+          "function": "luaL_loadfilex",
+          "callee": "skipcomment"
+        },
+        {
+          "function": "luaV_execute",
+          "callee": "luaG_traceexec"
+        },
+        {
+          "function": "unroll",
+          "callee": "luaV_finishOp"
+        },
+        {
+          "function": "luaU_dump",
+          "callee": "dumpFunction"
+        },
+        {
+          "function": "luaV_execute",
+          "callee": "luaD_pretailcall"
+        },
+        {
+          "function": "freeobj",
+          "callee": "luaH_free"
+        },
+        {
+          "function": "match",
+          "callee": "singlematch"
+        },
+        {
+          "function": "lua_compare",
+          "callee": "luaV_lessequal"
+        },
+        {
+          "function": "atomic",
+          "callee": "clearbyvalues"
+        },
+        {
+          "function": "close_state",
+          "callee": "luaC_freeallobjects"
+        },
+        {
+          "function": "f_parser",
+          "callee": "luaF_initupvals"
+        },
+        {
+          "function": "finishgencycle",
+          "callee": "correctgraylist"
+        },
+        {
+          "function": "lua_load",
+          "callee": "luaD_protectedparser"
+        },
+        {
+          "function": "g_read",
+          "callee": "read_line"
+        },
+        {
+          "function": "arith",
+          "callee": "lua_arith"
+        },
+        {
+          "function": "luaD_poscall",
+          "callee": "rethook"
+        },
+        {
+          "function": "luaV_execute",
+          "callee": "luaT_callorderiTM"
+        },
+        {
+          "function": "atomic",
+          "callee": "luaS_clearcache"
+        },
+        {
+          "function": "constructor",
+          "callee": "recfield"
+        },
+        {
+          "function": "lua_newuserdatauv",
+          "callee": "luaS_newudata"
+        },
+        {
+          "function": "db_upvaluejoin",
+          "callee": "lua_iscfunction"
+        },
+        {
+          "function": "luaO_rawarith",
+          "callee": "intarith"
+        }
+      ],
+      "data": [
+        {
+          "object": "luaB_collectgarbage.optsnum"
+        },
+        {
+          "object": "luaO_ceillog2.log_2"
+        },
+        {
+          "object": "priority"
+        }
+      ]
+    },
+    "md4c": {
+      "behaviour": [
+        {
+          "function": "md_is_entity_str"
+        },
+        {
+          "function": "md_decode_utf8__"
+        },
+        {
+          "function": "md_label_hash"
+        },
+        {
+          "function": "md_is_container_mark"
+        },
+        {
+          "function": "md_is_link_destination"
+        },
+        {
+          "function": "md_skip_unicode_whitespace"
+        },
+        {
+          "function": "md_leave_child_containers"
+        },
+        {
+          "function": "cmdline_handle_short_opt_group"
+        },
+        {
+          "function": "render_entity"
+        },
+        {
+          "function": "md_analyze_link_contents"
+        },
+        {
+          "function": "md_is_table_underline"
+        },
+        {
+          "function": "md_decode_utf8_before__"
+        },
+        {
+          "function": "md_lookup_label_hashtable"
+        },
+        {
+          "function": "md_is_link_title"
+        }
+      ],
+      "chain": [
+        {
+          "function": "cmdline_read",
+          "callee": "cmdline_handle_short_opt_group"
+        },
+        {
+          "function": "md_analyze_inlines",
+          "callee": "md_analyze_link_contents"
+        }
+      ],
+      "data": [
+        {
+          "object": "md_is_unicode_punct__.PUNCT_MAP"
+        },
+        {
+          "object": "md_is_unicode_whitespace__.WHITESPACE_MAP"
+        },
+        {
+          "object": "md_get_unicode_fold_info.FOLD_MAP_3"
+        }
+      ]
+    }
+  },
+  "rejected": []
+}

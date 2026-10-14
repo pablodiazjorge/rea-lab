@@ -380,6 +380,11 @@ async function probe(runs: PlannedRun[], set: ChallengeSet, options: Options, co
     const servers = record.mcp_servers.map((server) => `${server.name}:${server.status}`).join(', ')
     const isolation = record.isolation.ok ? 'isolation holds' : `isolation problems: ${record.isolation.problems.join(', ')}`
     console.log(`${condition}: ${isolation}; MCP servers [${servers}], plugins [${record.isolation.plugins.join(', ')}], skill offered: ${record.isolation.skillOffered}, model ${record.model}, ${Math.round(record.wall_ms / 1000)} s, terminal reason ${record.terminal_reason ?? 'none'}`)
+    // With a custom prompt, show what the session did, so a permission or path rule can be checked without opening the run folder.
+    if (options.probePrompt) {
+      console.log(`  tool calls: ${Object.entries(record.toolCalls).map(([name, count]) => `${name} x${count}`).join(', ') || 'none'}; denied: ${record.permissionDenials}; paths outside the run: ${record.outsidePaths.length === 0 ? 'none' : record.outsidePaths.join(', ')}`)
+      console.log(`  final answer: ${(record.answerFound ? '(manifest) ' : '') + String(readFileSync(join(context.home, 'runs', options.study, `probe-${condition}`, 'events.jsonl'), 'utf8').split('\n').filter(Boolean).map((line) => JSON.parse(line)).filter((event) => event.type === 'result').map((event) => event.result).at(-1) ?? '').slice(0, 400)}`)
+    }
   }
 }
 
