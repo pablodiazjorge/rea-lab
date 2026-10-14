@@ -70,13 +70,17 @@ function buildProgram(entry, outRoot) {
   const tool = (name) => join(bin, `${name}${suffix}`)
   const dir = join(outRoot, entry.id)
   mkdirSync(join(dir, 'obj'), { recursive: true })
+  // Headers a project's own build writes (such as a version header) go to gen/, searched after its own folders.
+  const generatedDir = join(dir, 'gen')
+  mkdirSync(generatedDir, { recursive: true })
+  for (const [name, text] of Object.entries(recipe.generated ?? {})) writeFileSync(join(generatedDir, name), text)
 
   const objects = []
   for (const file of recipe.sources) {
     const object = `obj/${basename(file, '.c')}.o`
     run(
       tool('x86_64-w64-mingw32-clang'),
-      ['-c', ...COMPILE_FLAGS, `-ffile-prefix-map=${source}=.`, ...recipe.includes.map((include) => `-I${include}`), ...recipe.defines.map((define) => `-D${define}`), file, '-o', join(dir, object)],
+      ['-c', ...COMPILE_FLAGS, ...(recipe.flags ?? []), `-ffile-prefix-map=${source}=.`, `-ffile-prefix-map=${generatedDir}=gen`, ...recipe.includes.map((include) => `-I${include}`), `-I${generatedDir}`, ...recipe.defines.map((define) => `-D${define}`), file, '-o', join(dir, object)],
       { cwd: source },
     )
     objects.push(object)

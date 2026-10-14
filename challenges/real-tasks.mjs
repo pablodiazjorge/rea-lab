@@ -19,8 +19,10 @@ import { join, resolve } from 'node:path'
 import { ROOT } from './toolchain.mjs'
 
 // Version 2 (after pilot 1, where command-line tools alone answered every task): more behaviour questions,
-// a two-step chain instead of a string-anchored caller, and numeric tables only.
-export const TASKS_VERSION = 2
+// a two-step chain instead of a string-anchored caller, and numeric tables only. Version 3 (after pilot 3,
+// where the model knew every program from memory): programs published after its training data, and a family
+// without enough candidates in a program gives its tasks to behaviour.
+export const TASKS_VERSION = 3
 export const QUOTAS = { string: 1, behaviour: 3, chain: 1, data: 1 }
 const FAMILIES = Object.keys(QUOTAS)
 
@@ -68,6 +70,18 @@ function pick(family, candidate, random) {
   return family === 'caller' ? { function: candidate.function, callee: candidate.callee, string } : { function: candidate.function, string }
 }
 
+/** Per-program quotas: a family with fewer candidates than tasks gives the missing ones to behaviour. */
+export function programQuotas(quotas, candidates) {
+  const own = { ...quotas }
+  for (const family of Object.keys(quotas)) {
+    if (family === 'behaviour' || !('behaviour' in own)) continue
+    const missing = Math.max(0, quotas[family] - (candidates[family]?.length ?? 0))
+    own[family] -= missing
+    own.behaviour += missing
+  }
+  return own
+}
+
 /** The function or table a task's answer points at. */
 const answerOf = (target) => target.object ?? target.function
 
@@ -103,25 +117,29 @@ function draw() {
   const excluded = flagValue('--exclude') ? readJson(flagValue('--exclude')).tasks : []
   const tasks = []
   const reserves = {}
+  const programQuotasOut = {}
   for (const program of programs) {
     const truth = truthOf(program.id)
     reserves[program.id] = {}
     // A function or table answers at most one task per program: a repeated answer adds a run, not a sample.
     const used = new Set(excluded.filter((task) => task.program === program.id).flatMap((task) => [answerOf(task.target), task.target.callee].filter(Boolean)))
-    for (const family of Object.keys(quotas)) {
+    const own = programQuotas(quotas, truth.candidates)
+    programQuotasOut[program.id] = own
+    for (const family of Object.keys(own)) {
+      if (own[family] === 0) continue
       const random = createRandom(streamSeed(seed, program.id, family))
       const order = shuffled(truth.candidates[family], random)
         .map((candidate) => pick(family, candidate, random))
         .filter((target) => !used.has(answerOf(target)) && !(target.callee && used.has(target.callee)))
       // A family with exactly as many candidates as tasks is taken whole: no draw, but no choice by the author either.
-      if (order.length < quotas[family]) throw new Error(`${program.id} has ${order.length} unused ${family} candidates; the draw needs ${quotas[family]}`)
-      for (const target of order.slice(0, quotas[family])) {
+      if (order.length < own[family]) throw new Error(`${program.id} has ${order.length} unused ${family} candidates; the draw needs ${own[family]}`)
+      for (const target of order.slice(0, own[family])) {
         used.add(answerOf(target))
         // The function a chain or caller question describes is not the answer of another task either.
         if (target.callee) used.add(target.callee)
         tasks.push({ program: program.id, family, target, question: templateQuestion(family, target) })
       }
-      reserves[program.id][family] = order.slice(quotas[family]).filter((target) => !used.has(answerOf(target)) && !(target.callee && used.has(target.callee)))
+      reserves[program.id][family] = order.slice(own[family]).filter((target) => !used.has(answerOf(target)) && !(target.callee && used.has(target.callee)))
     }
   }
   const prefix = flagValue('--id-prefix') ?? (role === 'study' ? 'r' : 'p')
@@ -135,6 +153,7 @@ function draw() {
     seed,
     build: { build_version: manifest.build_version, manifest_sha256: sha256(readFileSync(join(buildRoot, 'manifest.json'))) },
     quotas,
+    program_quotas: programQuotasOut,
     tasks: tasks.map(({ id, program, family, target, question }) => ({ id, program, family, target, question })),
     reserves,
     rejected: [],
@@ -196,7 +215,8 @@ export function verifyTasks(tasks, truths) {
   for (const program of new Set(tasks.tasks.map((task) => task.program))) {
     for (const family of Object.keys(tasks.quotas)) {
       const count = counts[`${program}/${family}`] ?? 0
-      if (count !== tasks.quotas[family]) problems.push(`${program}: ${count} ${family} tasks instead of ${tasks.quotas[family]}`)
+      const expected = tasks.program_quotas?.[program]?.[family] ?? tasks.quotas[family]
+      if (count !== expected) problems.push(`${program}: ${count} ${family} tasks instead of ${expected}`)
     }
   }
   return problems

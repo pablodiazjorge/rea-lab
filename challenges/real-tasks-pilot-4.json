@@ -1,0 +1,1098 @@
+{
+  "set": "real",
+  "role": "pilot",
+  "version": 3,
+  "seed": 20261016,
+  "build": {
+    "build_version": 1,
+    "manifest_sha256": "996a69f7b215aca561936617a206000226a4a723d89059b47f62ef895b3789eb"
+  },
+  "quotas": {
+    "behaviour": 1,
+    "chain": 1
+  },
+  "program_quotas": {
+    "sgiemu": {
+      "behaviour": 1,
+      "chain": 1
+    },
+    "c5xtools": {
+      "behaviour": 1,
+      "chain": 1
+    },
+    "moppe-emu": {
+      "behaviour": 1,
+      "chain": 1
+    },
+    "flint": {
+      "behaviour": 1,
+      "chain": 1
+    }
+  },
+  "tasks": [
+    {
+      "id": "s01",
+      "program": "sgiemu",
+      "family": "behaviour",
+      "target": {
+        "function": "fp_check_result"
+      },
+      "question": "In target.exe, find the function that emits, in the translator from MIPS code to x86-64 code, the check that sends a translated floating-point operation back to the interpreter when its result is not a normal number (a NaN, an infinity or a denormal), letting zero through. Give the address where that function starts."
+    },
+    {
+      "id": "s02",
+      "program": "sgiemu",
+      "family": "chain",
+      "target": {
+        "function": "exec",
+        "callee": "regimm"
+      },
+      "question": "In target.exe, one function executes the MIPS instructions that branch on the sign of a register (with or without link, likely or not) or trap when a register compares with an immediate value. Exactly one other function calls it directly. Give the address where that calling function starts."
+    },
+    {
+      "id": "s03",
+      "program": "c5xtools",
+      "family": "behaviour",
+      "target": {
+        "function": "first_tok"
+      },
+      "question": "In target.exe, find the function that returns the first token of a source line (the directive or mnemonic), skipping a label that starts in the first column, and where the rest of the line starts. Give the address where that function starts."
+    },
+    {
+      "id": "s04",
+      "program": "c5xtools",
+      "family": "chain",
+      "target": {
+        "function": "field_at",
+        "callee": "dma_operand"
+      },
+      "question": "In target.exe, one function arms, after an operand that uses direct memory addressing has been evaluated, the relocation for its data-page-relative address when it refers to exactly one symbol, and clears it otherwise. Exactly one other function calls it directly. Give the address where that calling function starts."
+    },
+    {
+      "id": "s05",
+      "program": "moppe-emu",
+      "family": "behaviour",
+      "target": {
+        "function": "sio_read_ctrl"
+      },
+      "question": "In target.exe, find the function that returns the value of the status register selected by the register pointer of one channel of the serial communications controller, and resets the pointer. Give the address where that function starts."
+    },
+    {
+      "id": "s06",
+      "program": "moppe-emu",
+      "family": "chain",
+      "target": {
+        "function": "serial_tick",
+        "callee": "sio_tick"
+      },
+      "question": "In target.exe, one function advances the transmitters of the two channels of the serial communications controller to a given time: it finishes a byte being shifted out, moves the next buffered byte into the shifter and raises the transmit interrupt. Exactly one other function calls it directly. Give the address where that calling function starts."
+    },
+    {
+      "id": "s07",
+      "program": "flint",
+      "family": "behaviour",
+      "target": {
+        "function": "parse_variable"
+      },
+      "question": "In target.exe, find the function that parses the name in a variable declaration, declares the variable, and returns the index of the name in the constant table for a global variable (0 for a local one). Give the address where that function starts."
+    },
+    {
+      "id": "s08",
+      "program": "flint",
+      "family": "chain",
+      "target": {
+        "function": "compile_and_maybe_run",
+        "callee": "fl_stats_walk"
+      },
+      "question": "In target.exe, one function walks a compiled function and, recursively, the functions among its constants, adding up functions, bytecode bytes and constants for a statistics report. Exactly one other function calls it directly. Give the address where that calling function starts."
+    }
+  ],
+  "reserves": {
+    "sgiemu": {
+      "behaviour": [
+        {
+          "function": "browse"
+        },
+        {
+          "function": "tlb_probe"
+        },
+        {
+          "function": "xlate_core"
+        },
+        {
+          "function": "emit_helper_call"
+        },
+        {
+          "function": "pm_unmap"
+        },
+        {
+          "function": "emit_store"
+        },
+        {
+          "function": "pack_rgb"
+        },
+        {
+          "function": "put_pixel"
+        },
+        {
+          "function": "indy_free"
+        },
+        {
+          "function": "swr"
+        },
+        {
+          "function": "pm_init"
+        },
+        {
+          "function": "indy_hpc3_init"
+        },
+        {
+          "function": "emit_load"
+        },
+        {
+          "function": "scsi_dev_close"
+        },
+        {
+          "function": "r4k_set_model"
+        },
+        {
+          "function": "emit_call"
+        },
+        {
+          "function": "ld16"
+        },
+        {
+          "function": "pit_poll"
+        },
+        {
+          "function": "translate"
+        },
+        {
+          "function": "present"
+        },
+        {
+          "function": "gpr_ldsx"
+        },
+        {
+          "function": "to_int"
+        },
+        {
+          "function": "read_pixels"
+        },
+        {
+          "function": "r4k_fast_flush_tlb_entry"
+        },
+        {
+          "function": "lwl"
+        },
+        {
+          "function": "fp_after"
+        },
+        {
+          "function": "scc_read"
+        },
+        {
+          "function": "r4k_cop0"
+        },
+        {
+          "function": "gpr_reload"
+        },
+        {
+          "function": "indy_run"
+        },
+        {
+          "function": "scsi_dev_data_len"
+        },
+        {
+          "function": "r4k_jit_find"
+        },
+        {
+          "function": "r4k_fetch_slow"
+        },
+        {
+          "function": "r4k_read_slow"
+        },
+        {
+          "function": "data_phase"
+        },
+        {
+          "function": "np_write"
+        },
+        {
+          "function": "r4k_cp0_write"
+        },
+        {
+          "function": "clock_to_regs"
+        },
+        {
+          "function": "r4k_reset"
+        },
+        {
+          "function": "kbc_mouse"
+        },
+        {
+          "function": "r4k_run"
+        },
+        {
+          "function": "wd_read"
+        },
+        {
+          "function": "kbc_key"
+        },
+        {
+          "function": "pit_read"
+        },
+        {
+          "function": "vdma_run"
+        },
+        {
+          "function": "r4k_fast_protect"
+        },
+        {
+          "function": "special"
+        },
+        {
+          "function": "np_render"
+        },
+        {
+          "function": "indy_update_irq"
+        },
+        {
+          "function": "np_init"
+        },
+        {
+          "function": "rtc_write"
+        },
+        {
+          "function": "rex_read"
+        },
+        {
+          "function": "emit_fmem"
+        },
+        {
+          "function": "eret"
+        },
+        {
+          "function": "raise_xlate"
+        },
+        {
+          "function": "cache_free"
+        },
+        {
+          "function": "indy_attach_scsi"
+        },
+        {
+          "function": "load_file"
+        },
+        {
+          "function": "indy_reset"
+        },
+        {
+          "function": "reg_read"
+        },
+        {
+          "function": "r4k_write_slow"
+        },
+        {
+          "function": "emit_load_lr"
+        },
+        {
+          "function": "pm_read"
+        },
+        {
+          "function": "rw_args"
+        },
+        {
+          "function": "pit_write"
+        },
+        {
+          "function": "madd"
+        },
+        {
+          "function": "swl"
+        },
+        {
+          "function": "gpr_ld"
+        },
+        {
+          "function": "tlb_read"
+        },
+        {
+          "function": "r4k_cop1x"
+        },
+        {
+          "function": "rtc_read"
+        },
+        {
+          "function": "r4k_jit_free"
+        },
+        {
+          "function": "scc_irq"
+        },
+        {
+          "function": "emit_fast"
+        },
+        {
+          "function": "pm_write"
+        },
+        {
+          "function": "gpr_alu"
+        },
+        {
+          "function": "ldl"
+        },
+        {
+          "function": "pm_dma_write"
+        },
+        {
+          "function": "emit_exit_chain"
+        },
+        {
+          "function": "ldr"
+        },
+        {
+          "function": "r4k_timer_fire"
+        },
+        {
+          "function": "st16"
+        },
+        {
+          "function": "wd_write"
+        },
+        {
+          "function": "kbc_read"
+        },
+        {
+          "function": "lwr"
+        },
+        {
+          "function": "pm_dma_read"
+        },
+        {
+          "function": "emit_lookup"
+        },
+        {
+          "function": "dcb_read"
+        },
+        {
+          "function": "kbc_write"
+        },
+        {
+          "function": "indy_mc_remap"
+        },
+        {
+          "function": "r4k_fetch_fill"
+        },
+        {
+          "function": "regimm"
+        },
+        {
+          "function": "r4k_set_irq"
+        },
+        {
+          "function": "emit_insn"
+        },
+        {
+          "function": "ld8"
+        },
+        {
+          "function": "pm_map_ram"
+        },
+        {
+          "function": "gpr_st"
+        },
+        {
+          "function": "r4k_cop1"
+        },
+        {
+          "function": "tlb_write"
+        },
+        {
+          "function": "ee_pins"
+        },
+        {
+          "function": "emit_stubs"
+        },
+        {
+          "function": "st_qi"
+        },
+        {
+          "function": "draw_color"
+        },
+        {
+          "function": "scc_write"
+        },
+        {
+          "function": "pit_reset"
+        },
+        {
+          "function": "wd_init"
+        },
+        {
+          "function": "exec"
+        },
+        {
+          "function": "pm_set_code"
+        },
+        {
+          "function": "r4k_translate"
+        }
+      ],
+      "chain": [
+        {
+          "function": "r4k_cop1",
+          "callee": "to_int"
+        },
+        {
+          "function": "indy_hpc3_init",
+          "callee": "pit_reset"
+        },
+        {
+          "function": "indy_hpc3_write",
+          "callee": "pit_write"
+        },
+        {
+          "function": "emit_insn",
+          "callee": "emit_helper_call"
+        },
+        {
+          "function": "indy_hpc3_write",
+          "callee": "scc_write"
+        },
+        {
+          "function": "emit_insn",
+          "callee": "emit_fmem"
+        },
+        {
+          "function": "indy_init",
+          "callee": "wd_init"
+        },
+        {
+          "function": "r4k_run",
+          "callee": "r4k_timer_fire"
+        },
+        {
+          "function": "r4k_jit_find",
+          "callee": "r4k_fetch_fill"
+        },
+        {
+          "function": "wd_write",
+          "callee": "scsi_dev_data_len"
+        },
+        {
+          "function": "r4k_jit_find",
+          "callee": "translate"
+        },
+        {
+          "function": "emit_insn",
+          "callee": "gpr_ldsx"
+        },
+        {
+          "function": "indy_init",
+          "callee": "indy_reset"
+        },
+        {
+          "function": "indy_free",
+          "callee": "scsi_dev_close"
+        },
+        {
+          "function": "r4k_cop0",
+          "callee": "eret"
+        },
+        {
+          "function": "rex_read",
+          "callee": "read_pixels"
+        },
+        {
+          "function": "indy_reset",
+          "callee": "indy_hpc3_init"
+        },
+        {
+          "function": "indy_run",
+          "callee": "pit_poll"
+        },
+        {
+          "function": "present",
+          "callee": "np_render"
+        },
+        {
+          "function": "indy_hpc3_write",
+          "callee": "kbc_write"
+        },
+        {
+          "function": "r4k_run",
+          "callee": "r4k_fetch_slow"
+        },
+        {
+          "function": "go",
+          "callee": "put_pixel"
+        },
+        {
+          "function": "r4k_jit_find",
+          "callee": "emit_stubs"
+        },
+        {
+          "function": "indy_hpc3_write",
+          "callee": "wd_write"
+        },
+        {
+          "function": "r4k_jit_find",
+          "callee": "r4k_fast_protect"
+        },
+        {
+          "function": "reg_write",
+          "callee": "vdma_run"
+        },
+        {
+          "function": "emit_insn",
+          "callee": "emit_load_lr"
+        },
+        {
+          "function": "translate",
+          "callee": "emit_insn"
+        },
+        {
+          "function": "indy_hpc3_read",
+          "callee": "pit_read"
+        },
+        {
+          "function": "r4k_cop0",
+          "callee": "tlb_write"
+        },
+        {
+          "function": "indy_hpc3_read",
+          "callee": "rtc_read"
+        },
+        {
+          "function": "r4k_cop1x",
+          "callee": "madd"
+        },
+        {
+          "function": "emit_insn",
+          "callee": "emit_load"
+        },
+        {
+          "function": "indy_hpc3_read",
+          "callee": "scc_read"
+        },
+        {
+          "function": "r4k_cop0",
+          "callee": "tlb_read"
+        },
+        {
+          "function": "indy_hpc3_read",
+          "callee": "wd_read"
+        },
+        {
+          "function": "tlb_write",
+          "callee": "r4k_fast_flush_tlb_entry"
+        },
+        {
+          "function": "indy_init",
+          "callee": "pm_init"
+        },
+        {
+          "function": "r4k_cop0",
+          "callee": "r4k_cp0_write"
+        },
+        {
+          "function": "indy_run",
+          "callee": "r4k_run"
+        },
+        {
+          "function": "indy_init",
+          "callee": "np_init"
+        },
+        {
+          "function": "indy_update_irq",
+          "callee": "r4k_set_irq"
+        },
+        {
+          "function": "np_io_write",
+          "callee": "np_write"
+        },
+        {
+          "function": "wndproc",
+          "callee": "kbc_key"
+        },
+        {
+          "function": "r4k_init",
+          "callee": "r4k_set_model"
+        },
+        {
+          "function": "go",
+          "callee": "draw_color"
+        },
+        {
+          "function": "r4k_run",
+          "callee": "r4k_jit_find"
+        },
+        {
+          "function": "indy_update_irq",
+          "callee": "scc_irq"
+        },
+        {
+          "function": "indy_hpc3_read",
+          "callee": "kbc_read"
+        },
+        {
+          "function": "emit_insn",
+          "callee": "emit_store"
+        },
+        {
+          "function": "indy_mc_remap",
+          "callee": "pm_unmap"
+        },
+        {
+          "function": "r4k_cop0",
+          "callee": "tlb_probe"
+        }
+      ]
+    },
+    "c5xtools": {
+      "behaviour": [
+        {
+          "function": "isa_find"
+        },
+        {
+          "function": "c5xcoff_w_reloc"
+        },
+        {
+          "function": "p_and"
+        },
+        {
+          "function": "dma_operand"
+        },
+        {
+          "function": "p_or"
+        },
+        {
+          "function": "sec_next_arg"
+        },
+        {
+          "function": "pp_e"
+        },
+        {
+          "function": "value_before_arp"
+        },
+        {
+          "function": "split"
+        },
+        {
+          "function": "sec_name"
+        },
+        {
+          "function": "emit"
+        },
+        {
+          "function": "apply_sub"
+        },
+        {
+          "function": "pp_prim"
+        },
+        {
+          "function": "shift_after"
+        },
+        {
+          "function": "emit_sym"
+        }
+      ],
+      "chain": [
+        {
+          "function": "p_or",
+          "callee": "p_and"
+        },
+        {
+          "function": "encode",
+          "callee": "value_before_arp"
+        },
+        {
+          "function": "encode",
+          "callee": "shift_after"
+        },
+        {
+          "function": "encode",
+          "callee": "emit_sym"
+        }
+      ]
+    },
+    "moppe-emu": {
+      "behaviour": [
+        {
+          "function": "write_byte"
+        },
+        {
+          "function": "pit_init"
+        },
+        {
+          "function": "add16"
+        },
+        {
+          "function": "sio_rx_byte"
+        },
+        {
+          "function": "sio_add_irqs"
+        },
+        {
+          "function": "pit_write"
+        },
+        {
+          "function": "pit_clock"
+        },
+        {
+          "function": "exec_main"
+        },
+        {
+          "function": "cu53an_out2"
+        },
+        {
+          "function": "r58_synth_vco_hz"
+        },
+        {
+          "function": "z80_reset"
+        },
+        {
+          "function": "hw_reset"
+        },
+        {
+          "function": "pio_write_ctrl"
+        },
+        {
+          "function": "r58_load_rom"
+        },
+        {
+          "function": "advance"
+        },
+        {
+          "function": "sio_tick"
+        },
+        {
+          "function": "serial_tick"
+        },
+        {
+          "function": "alu"
+        },
+        {
+          "function": "cu58af_init"
+        },
+        {
+          "function": "modem_tick"
+        },
+        {
+          "function": "daisy_reset"
+        },
+        {
+          "function": "r58_display_text"
+        },
+        {
+          "function": "sio_read_data"
+        },
+        {
+          "function": "sio_write_ctrl"
+        },
+        {
+          "function": "daa"
+        },
+        {
+          "function": "cu58af_int"
+        },
+        {
+          "function": "r58_init"
+        },
+        {
+          "function": "update_lines"
+        },
+        {
+          "function": "daisy_ack"
+        },
+        {
+          "function": "r58_load_nv"
+        }
+      ],
+      "chain": [
+        {
+          "function": "exec_main",
+          "callee": "alu"
+        },
+        {
+          "function": "exec_main",
+          "callee": "add16"
+        },
+        {
+          "function": "io_read",
+          "callee": "sio_read_data"
+        },
+        {
+          "function": "hw_reset",
+          "callee": "daisy_reset"
+        },
+        {
+          "function": "exec_main",
+          "callee": "daa"
+        },
+        {
+          "function": "io_write",
+          "callee": "sio_write_ctrl"
+        },
+        {
+          "function": "r58_init",
+          "callee": "cu58af_init"
+        },
+        {
+          "function": "io_write",
+          "callee": "pit_write"
+        },
+        {
+          "function": "r58_init",
+          "callee": "pit_init"
+        },
+        {
+          "function": "io_write",
+          "callee": "pio_write_ctrl"
+        },
+        {
+          "function": "update_lines",
+          "callee": "cu58af_int"
+        },
+        {
+          "function": "hw_reset",
+          "callee": "z80_reset"
+        },
+        {
+          "function": "r58_init",
+          "callee": "sio_add_irqs"
+        }
+      ]
+    },
+    "flint": {
+      "behaviour": [
+        {
+          "function": "ascii_case_eq"
+        },
+        {
+          "function": "pkg_copy_file"
+        },
+        {
+          "function": "new_closure"
+        },
+        {
+          "function": "pkg_free_locked"
+        },
+        {
+          "function": "sys_set_source_dir_for_file"
+        },
+        {
+          "function": "new_function"
+        },
+        {
+          "function": "flint_lookup_enum"
+        },
+        {
+          "function": "vm_define_native"
+        },
+        {
+          "function": "new_upvalue"
+        },
+        {
+          "function": "debug_frame_set"
+        },
+        {
+          "function": "table_find_string"
+        },
+        {
+          "function": "new_list"
+        },
+        {
+          "function": "table_define_const"
+        },
+        {
+          "function": "pkg_hash_file"
+        },
+        {
+          "function": "new_enum_value"
+        },
+        {
+          "function": "free_object"
+        },
+        {
+          "function": "value_has_type"
+        },
+        {
+          "function": "new_string"
+        },
+        {
+          "function": "pkg_set"
+        },
+        {
+          "function": "sys_set_args"
+        },
+        {
+          "function": "fl_sha256_final"
+        },
+        {
+          "function": "flint_value_to_string"
+        },
+        {
+          "function": "take_string"
+        },
+        {
+          "function": "compiler_mark_roots"
+        },
+        {
+          "function": "table_get_with_fallback"
+        },
+        {
+          "function": "pkg_version_parse"
+        },
+        {
+          "function": "pkg_free_deps"
+        },
+        {
+          "function": "chunk_free"
+        },
+        {
+          "function": "sys_make_dirs"
+        },
+        {
+          "function": "vm_free"
+        },
+        {
+          "function": "entry_for_write"
+        },
+        {
+          "function": "pkg_free_manifest"
+        },
+        {
+          "function": "compress"
+        },
+        {
+          "function": "set_table_field"
+        },
+        {
+          "function": "concat_strings"
+        },
+        {
+          "function": "table_remove_white"
+        },
+        {
+          "function": "chunk_write"
+        },
+        {
+          "function": "flint_register_enum"
+        },
+        {
+          "function": "new_native"
+        },
+        {
+          "function": "new_struct_ctor"
+        },
+        {
+          "function": "fl_stats_walk"
+        },
+        {
+          "function": "emit_variable_op"
+        },
+        {
+          "function": "pkg_table"
+        },
+        {
+          "function": "table_define_exported"
+        },
+        {
+          "function": "report_pending"
+        }
+      ],
+      "chain": [
+        {
+          "function": "http_request_native",
+          "callee": "set_table_field"
+        },
+        {
+          "function": "vm_interpret_function",
+          "callee": "value_has_type"
+        },
+        {
+          "function": "vm_interpret_function",
+          "callee": "new_enum_value"
+        },
+        {
+          "function": "vm_define_native",
+          "callee": "new_native"
+        },
+        {
+          "function": "debug_frames_native",
+          "callee": "debug_frame_set"
+        },
+        {
+          "function": "free_object",
+          "callee": "chunk_free"
+        },
+        {
+          "function": "vm_interpret_function",
+          "callee": "new_struct_ctor"
+        },
+        {
+          "function": "declaration",
+          "callee": "flint_register_enum"
+        },
+        {
+          "function": "pkg_install_core",
+          "callee": "pkg_free_locked"
+        },
+        {
+          "function": "vm_interpret_function",
+          "callee": "table_define_exported"
+        },
+        {
+          "function": "pkg_hash_walk",
+          "callee": "pkg_hash_file"
+        },
+        {
+          "function": "vm_interpret_function",
+          "callee": "new_upvalue"
+        },
+        {
+          "function": "vm_interpret_function",
+          "callee": "table_define_const"
+        },
+        {
+          "function": "pkg_copy_tree",
+          "callee": "pkg_copy_file"
+        },
+        {
+          "function": "url_parse",
+          "callee": "ascii_case_eq"
+        },
+        {
+          "function": "collect_garbage",
+          "callee": "compiler_mark_roots"
+        },
+        {
+          "function": "vm_interpret_function",
+          "callee": "new_closure"
+        },
+        {
+          "function": "vm_interpret_function",
+          "callee": "concat_strings"
+        },
+        {
+          "function": "vm_interpret_function",
+          "callee": "table_get_with_fallback"
+        },
+        {
+          "function": "vm_interpret_function",
+          "callee": "report_pending"
+        },
+        {
+          "function": "named_variable",
+          "callee": "emit_variable_op"
+        },
+        {
+          "function": "collect_garbage",
+          "callee": "table_remove_white"
+        }
+      ]
+    }
+  },
+  "rejected": []
+}
