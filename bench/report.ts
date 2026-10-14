@@ -152,11 +152,27 @@ export function buildReport(records: RunRecord[]) {
   return { markdown: `${lines.join('\n')}\n`, comparisons }
 }
 
-/** Replaces the user's home folder in published results, so no personal path leaves the machine. */
+/**
+ * Replaces the user's home folder in published results, so no personal path leaves the machine: in the
+ * flagged paths and commands, with Windows, forward-slash and Git Bash spellings, and in Claude Code's
+ * project folder names, which spell the path with dashes (`C--Users-name-...`).
+ */
 export function sanitize(record: RunRecord, home = homedir()): RunRecord {
-  const variants = [home, home.replace(/\\/g, '/'), home.replace(/\\/g, '/').replace(/^([A-Za-z]):/, (_, drive: string) => `/${drive.toLowerCase()}`)]
-  const clean = (text: string) => variants.reduce((value, prefix) => value.split(prefix).join('<home>'), text)
-  return { ...record, outsidePaths: record.outsidePaths.map(clean) }
+  const variants = [
+    home,
+    home.replace(/\\/g, '/'),
+    home.replace(/\\/g, '/').replace(/^([A-Za-z]):/, (_, drive: string) => `/${drive.toLowerCase()}`),
+    home.replace(/[^A-Za-z0-9]/g, '-'),
+  ]
+  // Any other path under a Users folder, including one an agent typed only in part.
+  const profiles = [/\b[A-Za-z]:[\\/]+Users[\\/]+[^\\/\s"'`<>]+/gi, /\/(?:[a-z]\/)?Users\/[^/\s"'`<>]+/g]
+  const clean = (text: string) =>
+    profiles.reduce((value, pattern) => value.replace(pattern, '<home>'), variants.reduce((value, prefix) => value.split(prefix).join('<home>'), text))
+  return {
+    ...record,
+    outsidePaths: record.outsidePaths.map(clean),
+    ...(record.executionAttempts === undefined ? {} : { executionAttempts: record.executionAttempts.map(clean) }),
+  }
 }
 
 function main() {

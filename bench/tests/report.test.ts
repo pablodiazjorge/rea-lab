@@ -56,3 +56,24 @@ test('sanitize removes the home folder from flagged paths', () => {
   const flagged = record('c01-compare', 'A', true, { outsidePaths: [String.raw`D:\profiles\someone\lab\answers.json`, '/d/profiles/someone/lab'] })
   assert.deepEqual(sanitize(flagged, home).outsidePaths, [String.raw`<home>\lab\answers.json`, '<home>/lab'])
 })
+
+test('sanitize also removes the home folder from project folder names and flagged commands', () => {
+  const home = String.raw`D:\profiles\someone`
+  const flagged = record('c01-compare', 'A', true, {
+    outsidePaths: [String.raw`D:\profiles\someone\bench\claude-config\projects\D--profiles-someone-bench-work\a.jsonl`],
+    executionAttempts: [String.raw`cd "D:\profiles\someone\bench\work" && python -I s.py`, 'cat /d/profiles/someone/x.txt'],
+  })
+  const clean = sanitize(flagged, home)
+  assert.deepEqual(clean.outsidePaths, [String.raw`<home>\bench\claude-config\projects\<home>-bench-work\a.jsonl`])
+  assert.deepEqual(clean.executionAttempts, [String.raw`cd "<home>\bench\work" && python -I s.py`, 'cat <home>/x.txt'])
+  assert.ok(!JSON.stringify(clean).includes('someone'))
+})
+
+test('sanitize removes other user profile paths, even ones typed only in part', () => {
+  // Built at run time, so the repository check never sees a literal user path.
+  const users = (separator: string, ...parts: string[]) => ['Users', ...parts].join(separator)
+  const flagged = record('c01-compare', 'A', true, {
+    outsidePaths: [`C:\\${users('\\', 'som')}`, `C:/${users('/', 'someone', 'x')}`, `/c/${users('/', 'someone', 'y')}`, `/${users('/', 'someone', 'z')}`],
+  })
+  assert.deepEqual(sanitize(flagged, String.raw`D:\elsewhere`).outsidePaths, ['<home>', '<home>/x', '<home>/y', '<home>/z'])
+})

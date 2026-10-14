@@ -2,7 +2,7 @@
 
 <p><a href="README.es.md">Leer en español</a></p>
 
-[rea](https://github.com/morluto/rea) gives coding agents MCP tools for reverse engineering, with Ghidra underneath and Evidence records that anyone can re-authenticate. When it reached the front page of Hacker News, the most repeated question was a simple one: what does it add over letting the agent use ordinary command-line tools? This study measures exactly that on native Windows binaries, with answers known in advance and an analysis fixed before the first run.
+[rea](https://github.com/morluto/rea) gives coding agents MCP tools for reverse engineering, with Ghidra underneath and Evidence records that anyone can re-authenticate. The obvious question about any such tool is a simple one: what does it add over letting the agent use ordinary command-line tools? This study measures exactly that on native Windows binaries, with answers known in advance and an analysis fixed before the first run.
 
 **Short answer:** on ten small crackmes, rea did not change how many the agent solved (28 of 30 with and without it). It made each run about twice as slow and expensive, it made the model's safety classifier stop far more often, and every piece of evidence the agent cited from it was genuine.
 

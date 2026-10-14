@@ -1,14 +1,14 @@
-# ¿Qué le aporta rea a un agente de programación? Un estudio preregistrado con binarios de Windows
+# ¿Qué le aporta rea a un agente de programación? Un estudio prerregistrado con binarios de Windows
 
 <p><a href="README.md">Read in English</a></p>
 
-[rea](https://github.com/morluto/rea) da a los agentes de programación herramientas MCP de ingeniería inversa, con Ghidra por debajo y registros de evidencia (Evidence) que cualquiera puede volver a autenticar. Cuando llegó a la portada de Hacker News, la pregunta que más se repetía era sencilla: ¿qué aporta frente a dejar que el agente use las herramientas de línea de órdenes de siempre? Este estudio mide justo eso con binarios nativos de Windows, con las respuestas conocidas de antemano y el análisis fijado antes de la primera ejecución.
+[rea](https://github.com/morluto/rea) da a los agentes de programación herramientas MCP de ingeniería inversa, con Ghidra por debajo y registros de evidencia (Evidence) que cualquiera puede volver a autenticar. La pregunta obvia ante una herramienta así es sencilla: ¿qué aporta frente a dejar que el agente use las herramientas de línea de órdenes de siempre? Este estudio mide justo eso con binarios nativos de Windows, con las respuestas conocidas de antemano y el análisis fijado antes de la primera ejecución.
 
 **Respuesta corta:** con diez crackmes pequeños, rea no cambió cuántos resolvió el agente (28 de 30 con y sin rea). Hizo cada ejecución el doble de lenta y de cara, hizo que el clasificador de seguridad del modelo cortara respuestas mucho más a menudo, y toda la evidencia que el agente citó de rea era auténtica.
 
 ## Diseño
 
-Todo lo de esta sección quedó fijado en el [preregistro](../../bench/preregistration-study-1.md), con commit antes de empezar el estudio (`d29c85b`, 12 de octubre de 2026). No hubo ninguna desviación.
+Todo lo de esta sección quedó fijado en el [prerregistro](../../bench/preregistration-study-1.md), con commit antes de empezar el estudio (`d29c85b`, 12 de octubre de 2026). No hubo ninguna desviación.
 
 - **Agente y modelo.** Claude Code 2.1.296 sin interfaz (`claude -p`), `claude-sonnet-5-5` con esfuerzo medio.
 - **Condiciones.**
@@ -35,7 +35,7 @@ Todo lo de esta sección quedó fijado en el [preregistro](../../bench/preregist
 | Mediana de tokens de entrada | 85.023 | 271.514 | 325.003 |
 | Mediana de coste equivalente | 0,10 USD | 0,25 USD | 0,28 USD |
 
-**H1, A frente a B: no se detecta ningún efecto grande.** De los 30 pares, solo dos discrepan, uno en cada sentido (McNemar exacto, p = 1). La prueba de sensibilidad preregistrada, con un par por reto, no encuentra ninguna discrepancia. Con 30 pares solo se pueden detectar efectos grandes, así que esto no demuestra que rea no tenga efecto: demuestra que, con retos como estos, no cambia mucho el resultado en ningún sentido.
+**H1, A frente a B: no se detecta ningún efecto grande.** De los 30 pares, solo dos discrepan, uno en cada sentido (McNemar exacto, p = 1). La prueba de sensibilidad prerregistrada, con un par por reto, no encuentra ninguna discrepancia. Con 30 pares solo se pueden detectar efectos grandes, así que esto no demuestra que rea no tenga efecto: demuestra que, con retos como estos, no cambia mucho el resultado en ningún sentido.
 
 | Familia | A | B | C |
 |---|---|---|---|
@@ -56,7 +56,7 @@ Los fallos de `table` con rea siguen un patrón. Las tres ejecuciones fallidas t
 
 ## Lo que ya mostraron los pilotos
 
-Cuatro pilotos con los retos públicos (35 ejecuciones, que no forman parte del estudio) dieron forma al diseño. Un compilador que optimiza pliega las búsquedas en tablas constantes en comparaciones directas, así que las compilaciones `-O2` de algunas familias regalaban la respuesta hasta que sus tablas pasaron a ser modificables. Un `awk` denegado hizo que un agente se detuviera en lugar de analizar, así que se permitieron los filtros de texto habituales. Y la skill no se cargó nunca, por eso C tuvo una sola repetición. Los detalles están en el preregistro.
+Cuatro pilotos con los retos públicos (35 ejecuciones, que no forman parte del estudio) dieron forma al diseño. Un compilador que optimiza pliega las búsquedas en tablas constantes en comparaciones directas, así que las compilaciones `-O2` de algunas familias regalaban la respuesta hasta que sus tablas pasaron a ser modificables. Un `awk` denegado hizo que un agente se detuviera en lugar de analizar, así que se permitieron los filtros de texto habituales. Y la skill no se cargó nunca, por eso C tuvo una sola repetición. Los detalles están en el prerregistro.
 
 ## Qué significa
 
