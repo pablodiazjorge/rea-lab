@@ -6,14 +6,11 @@
 // Usage: node bench/regrade.ts --study <name> [--set public|<built folder>]
 
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { dirname, join, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
 import { parseStreamJson } from './claude.ts'
-import { CONDITIONS, type ConditionId } from './conditions.ts'
-import { gradeRun, type Challenge } from './grade.ts'
-import { benchHome } from './run.ts'
-
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+import { CONDITIONS, toolResultsFolder, type ConditionId } from './conditions.ts'
+import { gradeRun } from './grade.ts'
+import { benchHome, loadSet } from './run.ts'
 
 function main() {
   const argv = process.argv.slice(2)
@@ -23,10 +20,7 @@ function main() {
   }
   const study = value('--study')
   if (!study) throw new Error('--study is required')
-  const set = value('--set') ?? 'public'
-  const publicFolders: Record<string, string> = { public: 'challenges', 'public-large': 'challenges-large' }
-  const setFolder = set in publicFolders ? join(ROOT, 'build', publicFolders[set]) : resolve(set)
-  const challenges: Challenge[] = JSON.parse(readFileSync(join(setFolder, 'answers.json'), 'utf8')).challenges
+  const set = loadSet(value('--set') ?? 'public')
   const studyDir = join(benchHome(), 'runs', study)
   if (!existsSync(studyDir)) throw new Error(`No study folder ${studyDir}`)
 
@@ -36,8 +30,8 @@ function main() {
     const runDir = join(studyDir, key)
     if (key.includes('.attempt-') || !existsSync(join(runDir, 'run.json'))) continue
     const previous = JSON.parse(readFileSync(join(runDir, 'run.json'), 'utf8'))
-    const challenge = challenges.find((candidate) => candidate.id === previous.challenge)
-    if (!challenge) throw new Error(`${key}: challenge ${previous.challenge} is not in ${setFolder}`)
+    const challenge = set.challenges.find((candidate) => candidate.id === previous.challenge)
+    if (!challenge) throw new Error(`${key}: challenge ${previous.challenge} is not in ${set.folder}`)
     const condition = CONDITIONS[previous.condition as ConditionId]
     const transcript = parseStreamJson(readFileSync(join(runDir, 'events.jsonl'), 'utf8').split('\n'))
     const grade = gradeRun(transcript, challenge, {
@@ -46,6 +40,8 @@ function main() {
       targetSha256: previous.target_sha256,
       workDir: join(runDir, 'work'),
       variant: previous.variant,
+      kind: set.kind,
+      extraRoots: set.kind === 'real' ? [toolResultsFolder(join(runDir, 'claude-config'))] : [],
     })
     const record = { ...previous, ...grade }
     if (JSON.stringify(record) !== JSON.stringify(previous)) {

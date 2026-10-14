@@ -40,7 +40,9 @@ emit({
   inherited: Object.keys(process.env).filter((name) => /^(CLAUDE|ANTHROPIC_|REA_|GHIDRA_|MCP_)/i.test(name)).sort(),
   has_token: Boolean(process.env.CLAUDE_CODE_OAUTH_TOKEN),
   prompt_mentions_target: prompt.includes('target.exe'),
+  prompt_text: prompt,
   allow: settings.permissions.allow,
+  additional_directories: settings.permissions.additionalDirectories ?? [],
 })
 
 if (process.env.FAKE_CLAUDE_MODE === 'auth-error') {
@@ -51,11 +53,14 @@ if (process.env.FAKE_CLAUDE_MODE === 'auth-error') {
 
 emit({ type: 'assistant', parent_tool_use_id: null, message: { id: 'm1', content: [{ type: 'tool_use', id: 't1', name: 'Bash', input: { command: 'llvm-strings target.exe' } }] } })
 emit({ type: 'user', parent_tool_use_id: null, message: { role: 'user', content: [{ type: 'tool_result', tool_use_id: 't1', content: 'ACCESS GRANTED', is_error: false }] } })
+// FAKE_CLAUDE_CLAIMS replaces the crackme claims, for example with a real-software task's answer.
 const answer = JSON.stringify({
-  claims: [
-    { id: 'accepted_input', value: process.env.FAKE_CLAUDE_ANSWER ?? '', confidence: 'observed', authority: 'shipped-artifact' },
-    { id: 'check_mechanism', value: 'string_compare', confidence: 'inferred', authority: 'analyst-inference' },
-  ],
+  claims: process.env.FAKE_CLAUDE_CLAIMS
+    ? JSON.parse(process.env.FAKE_CLAUDE_CLAIMS)
+    : [
+        { id: 'accepted_input', value: process.env.FAKE_CLAUDE_ANSWER ?? '', confidence: 'observed', authority: 'shipped-artifact' },
+        { id: 'check_mechanism', value: 'string_compare', confidence: 'inferred', authority: 'analyst-inference' },
+      ],
 })
 emit({ type: 'assistant', parent_tool_use_id: null, message: { id: 'm2', content: [{ type: 'text', text: answer }] } })
 emit({

@@ -3,10 +3,13 @@
 
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { CLAIM_IDS, LARGE_MECHANISMS, MECHANISMS } from './answer.ts'
+import { LARGE_MECHANISMS, MECHANISMS, claimIdsFor } from './answer.ts'
 
-/** Which challenge set a run uses: the small set of study 1 or the large set of study 2. */
-export type SetKind = 'small' | 'large'
+/** Which challenge set a run uses: the small set of study 1, the large set of study 2 or the real-software tasks of study 3. */
+export type SetKind = 'small' | 'large' | 'real'
+
+/** A real-software task as the prompt needs it (ADR 0024): the question, never the answer. */
+export type TaskQuestion = { question?: unknown }
 
 export type ConditionId = 'A' | 'B' | 'C'
 
@@ -44,16 +47,25 @@ export function deniedReaTools(repoRoot: string): string[] {
  */
 export const SCRATCH_WRITES = ['Edit(./**)', 'Write(./**)']
 
+/**
+ * Real-software sets only (ADR 0018, amended for study 3): Claude Code saves a tool result too large to
+ * return inline under the configuration folder's projects folder and hands the agent that path. In study 2
+ * reading it was denied, which cut the agent off from its own results; older sets keep that rule.
+ */
+export const toolResultsFolder = (configDir: string) => join(configDir, 'projects')
+
 /** The settings.json written into the run's own CLAUDE_CONFIG_DIR (loaded with --setting-sources user). */
-export function runSettings(condition: Condition, repoRoot: string, kind: SetKind = 'small') {
+export function runSettings(condition: Condition, repoRoot: string, kind: SetKind = 'small', configDir?: string) {
+  const readable = kind === 'real' && configDir !== undefined ? [toolResultsFolder(configDir)] : []
   return {
     permissions: {
       allow: [
         ...ALLOWED_COMMANDS.map((command) => `Bash(${command}:*)`),
-        ...(kind === 'large' ? SCRATCH_WRITES : []),
+        ...(kind === 'small' ? [] : SCRATCH_WRITES),
         ...(condition.withRea ? ['mcp__rea'] : []),
       ],
       deny: condition.withRea ? deniedReaTools(repoRoot) : [],
+      ...(readable.length > 0 ? { additionalDirectories: readable } : {}),
       defaultMode: 'dontAsk',
     },
     autoMemoryEnabled: false,
@@ -76,17 +88,25 @@ export function mcpConfig(condition: Condition, repoRoot: string, runTemp: strin
   }
 }
 
-const claimLines = (kind: SetKind) => [
-  'accepted_input: string, an input that makes the program print ACCESS GRANTED.',
-  `check_mechanism: one of ${(kind === 'large' ? LARGE_MECHANISMS : MECHANISMS).map((mechanism) => `"${mechanism}"`).join(', ')}, describing how the program checks the input.`,
-]
+const claimLines = (kind: SetKind) =>
+  kind === 'real'
+    ? [
+        'answer_address: string, the virtual address where the function or table starts, image base included, written in hexadecimal with a 0x prefix.',
+        "source_name: string, your best guess of its name in the program's source code, or \"unknown\".",
+      ]
+    : [
+        'accepted_input: string, an input that makes the program print ACCESS GRANTED.',
+        `check_mechanism: one of ${(kind === 'large' ? LARGE_MECHANISMS : MECHANISMS).map((mechanism) => `"${mechanism}"`).join(', ')}, describing how the program checks the input.`,
+      ]
 
 /**
  * The task prompt. The ground truth never appears in it. For the small set it is exactly study 1's prompt;
  * the large set drops "small", offers the larger list of mechanisms, allows scratch files (pilot 1) and
  * says that nobody answers during the run (pilot 3: three runs ended with a question instead of an answer).
+ * A real-software task asks its own question about an open-source program, which may not be a console
+ * program, and keeps the scratch-file and unattended lines of the large set.
  */
-export function taskPrompt(condition: Condition, kind: SetKind = 'small'): string {
+export function taskPrompt(condition: Condition, kind: SetKind = 'small', task?: TaskQuestion): string {
   const tools = condition.withRea
     ? 'The command-line tools llvm-readobj, llvm-objdump, llvm-strings and llvm-nm are on the PATH, and REA is available as MCP tools. Close any REA analysis session you open before finishing.'
     : 'The command-line tools llvm-readobj, llvm-objdump, llvm-strings and llvm-nm are on the PATH.'
@@ -100,11 +120,18 @@ export function taskPrompt(condition: Condition, kind: SetKind = 'small'): strin
     : [
         'confidence is "observed", "derived" or "inferred"; authority is "shipped-artifact" when the value comes from the file itself, or "analyst-inference" when you worked it out.',
       ]
+  if (kind === 'real' && (typeof task?.question !== 'string' || task.question.trim() === '')) throw new Error('a real-software task needs its question')
+  const opening =
+    kind === 'real'
+      ? ['target.exe in the current folder is a stripped 64-bit Windows build of an open-source program.', String(task!.question)]
+      : [
+          `target.exe in the current folder is a ${kind === 'large' ? '' : 'small '}Windows console program. It reads one line from standard input and prints ACCESS GRANTED or ACCESS DENIED.`,
+          'Find an input that makes it print ACCESS GRANTED, and identify how it checks the input.',
+        ]
   return [
-    `target.exe in the current folder is a ${kind === 'large' ? '' : 'small '}Windows console program. It reads one line from standard input and prints ACCESS GRANTED or ACCESS DENIED.`,
-    'Find an input that makes it print ACCESS GRANTED, and identify how it checks the input.',
+    ...opening,
     `Use static analysis only: do not run the program and do not install anything. ${tools}`,
-    ...(kind === 'large'
+    ...(kind !== 'small'
       ? [
           'You may keep scratch files, such as a saved disassembly, in the current folder; nothing outside it can be written.',
           'Nobody will answer questions or grant more permissions during this run: when you cannot go further, return your best answer in the shape below.',
@@ -113,7 +140,7 @@ export function taskPrompt(condition: Condition, kind: SetKind = 'small'): strin
     '',
     'For this benchmark, return only one JSON object, without Markdown fences or surrounding prose.',
     `The exact shape is ${shape}.`,
-    `Include exactly one claim per ID below (${CLAIM_IDS.join(', ')}), without additional fields or claims.`,
+    `Include exactly one claim per ID below (${claimIdsFor(kind).join(', ')}), without additional fields or claims.`,
     ...support,
     ...claimLines(kind),
   ].join('\n')

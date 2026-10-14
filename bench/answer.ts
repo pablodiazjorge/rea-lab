@@ -4,6 +4,28 @@
 
 export const CLAIM_IDS = ['accepted_input', 'check_mechanism'] as const
 
+/** Claims of a real-software task (ADR 0024): where the function or table starts, and its source name as a guess. */
+export const REAL_CLAIM_IDS = ['answer_address', 'source_name'] as const
+
+/** The claim ids a set asks for; the challenge sets of studies 1 and 2 keep theirs. */
+export const claimIdsFor = (kind: 'small' | 'large' | 'real'): readonly string[] => (kind === 'real' ? REAL_CLAIM_IDS : CLAIM_IDS)
+
+export type ParsedAddress = { value: number; form: 'va' | 'rva' }
+
+/**
+ * Reads an answered address: a hexadecimal string with a 0x prefix or a JSON integer. A value below the image
+ * base is taken as relative to it, so the grader can count it and still flag the form. Bare digits in a string
+ * are ambiguous between bases and are rejected.
+ */
+export function parseAddress(value: unknown, imageBase: number): ParsedAddress | null {
+  let number: number
+  if (typeof value === 'number' && Number.isSafeInteger(value) && value >= 0) number = value
+  else if (typeof value === 'string' && /^\s*0x[0-9a-f]{1,16}\s*$/i.test(value)) number = Number.parseInt(value.trim().slice(2), 16)
+  else return null
+  if (!Number.isSafeInteger(number)) return null
+  return number < imageBase ? { value: imageBase + number, form: 'rva' } : { value: number, form: 'va' }
+}
+
 export const MECHANISMS = [
   'string_compare',
   'xor_encoded',
@@ -86,7 +108,7 @@ export type ParsedAnswer = {
 type Json = Record<string, unknown>
 const isObject = (value: unknown): value is Json => typeof value === 'object' && value !== null && !Array.isArray(value)
 
-function shapeProblems(manifest: unknown, withEvidence: boolean): string[] {
+function shapeProblems(manifest: unknown, withEvidence: boolean, ids: readonly string[]): string[] {
   if (!isObject(manifest)) return ['not_an_object']
   const problems: string[] = []
   if (Object.keys(manifest).some((key) => key !== 'claims')) problems.push('extra_top_level_fields')
@@ -99,14 +121,14 @@ function shapeProblems(manifest: unknown, withEvidence: boolean): string[] {
       continue
     }
     if (Object.keys(claim).sort().join(',') !== expectedKeys.join(',')) problems.push(`claim_fields:${String(claim.id)}`)
-    if (typeof claim.id !== 'string' || !(CLAIM_IDS as readonly string[]).includes(claim.id)) problems.push(`unknown_claim:${String(claim.id)}`)
+    if (typeof claim.id !== 'string' || !ids.includes(claim.id)) problems.push(`unknown_claim:${String(claim.id)}`)
     else if (seen.has(claim.id)) problems.push(`duplicate_claim:${claim.id}`)
     else seen.add(claim.id)
     if (typeof claim.confidence !== 'string' || !CONFIDENCE.has(claim.confidence)) problems.push(`confidence:${String(claim.id)}`)
     if (typeof claim.authority !== 'string' || !AUTHORITY.has(claim.authority)) problems.push(`authority:${String(claim.id)}`)
     if (withEvidence && (typeof claim.evidence_id !== 'string' || !EVIDENCE_ID.test(claim.evidence_id))) problems.push(`evidence_id:${String(claim.id)}`)
   }
-  for (const id of CLAIM_IDS) if (!seen.has(id)) problems.push(`claim_missing:${id}`)
+  for (const id of ids) if (!seen.has(id)) problems.push(`claim_missing:${id}`)
   return problems
 }
 
@@ -146,13 +168,13 @@ const toClaims = (manifest: Json): Claim[] =>
     ...(typeof claim.authority === 'string' ? { authority: claim.authority } : {}),
   }))
 
-export function parseAnswer(text: string | null, withEvidence: boolean): ParsedAnswer {
+export function parseAnswer(text: string | null, withEvidence: boolean, ids: readonly string[] = CLAIM_IDS): ParsedAnswer {
   if (text === null || text.trim() === '') return { strict: false, claims: null, problems: ['no_final_message'] }
   let whole: unknown
   let problems: string[]
   try {
     whole = JSON.parse(text.trim())
-    problems = shapeProblems(whole, withEvidence)
+    problems = shapeProblems(whole, withEvidence, ids)
   } catch {
     problems = ['not_closed_json']
   }

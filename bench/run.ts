@@ -20,7 +20,7 @@ import { homedir } from 'node:os'
 import { delimiter, dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseStreamJson } from './claude.ts'
-import { CONDITIONS, BUILT_IN_TOOLS, mcpConfig, runSettings, taskPrompt, type ConditionId, type SetKind } from './conditions.ts'
+import { CONDITIONS, BUILT_IN_TOOLS, mcpConfig, runSettings, taskPrompt, toolResultsFolder, type ConditionId, type SetKind } from './conditions.ts'
 import { gradeRun, type Challenge } from './grade.ts'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -141,22 +141,50 @@ function authenticationToken(home: string): string {
   return readFileSync(file, 'utf8').trim()
 }
 
-type ChallengeSet = { name: string; kind: SetKind; folder: string; seed: number; challenges: Challenge[]; binaries: Array<{ id: string; variant: string; file: string; sha256: string }> }
+export type ChallengeSet = {
+  name: string
+  kind: SetKind
+  folder: string
+  seed: number | null
+  challenges: Challenge[]
+  binaries: Array<{ id: string; variant: string; file: string; sha256: string }>
+  /** SHA-256 of answers.json, so a study cannot resume against a changed task file. */
+  answersSha256: string
+}
 
-// "public" and "public-large" are the public builds in build/; any other value is the folder of a held-out set.
+// "public" and "public-large" are the public builds in build/; any other value is the folder of a held-out set
+// or of the real-software build (challenges/real.mjs, with answers.json from challenges/real-tasks.mjs resolve).
 const PUBLIC_SETS: Readonly<Record<string, string>> = { public: 'challenges', 'public-large': 'challenges-large' }
 
-function loadSet(set: string): ChallengeSet {
+/** The single build variant of the real-software targets (x64, -O2, stripped). */
+export const REAL_VARIANT = 'x64-O2-strip'
+
+export function loadSet(set: string): ChallengeSet {
   const publicFolder = PUBLIC_SETS[set]
   const folder = publicFolder === undefined ? resolve(set) : join(ROOT, 'build', publicFolder)
   const manifestFile = join(folder, 'manifest.json')
   const hint = set === 'public-large' ? ' --set large' : publicFolder === undefined ? ' [--set large] --seed <n> --out <folder>' : ''
   if (!existsSync(manifestFile)) throw new Error(`No built challenges in ${folder}. Run: node challenges/build.mjs${hint}`)
   const manifest = JSON.parse(readFileSync(manifestFile, 'utf8'))
-  const answers = JSON.parse(readFileSync(join(folder, 'answers.json'), 'utf8'))
+  const answersFile = join(folder, 'answers.json')
+  if (!existsSync(answersFile)) throw new Error(`No answers.json in ${folder}. For real-software tasks run: node challenges/real-tasks.mjs resolve <task file>`)
+  const answersText = readFileSync(answersFile, 'utf8')
+  const answers = JSON.parse(answersText)
+  const answersSha256 = createHash('sha256').update(answersText).digest('hex')
+  if (answers.set === 'real') {
+    // One task per run; every task of a program uses that program's target (ADR 0024).
+    const programs = new Map<string, { file: string; sha256: string; image_base: string }>(manifest.programs.map((program: { id: string; file: string; sha256: string; image_base: string }) => [program.id, program]))
+    const challenges: Challenge[] = answers.tasks.map((task: { id: string; program: string; family: string; question: string; answer: Record<string, unknown> }) => {
+      const program = programs.get(task.program)
+      if (!program) throw new Error(`Task ${task.id} needs program ${task.program}, which is not in ${manifestFile}`)
+      return { id: task.id, family: task.family, program: task.program, question: task.question, answer: { ...task.answer, image_base: program.image_base } }
+    })
+    const binaries = challenges.map((challenge) => ({ id: challenge.id, variant: REAL_VARIANT, file: programs.get(challenge.program!)!.file, sha256: programs.get(challenge.program!)!.sha256 }))
+    return { name: answers.role === 'pilot' ? 'real-pilot' : 'held-out-real', kind: 'real', folder, seed: null, challenges, binaries, answersSha256 }
+  }
   const kind: SetKind = answers.set === 'large' ? 'large' : 'small'
   const name = publicFolder === undefined ? (kind === 'large' ? 'held-out-large' : 'held-out') : set
-  return { name, kind, folder, seed: manifest.seed, challenges: answers.challenges, binaries: manifest.binaries }
+  return { name, kind, folder, seed: manifest.seed, challenges: answers.challenges, binaries: manifest.binaries, answersSha256 }
 }
 
 // Same small PRNG as the challenge generator (mulberry32), used here to shuffle the run order.
@@ -241,7 +269,7 @@ async function executeRun(run: PlannedRun, set: ChallengeSet, options: Options, 
   const condition = CONDITIONS[run.condition]
   // Passed with --settings: permission rules in settings files of an untrusted folder are ignored in print mode.
   const settingsFile = join(runDir, 'settings.json')
-  writeFileSync(settingsFile, `${JSON.stringify(runSettings(condition, ROOT, set.kind), null, 2)}\n`)
+  writeFileSync(settingsFile, `${JSON.stringify(runSettings(condition, ROOT, set.kind, config), null, 2)}\n`)
   if (condition.withSkill) {
     cpSync(join(ROOT, 'node_modules', 'rea-agents', 'skills', 'reverse-engineer-anything'), join(config, 'skills', 'reverse-engineer-anything'), { recursive: true })
   }
@@ -267,7 +295,7 @@ async function executeRun(run: PlannedRun, set: ChallengeSet, options: Options, 
       windowsHide: true,
     })
     // The prompt goes through stdin: no quoting or length limits on the Windows command line.
-    child.stdin.end(context.prompt ?? taskPrompt(condition, set.kind))
+    child.stdin.end(context.prompt ?? taskPrompt(condition, set.kind, run.challenge))
     child.stdout.pipe(createWriteStream(eventsFile))
     child.stderr.pipe(createWriteStream(join(runDir, 'stderr.txt')))
     let timedOut = false
@@ -289,7 +317,15 @@ async function executeRun(run: PlannedRun, set: ChallengeSet, options: Options, 
   rmSync(temp, { recursive: true, force: true, maxRetries: 3 })
 
   const transcript = parseStreamJson(readFileSync(eventsFile, 'utf8').split('\n'))
-  const grade = gradeRun(transcript, run.challenge, { withRea: condition.withRea, withSkill: condition.withSkill, targetSha256: run.binary.sha256, workDir: work, variant: run.variant })
+  const grade = gradeRun(transcript, run.challenge, {
+    withRea: condition.withRea,
+    withSkill: condition.withSkill,
+    targetSha256: run.binary.sha256,
+    workDir: work,
+    variant: run.variant,
+    kind: set.kind,
+    extraRoots: set.kind === 'real' ? [toolResultsFolder(config)] : [],
+  })
   const record = {
     schema: 1,
     study: options.study,
@@ -298,6 +334,7 @@ async function executeRun(run: PlannedRun, set: ChallengeSet, options: Options, 
     seed: set.name in PUBLIC_SETS ? set.seed : null,
     challenge: run.challenge.id,
     family: run.challenge.family,
+    ...(run.challenge.program === undefined ? {} : { program: run.challenge.program }),
     variant: run.variant,
     condition: run.condition,
     repetition: run.repetition,
@@ -357,7 +394,7 @@ async function main() {
   console.log(`Benchmark home: ${home}`)
   if (options.dryRun) {
     for (const run of runs) console.log(`  ${run.key}`)
-    console.log(`\nPrompt for condition B:\n${taskPrompt(CONDITIONS.B, set.kind)}`)
+    console.log(`\nPrompt for condition B (${runs[0]?.challenge.id ?? 'no run'}):\n${taskPrompt(CONDITIONS.B, set.kind, runs[0]?.challenge)}`)
     return
   }
   const token = authenticationToken(home)
@@ -365,11 +402,15 @@ async function main() {
   const studyDir = join(home, 'runs', options.study)
   mkdirSync(studyDir, { recursive: true })
   const studyFile = join(studyDir, 'study.json')
-  const study = { study: options.study, client_version: version, rea_version: REA_VERSION, model: options.model, effort: options.effort, set: set.name }
+  const study = { study: options.study, client_version: version, rea_version: REA_VERSION, model: options.model, effort: options.effort, set: set.name, set_sha256: set.answersSha256 }
   if (existsSync(studyFile)) {
     const previous = JSON.parse(readFileSync(studyFile, 'utf8'))
     for (const field of ['client_version', 'rea_version', 'model', 'effort', 'set'] as const) {
       if (previous[field] !== study[field]) throw new Error(`Study ${options.study} was started with ${field} ${previous[field]}, not ${study[field]}`)
+    }
+    // Studies started before the answers hash was recorded (studies 1 and 2) keep resuming as before.
+    if (previous.set_sha256 !== undefined && previous.set_sha256 !== study.set_sha256) {
+      throw new Error(`Study ${options.study} was started with another answers.json (SHA-256 ${previous.set_sha256})`)
     }
   } else writeFileSync(studyFile, `${JSON.stringify(study, null, 2)}\n`)
 

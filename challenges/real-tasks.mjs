@@ -216,7 +216,7 @@ export function resolveTasks(tasks, truths, taskFileHash) {
       const name = kind === 'data' ? task.target.object : task.target.function
       const item = (kind === 'data' ? truth.data : truth.functions).find((candidate) => candidate.name === name)
       if (!item) throw new Error(`${task.id}: ${name} is not in ${task.program}'s ground truth`)
-      return { id: task.id, program: task.program, family: task.family, question: task.question, answer: { kind, name, start: item.start, end: item.end } }
+      return { id: task.id, program: task.program, family: task.family, question: task.question, answer: { kind, name, start: item.start, end: item.end, image_base: truth.image_base } }
     }),
   }
 }

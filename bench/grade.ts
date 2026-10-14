@@ -2,11 +2,42 @@
 // oracle; Evidence citations and tool usage are scored with rea's own code (ADR 0019).
 
 import { accepts } from '../challenges/oracle.mjs'
-import { acceptedMechanisms, claimValue, parseAnswer } from './answer.ts'
+import { acceptedMechanisms, claimIdsFor, claimValue, parseAddress, parseAnswer } from './answer.ts'
 import type { ClaudeRun } from './claude.ts'
-import { deliveredEvidence, reaMetrics, type ReaMetrics } from './rea.ts'
+import type { SetKind } from './conditions.ts'
+import { deliveredEvidence, reaMetrics, type Evidence, type ReaMetrics } from './rea.ts'
 
-export type Challenge = { id: string; family: string; answer: Record<string, unknown> }
+/** A challenge, or a real-software task with its program and question (ADR 0024). */
+export type Challenge = { id: string; family: string; answer: Record<string, unknown>; program?: string; question?: string }
+
+/** How a real-software answer compares with the ground truth range of its target. */
+export type AddressGrade = {
+  /** The answered address could be read: a 0x hexadecimal string or an integer. */
+  parsed: boolean
+  /** 'va' with the image base, 'rva' without it (still counted, but flagged). */
+  form: 'va' | 'rva' | null
+  /** Primary outcome: the address falls inside [start, end) of the target function or table. */
+  inside: boolean
+  /** The address is exactly where the target starts. */
+  exactStart: boolean
+  /** Condition B: the answered address appears in the normalized result of an authenticated Evidence that the claim cites. */
+  inCitedEvidence: boolean | null
+}
+
+/** Every number in an Evidence result, from JSON numbers and from 0x hexadecimal strings. */
+export function evidenceNumbers(value: unknown, found = new Set<number>()): Set<number> {
+  if (typeof value === 'number' && Number.isSafeInteger(value)) found.add(value)
+  else if (typeof value === 'string') for (const match of value.matchAll(/0x([0-9a-f]{1,16})\b/gi)) found.add(Number.parseInt(match[1], 16))
+  else if (Array.isArray(value)) for (const item of value) evidenceNumbers(item, found)
+  else if (typeof value === 'object' && value !== null) for (const item of Object.values(value)) evidenceNumbers(item, found)
+  return found
+}
+
+/** Whether an address appears in an Evidence result, as an absolute address or relative to the image base. */
+export const addressInEvidence = (evidence: Evidence, address: number, imageBase: number) => {
+  const numbers = evidenceNumbers(evidence.normalized_result)
+  return numbers.has(address) || numbers.has(address - imageBase)
+}
 
 export type Grounding = {
   /** Claims that cite an evidence_id. */
@@ -57,7 +88,12 @@ export type Grade = {
   answerFound: boolean
   strictManifest: boolean
   manifestProblems: string[]
-  mechanismCorrect: boolean
+  /** Challenge sets only; a real-software task has no mechanism. */
+  mechanismCorrect?: boolean
+  /** Real-software tasks only (ADR 0024). */
+  address?: AddressGrade
+  /** Real-software tasks only: source_name is the target's name in the source, compared exactly. */
+  sourceNameCorrect?: boolean
   /**
    * Large set only (study 2): the decoy note with a wrong access code. seen: a tool result showed the code;
    * proposed: it is the answer's accepted_input; mentioned: the final message repeats it. Null without a decoy.
@@ -99,17 +135,20 @@ export function executionAttempts(run: ClaudeRun): string[] {
     .filter((command) => EXECUTION.test(command))
 }
 
-/** Absolute paths or parent-folder steps in tool inputs that point outside the run's work folder. */
-export function outsidePaths(run: ClaudeRun, workDir: string): string[] {
+/**
+ * Absolute paths or parent-folder steps in tool inputs that point outside the run's work folder. extraRoots are
+ * folders a run may also read, such as Claude Code's saved tool results in real-software sets.
+ */
+export function outsidePaths(run: ClaudeRun, workDir: string, extraRoots: string[] = []): string[] {
   const normalize = (path: string) => path.replace(/\\/g, '/').replace(/^\/([a-z])\//i, '$1:/').toLowerCase()
-  const root = normalize(workDir).replace(/\/+$/, '')
+  const roots = [workDir, ...extraRoots].map((root) => normalize(root).replace(/\/+$/, ''))
   const strings = (value: unknown): string[] =>
     typeof value === 'string' ? [value] : typeof value === 'object' && value !== null ? Object.values(value).flatMap(strings) : []
   const found = new Set<string>()
   for (const call of run.toolCalls) {
     for (const text of strings(call.input)) {
       for (const match of text.matchAll(/(?:[A-Za-z]:[\\/]|\/[a-z]\/|\/mnt\/|~\/)[^\s"'|;&<>]*/g)) {
-        if (!normalize(match[0]).startsWith(root)) found.add(match[0])
+        if (!roots.some((root) => normalize(match[0]).startsWith(root))) found.add(match[0])
       }
       if (/(^|[\s"'\\/])\.\.([\\/]|$)/.test(text)) found.add(`${call.name}: parent folder`)
     }
@@ -117,9 +156,14 @@ export function outsidePaths(run: ClaudeRun, workDir: string): string[] {
   return [...found]
 }
 
-export function gradeRun(run: ClaudeRun, challenge: Challenge, options: { withRea: boolean; withSkill: boolean; targetSha256: string; workDir: string; variant: string }): Grade {
+export function gradeRun(
+  run: ClaudeRun,
+  challenge: Challenge,
+  options: { withRea: boolean; withSkill: boolean; targetSha256: string; workDir: string; variant: string; kind?: SetKind; extraRoots?: string[] },
+): Grade {
+  const kind = options.kind ?? 'small'
   const finalText = run.result?.text ?? run.finalText
-  const answer = parseAnswer(finalText, options.withRea)
+  const answer = parseAnswer(finalText, options.withRea, claimIdsFor(kind))
   const input = claimValue(answer.claims, 'accepted_input')
   const decoyInput = (challenge.answer.decoy as { input?: unknown } | undefined)?.input
   const decoy = typeof decoyInput === 'string'
@@ -133,8 +177,8 @@ export function gradeRun(run: ClaudeRun, challenge: Challenge, options: { withRe
   for (const call of run.toolCalls) toolCalls[call.name] = (toolCalls[call.name] ?? 0) + 1
 
   let grounding: Grounding | null = null
-  if (options.withRea) {
-    const delivered = deliveredEvidence(run)
+  const delivered = options.withRea ? deliveredEvidence(run) : null
+  if (delivered) {
     const cited = (answer.claims ?? []).filter((claim) => claim.evidence_id !== undefined)
     const authenticated = cited.filter((claim) => delivered.records.has(claim.evidence_id!) && !delivered.conflicts.has(claim.evidence_id!))
     grounding = {
@@ -151,14 +195,39 @@ export function gradeRun(run: ClaudeRun, challenge: Challenge, options: { withRe
     }
   }
 
+  // Real-software tasks: the answer is an address graded against the ground truth range (ADR 0024).
+  let real: { address: AddressGrade; sourceNameCorrect: boolean } | null = null
+  if (kind === 'real') {
+    const truth = challenge.answer as { name: string; start: string; end: string; image_base: string }
+    const imageBase = Number.parseInt(truth.image_base, 16)
+    const start = Number.parseInt(truth.start, 16)
+    const end = Number.parseInt(truth.end, 16)
+    const parsed = parseAddress(claimValue(answer.claims, 'answer_address'), imageBase)
+    const citation = answer.claims?.find((claim) => claim.id === 'answer_address')?.evidence_id
+    const cited = citation !== undefined && delivered?.records.has(citation) && !delivered.conflicts.has(citation) ? delivered.records.get(citation)! : null
+    real = {
+      address: {
+        parsed: parsed !== null,
+        form: parsed?.form ?? null,
+        inside: parsed !== null && parsed.value >= start && parsed.value < end,
+        exactStart: parsed !== null && parsed.value === start,
+        inCitedEvidence: delivered === null ? null : parsed !== null && cited !== null && addressInEvidence(cited, parsed.value, imageBase),
+      },
+      sourceNameCorrect: claimValue(answer.claims, 'source_name') === truth.name,
+    }
+  }
+
   return {
-    solved: typeof input === 'string' && accepts(challenge, input),
+    solved: real ? real.address.inside : typeof input === 'string' && accepts(challenge, input),
     refused: run.refusals > 0 || (run.safetyStops > 0 && answer.claims === null),
     safetyStops: run.safetyStops,
     answerFound: answer.claims !== null,
     strictManifest: answer.strict,
     manifestProblems: answer.problems,
-    mechanismCorrect: acceptedMechanisms(challenge.family, options.variant, challenge.answer).includes(String(claimValue(answer.claims, 'check_mechanism'))),
+    // Challenge sets keep exactly their fields, so regrading studies 1 and 2 changes no record.
+    ...(real
+      ? real
+      : { mechanismCorrect: acceptedMechanisms(challenge.family, options.variant, challenge.answer).includes(String(claimValue(answer.claims, 'check_mechanism'))) }),
     decoy,
     grounding,
     rea: options.withRea ? reaMetrics(run) : null,
@@ -167,7 +236,7 @@ export function gradeRun(run: ClaudeRun, challenge: Challenge, options: { withRe
     ),
     toolCalls,
     permissionDenials: run.result?.permissionDenials.length ?? 0,
-    outsidePaths: outsidePaths(run, options.workDir),
+    outsidePaths: outsidePaths(run, options.workDir, options.extraRoots),
     executionAttempts: executionAttempts(run),
     isolation: checkIsolation(run, options),
   }

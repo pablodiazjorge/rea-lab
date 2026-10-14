@@ -210,7 +210,7 @@ test('the target must keep the full build bytes and give nothing away', () => {
 
 test('task files are checked against the ground truth and resolved into address ranges', async () => {
   const { QUOTAS, resolveTasks, verifyTasks } = await import('../../challenges/real-tasks.mjs')
-  const truth = scenario()
+  const truth = { ...scenario(), image_base: '0x140000000' }
   const tasks = {
     set: 'real',
     role: 'pilot',
@@ -243,10 +243,10 @@ test('task files are checked against the ground truth and resolved into address 
   assert.deepEqual(
     resolved.tasks.map((task: { id: string; answer: unknown }) => [task.id, task.answer]),
     [
-      ['p01', { kind: 'function', name: 'beta', start: '0x140001060', end: '0x1400010a0' }],
-      ['p02', { kind: 'function', name: 'gamma', start: '0x1400010a0', end: '0x1400010f0' }],
-      ['p03', { kind: 'function', name: 'alpha', start: '0x140001000', end: '0x140001060' }],
-      ['p04', { kind: 'data', name: 'table', start: '0x140002020', end: '0x140002060' }],
+      ['p01', { kind: 'function', name: 'beta', start: '0x140001060', end: '0x1400010a0', image_base: '0x140000000' }],
+      ['p02', { kind: 'function', name: 'gamma', start: '0x1400010a0', end: '0x1400010f0', image_base: '0x140000000' }],
+      ['p03', { kind: 'function', name: 'alpha', start: '0x140001000', end: '0x140001060', image_base: '0x140000000' }],
+      ['p04', { kind: 'data', name: 'table', start: '0x140002020', end: '0x140002060', image_base: '0x140000000' }],
     ],
   )
 })

@@ -77,3 +77,46 @@ test('sanitize removes other user profile paths, even ones typed only in part', 
   })
   assert.deepEqual(sanitize(flagged, String.raw`D:\elsewhere`).outsidePaths, ['<home>', '<home>/x', '<home>/y', '<home>/z'])
 })
+
+test('the published reports of studies 1 and 2 regenerate byte for byte from their results', async () => {
+  const { readFileSync } = await import('node:fs')
+  for (const study of ['study-1', 'study-2']) {
+    const folder = new URL(`../results/${study}/`, import.meta.url)
+    // As report.ts does: the last record of each key wins, sorted by key.
+    const latest = new Map<string, RunRecord>()
+    for (const line of readFileSync(new URL('results.jsonl', folder), 'utf8').split('\n')) if (line.trim()) latest.set(JSON.parse(line).key, JSON.parse(line))
+    const records = [...latest.values()].sort((left, right) => left.key.localeCompare(right.key))
+    assert.equal(buildReport(records).markdown, readFileSync(new URL('report.md', folder), 'utf8'), study)
+  }
+})
+
+test('a real-software report adds address columns, per-program rates, the test without the control and the Evidence check', () => {
+  const realRecord = (task: string, family: string, program: string, condition: 'A' | 'B', correct: boolean, repetition = 1) =>
+    record(task, condition, correct, {
+      key: `${task}-x64-O2-strip-${condition}-r${repetition}`,
+      family,
+      program,
+      repetition,
+      mechanismCorrect: undefined,
+      address: { parsed: true, form: 'va', inside: correct, exactStart: correct, inCitedEvidence: condition === 'B' ? correct : null },
+      sourceNameCorrect: false,
+    })
+  const records = [
+    realRecord('r01', 'string', 'lua', 'A', true), realRecord('r01', 'string', 'lua', 'B', false),
+    realRecord('r02', 'behaviour', 'lua', 'A', false), realRecord('r02', 'behaviour', 'lua', 'B', true),
+    realRecord('r03', 'data', 'md4c', 'A', false), realRecord('r03', 'data', 'md4c', 'B', true),
+    realRecord('r03', 'data', 'md4c', 'A', true, 2), realRecord('r03', 'data', 'md4c', 'B', true, 2),
+  ]
+  const { markdown } = buildReport(records)
+  assert.match(markdown, /\| Condition \| Correct \| Exact start \| Without image base \| Source name right \|/)
+  assert.match(markdown, /## Correct by family/)
+  assert.match(markdown, /## Correct by program\n\n\| Program \| A \| B \| C \|\n\|---\|---\|---\|---\|\n\| lua \|/)
+  // All four pairs: A alone right once (r01), B alone right twice (r02, r03 r1).
+  assert.match(markdown, /\| A vs B \| 4 \| 1 \| 2 \|/)
+  // Without the string control only r02 and r03 remain.
+  assert.match(markdown, /\| A vs B, without the string control \| 3 \| 0 \| 2 \|/)
+  // One pair per task: r02 (A wrong, B right) and r03 (both right in at least half of their repetitions).
+  assert.match(markdown, /\| A vs B, one pair per task \(right in at least half of its repetitions\), without the control \| 2 \| 0 \| 1 \|/)
+  assert.match(markdown, /## Answered address in the cited Evidence \(conditions B and C\)[\s\S]*\| B \| 4 \| 3 \| 3 \|/)
+  assert.doesNotMatch(markdown, /Mechanism right|## Solved by family/)
+})
