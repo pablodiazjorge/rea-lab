@@ -61,6 +61,7 @@ No hay fechas: cada fase se cierra cuando cumple sus criterios de salida.
 | [`challenges/`](challenges/README.es.md) | Retos de práctica con semilla y respuesta conocida, compilados de forma reproducible |
 | [`bench/`](bench/README.es.md) | Banco de pruebas: ejecuciones aisladas de `claude -p`, calificadores deterministas, el propio código de evaluación de rea y estadística por pares |
 | `tools.json` | Versiones, URL de descarga y SHA-256 de cada herramienta |
+| `sources.json` | Archivos de código de los programas libres que se compilan para el estudio 3, con su SHA-256 |
 | `scripts/setup.mjs` | Descarga, verifica y descomprime las herramientas en `tools/` |
 | `scripts/rea-mcp.mjs`, `.mcp.json` | El servidor MCP de rea, registrado solo para este proyecto |
 | `.claude/settings.json` | Herramientas de rea permitidas; denegadas las que ejecutan un objetivo o un dispositivo |

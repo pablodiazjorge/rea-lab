@@ -14,13 +14,14 @@ A lab for reverse engineering with AI agents on Windows, using [rea](https://git
 | `docs/adr/` | Architecture decision records | yes |
 | `writeups/` | One folder per investigation: README EN/ES, sanitised evidence, provenance, session plan | yes |
 | `scripts/rea-session.mjs`, `scripts/sanitize.mjs` | Scripted rea sessions over MCP; sanitise and re-authenticate Evidence before publishing | yes |
-| `challenges/` | Seeded challenge generator, reproducible build, answer check and oracle, public manifest | yes |
+| `challenges/` | Seeded challenge generator, reproducible build, answer check and oracle, public manifest; real-software build and ground truth for study 3 (`real.mjs`) | yes |
 | `bench/` | Benchmark harness (TypeScript run directly by Node): runner, graders, rea adapter, report, tests | yes |
 | `bench/results/` | Published, sanitised results of finished studies | yes |
 | `fixtures/compare-pairs/` | Reproducible PE pairs for rea's `compare_functions` (relocation only, real change) | yes |
 | `build/` | Generated challenge sources and binaries | no |
 | `tools.json` | Single source of tool versions, URLs and SHA-256 hashes | yes |
-| `scripts/setup.mjs` | Downloads, verifies and extracts the tools (`npm run setup`) | yes |
+| `sources.json` | Pinned source archives of the open-source programs compiled for study 3 (ADR 0024) | yes |
+| `scripts/setup.mjs` | Downloads, verifies and extracts the tools (`npm run setup`) and, with `--manifest sources.json`, the study 3 sources into `tools/sources/` | yes |
 | `scripts/rea-mcp.mjs`, `.mcp.json` | rea MCP server for this project, paths resolved at runtime | yes |
 | `.claude/settings.json` | Allows rea tools, denies the ones that run targets or devices | yes |
 | `scripts/check.mjs` | Repository checks (`npm run check`) | yes |
@@ -37,6 +38,7 @@ A lab for reverse engineering with AI agents on Windows, using [rea](https://git
 ```powershell
 npm run check                                   # must pass before a change is done
 npm run setup                                   # tools from tools.json (asks nothing, verifies hashes)
+node scripts/setup.mjs --manifest sources.json  # study 3 source archives, same verification
 npm run challenges:check                        # challenges: reproducible, public manifest, answers
 npm run bench:test                              # benchmark graders, rea adapter and statistics
 . .\env.ps1                                     # rea, Ghidra and clang for this session

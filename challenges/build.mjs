@@ -16,12 +16,10 @@ import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { dirname, join, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join, resolve } from 'node:path'
 import { GENERATOR_VERSION, PUBLIC_SEED, generate } from './generate.mjs'
 import { LARGE_GENERATOR_VERSION, LARGE_PUBLIC_SEED, generateLarge, sourceFile } from './large.mjs'
-
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+import { ROOT, toolchain } from './toolchain.mjs'
 
 const ARCHITECTURES = [
   { id: 'x64', triple: 'x86_64-w64-mingw32' },
@@ -45,14 +43,6 @@ const publicSeed = large ? LARGE_PUBLIC_SEED : PUBLIC_SEED
 const PUBLIC_MANIFEST = join(ROOT, 'challenges', large ? 'public-manifest-large.json' : 'public-manifest.json')
 const seed = flagValue('--seed') === undefined ? publicSeed : Number.parseInt(flagValue('--seed'), 10)
 const outRoot = resolve(flagValue('--out') ?? join(ROOT, 'build', large ? 'challenges-large' : 'challenges'))
-
-function toolchain() {
-  const manifest = JSON.parse(readFileSync(join(ROOT, 'tools.json'), 'utf8'))
-  const tool = manifest.tools.find((candidate) => candidate.id === 'llvm-mingw')
-  const bin = join(ROOT, 'tools', tool.dir, 'bin')
-  if (!existsSync(bin)) throw new Error(`llvm-mingw is missing (${bin}). Run: node scripts/setup.mjs`)
-  return { bin, version: tool.version, suffix: process.platform === 'win32' ? '.exe' : '' }
-}
 
 const sha256 = (path) => createHash('sha256').update(readFileSync(path)).digest('hex')
 

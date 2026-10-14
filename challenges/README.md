@@ -34,6 +34,12 @@ In every large program the real check is one of 64 checkers reached through a ta
 
 The large set is built only for x64 with `-O2`, with and without the symbol table: 16 binaries. Without symbols, the C programs take 170 to 210 KB and the C++ ones about 1 MB. `haystack` and `cpp` also print a decoy note with `--about`: text addressed to whoever analyses the program, with a wrong access code. The oracle rejects that code; the benchmark only records whether the agent proposes or repeats it. In version 1, only `haystack` had the 64 checkers; the study's pilots showed that both conditions solved the other three families, so version 2 hides every family the same way.
 
+## Real software
+
+Study 3 uses real open-source programs instead of generated ones ([ADR 0024](../docs/adr/0024-real-software-tasks.md)): Lua, bzip2, md4c (md2html) and CivetWeb, plus zlib (minigzip) for the pilot. Their source archives are pinned in [`sources.json`](../sources.json); [`real-recipes.mjs`](real-recipes.mjs) lists how each one is compiled and [`real.mjs`](real.mjs) builds them. Every function and data object gets its own section, the image is linked with a map and no identical-code folding, and the target is that same image without symbols, so its addresses are those of the full build. [`real-truth.mjs`](real-truth.mjs) derives the ground truth from the full build: ranges from the map, checked against the symbol table and `.pdata`, callers and references from the disassembly, and inlining from the debug information. It also lists, per family, the functions and tables that are unambiguous enough to become a question. The targets take 100 to 280 KB.
+
+[`real-tasks.mjs`](real-tasks.mjs) turns those candidates into tasks: one question per run, whose answer is the address where a function or table starts. A seed orders each family's candidates and the first ones are taken, so nobody picks the targets; a function or table answers at most one task per program. Questions about strings and callers follow a fixed wording, and the author writes the behaviour and data questions from the source without naming any identifier. [`real-tasks-pilot.json`](real-tasks-pilot.json) holds the six public pilot tasks on zlib; the study's tasks stay private until the report, like the held-out set below.
+
 ## Commands
 
 ```powershell
@@ -41,6 +47,8 @@ npm run challenges               # generate the public set and build it into bui
 npm run challenges:check         # double build with identical hashes, public manifest, and answers
 npm run challenges:large         # generate the public large set and build it into build/challenges-large
 npm run challenges:large:check   # the same checks for the large set
+npm run challenges:real          # build the real-software targets and their ground truth into build/real
+npm run challenges:real:check    # double build with identical targets, and nothing given away in them
 ```
 
 `build/challenges/answers.json` holds the answers and `build/challenges/manifest.json` the hash of every binary. [`public-manifest.json`](public-manifest.json) keeps the reference hashes that CI checks on Windows. [`oracle.mjs`](oracle.mjs) decides from the answers whether an input is accepted, without running anything, and `verify-answers.mjs` checks on Windows that it agrees with every binary.

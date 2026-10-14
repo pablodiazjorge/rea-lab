@@ -1,13 +1,15 @@
 #!/usr/bin/env node
 // Prepares the lab from tools.json: downloads each archive into tools/, verifies its size and
 // SHA-256 before anything is extracted, extracts it, and copies the Ghidra class exercises into
-// targets/. Idempotent: finished steps are skipped. Never touches PATH, the registry or anything
-// outside this repository.
+// targets/. With --manifest, the same steps run for another manifest of the same shape, such as
+// sources.json (ADR 0024), into the folder its "into" field names. Idempotent: finished steps are
+// skipped. Never touches PATH, the registry or anything outside this repository.
 //
 // Usage:
-//   node scripts/setup.mjs                 prepare everything
-//   node scripts/setup.mjs --only jdk      prepare some tools (comma-separated ids)
-//   node scripts/setup.mjs --check         report what is ready without downloading (exit 1 if not)
+//   node scripts/setup.mjs                          prepare everything
+//   node scripts/setup.mjs --only jdk               prepare some tools (comma-separated ids)
+//   node scripts/setup.mjs --check                  report what is ready without downloading (exit 1 if not)
+//   node scripts/setup.mjs --manifest sources.json  prepare the entries of another manifest
 
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
@@ -18,19 +20,24 @@ import { pipeline } from 'node:stream/promises'
 import { fileURLToPath } from 'node:url'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const TOOLS = join(ROOT, 'tools')
 const MARKER = '.rea-lab-sha256'
 
 const args = process.argv.slice(2)
 const checkOnly = args.includes('--check')
-const onlyIndex = args.indexOf('--only')
-const only = onlyIndex >= 0 ? (args[onlyIndex + 1] ?? '').split(',').filter(Boolean) : null
+const valueOf = (flag) => {
+  const index = args.indexOf(flag)
+  return index >= 0 ? (args[index + 1] ?? '') : null
+}
+const only = valueOf('--only')?.split(',').filter(Boolean) ?? null
+const manifestName = valueOf('--manifest') || 'tools.json'
 
-const manifest = JSON.parse(readFileSync(join(ROOT, 'tools.json'), 'utf8'))
-const selected = manifest.tools.filter((tool) => !only || only.includes(tool.id))
+const manifest = JSON.parse(readFileSync(join(ROOT, manifestName), 'utf8'))
+const TOOLS = join(ROOT, manifest.into ?? 'tools')
+const entries = manifest.tools ?? manifest.sources
+const selected = entries.filter((tool) => !only || only.includes(tool.id))
 if (only && selected.length !== only.length) {
-  const known = manifest.tools.map((tool) => tool.id).join(', ')
-  console.error(`Unknown tool id in --only. Known ids: ${known}`)
+  const known = entries.map((tool) => tool.id).join(', ')
+  console.error(`Unknown id in --only. Known ids: ${known}`)
   process.exit(2)
 }
 
@@ -87,9 +94,11 @@ async function download(tool) {
 function extract(tool) {
   const archive = join(TOOLS, tool.file)
   log(`  extracting ${tool.file}`)
+  // Windows' tar.exe reads both zip and gzip archives; elsewhere a zip goes to unzip.
+  const tar = process.platform === 'win32' ? join(process.env.SystemRoot ?? 'C:\\Windows', 'System32', 'tar.exe') : 'tar'
   const command =
-    process.platform === 'win32'
-      ? [join(process.env.SystemRoot ?? 'C:\\Windows', 'System32', 'tar.exe'), ['-xf', archive, '-C', TOOLS]]
+    process.platform === 'win32' || /\.(tar\.gz|tgz)$/.test(tool.file)
+      ? [tar, ['-xf', archive, '-C', TOOLS]]
       : ['unzip', ['-q', '-o', archive, '-d', TOOLS]]
   const result = spawnSync(command[0], command[1], { stdio: 'inherit' })
   if (result.status !== 0) throw new Error(`extraction failed (${command[0]} exited with ${result.status})`)
@@ -98,6 +107,10 @@ function extract(tool) {
 
 async function prepare(tool) {
   log(`${tool.name} ${tool.version}`)
+  if (!tool.sha256 || !Number.isSafeInteger(tool.size)) {
+    log(`  not pinned yet: ${manifestName} has no size or SHA-256 for ${tool.id}`)
+    return false
+  }
   if (isInstalled(tool)) {
     log('  ready')
     return true
@@ -129,7 +142,7 @@ async function prepare(tool) {
 
 function copyExercises() {
   const exercises = manifest.exercises
-  const tool = manifest.tools.find((candidate) => candidate.id === exercises.tool)
+  const tool = entries.find((candidate) => candidate.id === exercises.tool)
   if (!tool || !isInstalled(tool)) return false
   log('Ghidra class exercises')
   let ready = true
@@ -159,10 +172,11 @@ for (const tool of selected) {
     allReady = false
   }
 }
-if (!only || only.includes(manifest.exercises.tool)) allReady = copyExercises() && allReady
+if (manifest.exercises && (!only || only.includes(manifest.exercises.tool))) allReady = copyExercises() && allReady
 
 if (!allReady) {
-  console.error(checkOnly ? '\nNot ready. Run: node scripts/setup.mjs' : '\nSetup did not finish. See the errors above.')
+  const command = manifestName === 'tools.json' ? 'node scripts/setup.mjs' : `node scripts/setup.mjs --manifest ${manifestName}`
+  console.error(checkOnly ? `\nNot ready. Run: ${command}` : '\nSetup did not finish. See the errors above.')
   process.exit(1)
 }
-log('\nAll tools are ready.')
+log(manifestName === 'tools.json' ? '\nAll tools are ready.' : `\nAll entries of ${manifestName} are ready.`)

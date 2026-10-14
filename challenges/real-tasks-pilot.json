@@ -1,0 +1,262 @@
+{
+  "set": "real",
+  "role": "pilot",
+  "version": 1,
+  "seed": 20261014,
+  "build": {
+    "build_version": 1,
+    "manifest_sha256": "9862984d30f16a0ee724d53d84ce4b35c3d8391d46a67119e08cfbf7c48378fe"
+  },
+  "quotas": {
+    "string": 1,
+    "behaviour": 2,
+    "caller": 2,
+    "data": 1
+  },
+  "tasks": [
+    {
+      "id": "p01",
+      "program": "zlib",
+      "family": "string",
+      "target": {
+        "function": "gz_comp",
+        "string": "internal error: deflate stream corrupt"
+      },
+      "question": "Exactly one function in target.exe references the string \"internal error: deflate stream corrupt\" from its code. Give the address where that function starts."
+    },
+    {
+      "id": "p02",
+      "program": "zlib",
+      "family": "behaviour",
+      "target": {
+        "function": "gz_zero"
+      },
+      "question": "In target.exe, find the function that writes a pending run of zero bytes into a gzip file opened for writing, as requested by an earlier seek forward: it first compresses whatever is left in the input buffer, then fills the input buffer with zeros once and compresses buffer-sized chunks until the requested count is consumed, advancing the file position. Give the address where that function starts."
+    },
+    {
+      "id": "p03",
+      "program": "zlib",
+      "family": "behaviour",
+      "target": {
+        "function": "_tr_stored_block"
+      },
+      "question": "In target.exe, find the function that emits a deflate stored (uncompressed) block: it writes the 3-bit block header, aligns the bit buffer to a byte boundary, writes the 16-bit block length followed by its one's complement, and copies the raw bytes into the pending output buffer. Give the address where that function starts."
+    },
+    {
+      "id": "p04",
+      "program": "zlib",
+      "family": "caller",
+      "target": {
+        "function": "gz_read",
+        "callee": "gz_fetch",
+        "string": "state corrupt"
+      },
+      "question": "Exactly one function in target.exe references the string \"state corrupt\" from its code, and exactly one other function calls that function directly. Give the address where the calling function starts."
+    },
+    {
+      "id": "p05",
+      "program": "zlib",
+      "family": "caller",
+      "target": {
+        "function": "gz_uncompress",
+        "callee": "gzread",
+        "string": "request does not fit in an int"
+      },
+      "question": "Exactly one function in target.exe references the string \"request does not fit in an int\" from its code, and exactly one other function calls that function directly. Give the address where the calling function starts."
+    },
+    {
+      "id": "p06",
+      "program": "zlib",
+      "family": "data",
+      "target": {
+        "object": "_dist_code"
+      },
+      "question": "In target.exe, find the 512-byte table that maps a match distance to its deflate distance code: the first 256 entries are indexed by the distance itself and the last 256 by the distance shifted right by 7. Give the address where that table starts."
+    }
+  ],
+  "reserves": {
+    "zlib": {
+      "string": [
+        {
+          "function": "gz_uncompress",
+          "string": "failed fwrite"
+        },
+        {
+          "function": "gzread",
+          "string": "request does not fit in an int"
+        },
+        {
+          "function": "gzwrite",
+          "string": "requested length does not fit in int"
+        },
+        {
+          "function": "gz_decomp",
+          "string": "compressed data error"
+        },
+        {
+          "function": "gz_fetch",
+          "string": "state corrupt"
+        },
+        {
+          "function": "inflate",
+          "string": "too many length or distance symbols"
+        }
+      ],
+      "behaviour": [
+        {
+          "function": "crc32_z"
+        },
+        {
+          "function": "_tr_init"
+        },
+        {
+          "function": "deflate"
+        },
+        {
+          "function": "inflateInit2_"
+        },
+        {
+          "function": "deflateInit2_"
+        },
+        {
+          "function": "gz_write"
+        },
+        {
+          "function": "inflateReset2"
+        },
+        {
+          "function": "adler32_z"
+        },
+        {
+          "function": "gz_open"
+        },
+        {
+          "function": "_tr_flush_bits"
+        },
+        {
+          "function": "gzclose_r"
+        },
+        {
+          "function": "deflateReset"
+        },
+        {
+          "function": "inflate_table"
+        },
+        {
+          "function": "inflateEnd"
+        },
+        {
+          "function": "deflate_rle"
+        },
+        {
+          "function": "gz_load"
+        },
+        {
+          "function": "build_tree"
+        },
+        {
+          "function": "compress_block"
+        },
+        {
+          "function": "_tr_flush_block"
+        },
+        {
+          "function": "deflateResetKeep"
+        },
+        {
+          "function": "gz_read"
+        },
+        {
+          "function": "longest_match"
+        },
+        {
+          "function": "send_tree"
+        },
+        {
+          "function": "_tr_align"
+        },
+        {
+          "function": "deflate_huff"
+        },
+        {
+          "function": "gzclose_w"
+        },
+        {
+          "function": "updatewindow"
+        },
+        {
+          "function": "deflateEnd"
+        },
+        {
+          "function": "init_block"
+        },
+        {
+          "function": "fill_window"
+        }
+      ],
+      "caller": [
+        {
+          "function": "gz_compress",
+          "callee": "gzwrite",
+          "string": "requested length does not fit in int"
+        },
+        {
+          "function": "gz_decomp",
+          "callee": "inflate",
+          "string": "invalid code -- missing end-of-block"
+        }
+      ],
+      "data": [
+        {
+          "object": "distfix"
+        },
+        {
+          "object": "extra_dbits"
+        },
+        {
+          "object": "lenfix"
+        },
+        {
+          "object": "static_ltree"
+        },
+        {
+          "object": "configuration_table"
+        },
+        {
+          "object": "crc_braid_table"
+        },
+        {
+          "object": "base_length"
+        },
+        {
+          "object": "_length_code"
+        },
+        {
+          "object": "static_d_desc"
+        },
+        {
+          "object": "static_bl_desc"
+        },
+        {
+          "object": "static_dtree"
+        },
+        {
+          "object": "static_l_desc"
+        },
+        {
+          "object": "crc_table"
+        },
+        {
+          "object": "z_errmsg"
+        },
+        {
+          "object": "extra_lbits"
+        },
+        {
+          "object": "base_dist"
+        }
+      ]
+    }
+  },
+  "rejected": []
+}

@@ -11,6 +11,8 @@
     "challenges:check": "node challenges/build.mjs --check && node challenges/build.mjs && node challenges/verify-answers.mjs",
     "challenges:large": "node challenges/build.mjs --set large",
     "challenges:large:check": "node challenges/build.mjs --set large --check && node challenges/build.mjs --set large && node challenges/verify-answers.mjs --out build/challenges-large",
+    "challenges:real": "node challenges/real.mjs",
+    "challenges:real:check": "node challenges/real.mjs --check",
     "bench": "node bench/run.ts",
     "bench:report": "node bench/report.ts",
     "bench:test": "node --test \"bench/tests/*.test.ts\""

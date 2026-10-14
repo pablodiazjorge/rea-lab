@@ -61,6 +61,7 @@ There are no dates: each phase closes when it meets its exit criteria.
 | [`challenges/`](challenges/README.md) | Seeded practice challenges with known answers, built reproducibly |
 | [`bench/`](bench/README.md) | Benchmark harness: isolated `claude -p` runs, deterministic graders, rea's own evaluation code, paired statistics |
 | `tools.json` | Tool versions, download URLs and SHA-256 hashes |
+| `sources.json` | Source archives of the open-source programs compiled for study 3, with their SHA-256 |
 | `scripts/setup.mjs` | Downloads, verifies and extracts the tools into `tools/` |
 | `scripts/rea-mcp.mjs`, `.mcp.json` | rea's MCP server, registered for this project only |
 | `.claude/settings.json` | rea tools allowed; tools that run a target or a device denied |

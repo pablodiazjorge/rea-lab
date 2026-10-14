@@ -1,0 +1,71 @@
+{
+  "description": "Open-source programs compiled here for study 3 (ADR 0024). node scripts/setup.mjs --manifest sources.json downloads each source archive into tools/sources/, verifies its size and SHA-256 and extracts it. Source text only: no third-party executable is downloaded. challenges/real.mjs builds the targets from the extracted folders.",
+  "into": "tools/sources",
+  "sources": [
+    {
+      "id": "lua",
+      "name": "Lua",
+      "version": "5.4.9",
+      "role": "study",
+      "licence": "MIT",
+      "url": "https://www.lua.org/ftp/lua-5.4.9.tar.gz",
+      "file": "lua-5.4.9.tar.gz",
+      "size": 373429,
+      "sha256": "2335b6c582a52654f94612bf10d2f4672805d05329aa6568b1d8cd9e5c6fb8e6",
+      "hashSource": "lua.org/ftp listing",
+      "dir": "lua-5.4.9"
+    },
+    {
+      "id": "bzip2",
+      "name": "bzip2",
+      "version": "1.0.8",
+      "role": "study",
+      "licence": "bzip2 licence (BSD-style)",
+      "url": "https://sourceware.org/pub/bzip2/bzip2-1.0.8.tar.gz",
+      "file": "bzip2-1.0.8.tar.gz",
+      "size": 810029,
+      "sha256": "ab5a03176ee106d3f0fa90e381da478ddae405918153cca248e682cd0c4a2269",
+      "hashSource": "value pinned by Linux distributions for this sourceware.org archive, checked on the first download",
+      "dir": "bzip2-1.0.8"
+    },
+    {
+      "id": "md4c",
+      "name": "MD4C",
+      "version": "0.6.0",
+      "role": "study",
+      "licence": "MIT",
+      "url": "https://github.com/mity/md4c/archive/refs/tags/v0.6.0.tar.gz",
+      "file": "md4c-0.6.0.tar.gz",
+      "size": 268862,
+      "sha256": "4d151298125a81da3b2efa2e0eed8bdb7a9318569804e4fa4d7a2375ab83ef70",
+      "hashSource": "first download on 2026-10-14 (TOFU, ADR 0006); the project publishes no release archive, only the GitHub tag archive",
+      "dir": "md4c-0.6.0"
+    },
+    {
+      "id": "civetweb",
+      "name": "CivetWeb",
+      "version": "1.16",
+      "role": "study",
+      "licence": "MIT",
+      "url": "https://github.com/civetweb/civetweb/archive/refs/tags/v1.16.tar.gz",
+      "file": "civetweb-1.16.tar.gz",
+      "size": 12094780,
+      "sha256": "f0e471c1bf4e7804a6cfb41ea9d13e7d623b2bcc7bc1e2a4dd54951a24d60285",
+      "hashSource": "first download on 2026-10-14 (TOFU, ADR 0006); the release ships only a Windows binary besides the GitHub tag archive",
+      "dir": "civetweb-1.16"
+    },
+    {
+      "id": "zlib",
+      "name": "zlib",
+      "version": "1.3.2",
+      "role": "pilot",
+      "licence": "zlib licence",
+      "url": "https://zlib.net/zlib-1.3.2.tar.gz",
+      "file": "zlib-1.3.2.tar.gz",
+      "size": 1502830,
+      "sha256": "bb329a0a2cd0274d05519d61c667c062e06990d72e125ee2dfa8de64f0119d16",
+      "hashSource": "zlib.net home page",
+      "dir": "zlib-1.3.2"
+    }
+  ]
+}
