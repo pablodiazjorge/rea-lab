@@ -61,7 +61,7 @@ node bench/run.ts --study pilot --model <modelo>
 node bench/report.ts --study pilot
 ```
 
-Tras corregir un calificador, `node bench/regrade.ts --study <nombre>` vuelve a calificar un estudio a partir de sus transcripciones guardadas, sin repetir ninguna ejecución. Las transcripciones en bruto se quedan en la carpeta del banco. `node bench/report.ts --study <nombre> --publish` copia las ejecuciones calificadas, sin rutas personales, en `bench/results/<nombre>/` junto con el informe. `node bench/context.ts --study <nombre>` muestra medidas de contexto a posteriori sacadas de las transcripciones, como los resultados de rea guardados en archivos por herramienta y la entrada de la primera petición de cada ejecución, sin rutas locales.
+Tras corregir un calificador, `node bench/regrade.ts --study <nombre>` vuelve a calificar un estudio a partir de sus transcripciones guardadas, sin repetir ninguna ejecución. Las transcripciones en bruto se quedan en la carpeta del banco. `node bench/report.ts --study <nombre> --publish` copia las ejecuciones calificadas, sin rutas personales, en `bench/results/<nombre>/` junto con el informe. Añadir `--compare <archivo de resultados>` compara el estudio tarea por tarea con otro estudio sobre las mismas tareas, como hace el estudio 4 con el 3. `node bench/context.ts --study <nombre>` muestra medidas de contexto a posteriori sacadas de las transcripciones, como los resultados de rea guardados en archivos por herramienta, las ejecuciones que vuelven a leer alguno y la entrada de la primera petición de cada ejecución, sin rutas locales.
 
 ## Limitaciones
 

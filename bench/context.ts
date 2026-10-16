@@ -23,8 +23,11 @@ type RunContext = {
   firstRequestInput: number
   totalInput: number
   toolCalls: Map<string, number>
-  /** rea results Claude Code saved to a file, by tool, with their sizes in bytes. */
-  saved: Array<{ tool: string; bytes: number }>
+  /** rea results Claude Code saved to a file, by tool, with their file names and sizes in bytes. */
+  saved: Array<{ tool: string; file: string; bytes: number }>
+  /** Whether the agent tried to read a saved tool result, and whether it read a saved rea result back. */
+  readAttempted: boolean
+  readBack: boolean
   /** rea tools that Claude Code's init event listed for the run. */
   advertisedReaTools: number
 }
@@ -32,6 +35,8 @@ type RunContext = {
 function readRun(runDir: string, condition: string): RunContext {
   const usageById = new Map<string, Usage>()
   const toolUseIds = new Map<string, string>()
+  const toolInputs = new Map<string, string>()
+  const failedCalls = new Set<string>()
   let advertisedReaTools = 0
   for (const line of readFileSync(join(runDir, 'events.jsonl'), 'utf8').split('\n')) {
     if (!line.trim()) continue
@@ -43,10 +48,17 @@ function readRun(runDir: string, condition: string): RunContext {
     }
     if (event.type === 'system' && event.subtype === 'init' && Array.isArray(event.tools))
       advertisedReaTools = event.tools.filter((tool) => typeof tool === 'string' && tool.startsWith('mcp__rea__')).length
+    // Tool results come back in user events; a denied or failed call is flagged as an error.
+    if (event.type === 'user')
+      for (const block of Array.isArray(event.message?.content) ? event.message.content : [])
+        if (block?.type === 'tool_result' && block.is_error === true && typeof block.tool_use_id === 'string') failedCalls.add(block.tool_use_id)
     if (event.type !== 'assistant' || !event.message?.id) continue
     if (event.message.usage && !usageById.has(event.message.id)) usageById.set(event.message.id, event.message.usage)
     for (const block of Array.isArray(event.message.content) ? event.message.content : [])
-      if (block?.type === 'tool_use' && typeof block.id === 'string') toolUseIds.set(block.id, block.name)
+      if (block?.type === 'tool_use' && typeof block.id === 'string') {
+        toolUseIds.set(block.id, block.name)
+        toolInputs.set(block.id, JSON.stringify(block.input ?? {}))
+      }
   }
   const usages = [...usageById.values()]
   const toolCalls = new Map<string, number>()
@@ -58,13 +70,22 @@ function readRun(runDir: string, condition: string): RunContext {
     for (const entry of readdirSync(folder, { withFileTypes: true })) {
       const path = join(folder, entry.name)
       if (entry.isDirectory()) walk(path)
-      else {
-        const match = /^mcp-rea-([a-z0-9_]+)-\d+\.txt$/.exec(entry.name)
-        if (match && folder.endsWith('tool-results')) saved.push({ tool: match[1], bytes: statSync(path).size })
+      else if (folder.endsWith('tool-results')) {
+        // With Anthropic models the file is named after the rea tool; with DeepSeek, after the call's id.
+        const named = /^mcp-rea-([a-z0-9_]+)-\d+\.txt$/.exec(entry.name)?.[1]
+        const byCall = toolUseIds.get(entry.name.replace(/\.txt$/, ''))
+        const tool = named ?? (byCall?.startsWith('mcp__rea__') ? byCall.slice(10) : undefined)
+        if (tool) saved.push({ tool, file: entry.name, bytes: statSync(path).size })
       }
     }
   }
   walk(projects)
+  // A read back is a call that did not fail and names a saved rea result, or searches the folder of saved results.
+  const reads = [...toolUseIds].filter(([id, name]) => !name.startsWith('mcp__') && toolInputs.get(id)!.includes('tool-results'))
+  const readBack = reads.some(([id]) => {
+    const input = toolInputs.get(id)!
+    return !failedCalls.has(id) && saved.length > 0 && (saved.some((file) => input.includes(file.file)) || !/tool-results[\\/]+[A-Za-z0-9_.-]+\.txt/.test(input))
+  })
   return {
     condition,
     requests: usages.length,
@@ -72,6 +93,8 @@ function readRun(runDir: string, condition: string): RunContext {
     totalInput: usages.reduce((total, usage) => total + inputOf(usage), 0),
     toolCalls,
     saved,
+    readAttempted: reads.length > 0,
+    readBack,
     advertisedReaTools,
   }
 }
@@ -112,6 +135,8 @@ function main() {
     savedResults: {
       runs: withRea.filter((run) => run.saved.length > 0).length,
       results: withRea.reduce((total, run) => total + run.saved.length, 0),
+      readAttemptRuns: withRea.filter((run) => run.readAttempted).length,
+      readBackRuns: withRea.filter((run) => run.readBack).length,
       byTool: Object.fromEntries([...tools].filter(([, tool]) => tool.saved.length > 0 || tool.calls > 0).sort(([left], [right]) => left.localeCompare(right)).map(([name, tool]) => [name, {
         calls: tool.calls,
         saved: tool.saved.length,

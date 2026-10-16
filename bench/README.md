@@ -61,7 +61,7 @@ node bench/run.ts --study pilot --model <model>
 node bench/report.ts --study pilot
 ```
 
-After a grader fix, `node bench/regrade.ts --study <name>` grades a study again from its saved transcripts, without repeating any run. Raw transcripts stay in the benchmark home. `node bench/report.ts --study <name> --publish` copies the graded runs, without personal paths, into `bench/results/<name>/` together with the report. `node bench/context.ts --study <name>` prints post-hoc context measures from the transcripts, such as the rea results saved to files by tool and the input of each run's first request, without local paths.
+After a grader fix, `node bench/regrade.ts --study <name>` grades a study again from its saved transcripts, without repeating any run. Raw transcripts stay in the benchmark home. `node bench/report.ts --study <name> --publish` copies the graded runs, without personal paths, into `bench/results/<name>/` together with the report. Adding `--compare <results file>` compares the study task by task with another study on the same tasks, as study 4 does with study 3. `node bench/context.ts --study <name>` prints post-hoc context measures from the transcripts, such as the rea results saved to files by tool, the runs that read one back and the input of each run's first request, without local paths.
 
 ## Limitations
 

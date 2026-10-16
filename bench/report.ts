@@ -7,6 +7,7 @@
 //   node bench/report.ts --study <name>                 read <bench home>/runs/<name>/results.jsonl
 //   node bench/report.ts --results <file> --out <dir>   any results file, for example a published one
 //   node bench/report.ts --study <name> --publish       also copy sanitised results into bench/results/<name>/
+//   add --compare <results file>                        to compare task by task with another study on the same tasks
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
@@ -28,6 +29,8 @@ export type RunRecord = {
   client_version: string
   model: string | null
   requested_model: string
+  /** Who served the model; absent in studies 1 to 3, which Anthropic served. */
+  provider?: 'anthropic' | 'deepseek'
   effort: string
   rea_version: string
   timed_out: boolean
@@ -102,19 +105,36 @@ export function perChallenge(records: RunRecord[], first: string, second: string
   return { first, second, pairs: pairs.length, ...mcnemarExact(pairs) }
 }
 
-export function buildReport(records: RunRecord[]) {
+/** Correct runs out of all runs of one condition, on one task or on all, as `x/n`, or `n/a` when there are none. */
+const tally = (records: RunRecord[], condition: string, challenge?: string) => {
+  const group = records.filter((record) => record.condition === condition && (challenge === undefined || record.challenge === challenge))
+  return group.length === 0 ? 'n/a' : `${group.filter((record) => record.solved).length}/${group.length}`
+}
+
+export type ReportOptions = {
+  /** Another study on the same tasks, compared task by task (study 4 against study 3). */
+  compare?: { study: string; records: RunRecord[] }
+}
+
+export function buildReport(records: RunRecord[], options: ReportOptions = {}) {
   const byCondition = Object.fromEntries(CONDITIONS.map((condition) => [condition, records.filter((record) => record.condition === condition)]))
   const families = [...new Set(records.map((record) => record.family))]
   // Real-software tasks (study 3) get their own columns and sections; challenge-set reports stay as they were.
   const real = records.some((record) => record.address !== undefined)
+  const deepseek = records.some((record) => record.provider === 'deepseek')
 
   const comparisons = PAIRS.map(([first, second]) => compare(records, first, second))
 
   const lines: string[] = []
   const study = records[0]?.study ?? 'unknown'
   lines.push(`# Benchmark report: ${study}`, '')
-  lines.push(`Runs: ${records.length}. Set: ${distinct(records, (record) => record.set)}. Claude Code ${distinct(records, (record) => record.client_version)}, model ${distinct(records, (record) => record.model ?? record.requested_model)}, effort ${distinct(records, (record) => record.effort)}, rea ${distinct(records, (record) => record.rea_version)}.`, '')
-  lines.push('Rates show successes/runs, the estimate and its Wilson 95 % interval. Cost is the equivalent cost reported by Claude Code, not money spent.', '')
+  lines.push(`Runs: ${records.length}. Set: ${distinct(records, (record) => record.set)}. Claude Code ${distinct(records, (record) => record.client_version)}, model ${distinct(records, (record) => record.model ?? record.requested_model)}${deepseek ? ' served by DeepSeek' : ''}, effort ${distinct(records, (record) => record.effort)}, rea ${distinct(records, (record) => record.rea_version)}.`, '')
+  lines.push(
+    deepseek
+      ? "Rates show successes/runs, the estimate and its Wilson 95 % interval. Cost is computed from each run's token usage at DeepSeek's published prices, peak or off-peak by the run's start (bench/prices.ts): money spent, not Claude Code's equivalent cost."
+      : 'Rates show successes/runs, the estimate and its Wilson 95 % interval. Cost is the equivalent cost reported by Claude Code, not money spent.',
+    '',
+  )
 
   const costs = (group: RunRecord[]) =>
     `${group.filter((record) => (record.safetyStops ?? 0) > 0).length} | ${group.filter((record) => record.refused).length} | ${group.filter((record) => record.timed_out).length} | ${group.reduce((total, record) => total + record.permissionDenials, 0)} | ${middle(group.map((record) => record.wall_ms), (value) => `${Math.round(value / 1000)} s`)} | ${middle(group.map((record) => record.num_turns), (value) => String(value))} | ${middle(group.map(inputTokens), (value) => String(Math.round(value)))} | ${middle(group.map((record) => record.usage?.output_tokens ?? null), (value) => String(Math.round(value)))} | ${middle(group.map((record) => record.equivalent_cost_usd), (value) => `${value.toFixed(2)} USD`)}`
@@ -169,6 +189,24 @@ export function buildReport(records: RunRecord[]) {
       const comparison = perChallenge(confirmatory, first, second)
       if (comparison.pairs > 0) lines.push(row(comparison, `${first} vs ${second}, one pair per task (right in at least half of its repetitions), without the control`))
     }
+  }
+
+  // Only when asked for, so the reports of studies 1 to 3 regenerate unchanged.
+  if (options.compare) {
+    const { study: other, records: theirs } = options.compare
+    const shared = [...new Set(records.map((record) => record.challenge))].filter((challenge) => theirs.some((record) => record.challenge === challenge)).sort()
+    const ours = records.filter((record) => shared.includes(record.challenge))
+    const their = theirs.filter((record) => shared.includes(record.challenge))
+    const conditions = CONDITIONS.filter((condition) => ours.some((record) => record.condition === condition))
+    lines.push('', `## Per task, compared with ${other}`, '')
+    lines.push(`Correct runs out of all runs, per condition, here and in ${other}, on the ${shared.length} tasks both studies ran.`, '')
+    lines.push(`| Task | Family | Program | ${conditions.join(' | ')} | ${conditions.map((condition) => `${condition} in ${other}`).join(' | ')} |`)
+    lines.push(`|---|---|---|${conditions.map(() => '---').join('|')}|${conditions.map(() => '---').join('|')}|`)
+    for (const challenge of shared) {
+      const first = ours.find((record) => record.challenge === challenge)!
+      lines.push(`| ${challenge} | ${first.family} | ${first.program ?? 'unknown'} | ${conditions.map((condition) => tally(ours, condition, challenge)).join(' | ')} | ${conditions.map((condition) => tally(their, condition, challenge)).join(' | ')} |`)
+    }
+    lines.push(`| All | | | ${conditions.map((condition) => tally(ours, condition)).join(' | ')} | ${conditions.map((condition) => tally(their, condition)).join(' | ')} |`)
   }
 
   const withRea = records.filter((record) => record.rea !== null)
@@ -249,6 +287,13 @@ export function sanitize(record: RunRecord, home = homedir()): RunRecord {
   }
 }
 
+/** Graded runs of a results file. A resumed batch may append a run twice; the last record of each key wins. */
+export function readRecords(file: string): RunRecord[] {
+  const latest = new Map<string, RunRecord>()
+  for (const line of readFileSync(file, 'utf8').split('\n')) if (line.trim()) latest.set(JSON.parse(line).key, JSON.parse(line))
+  return [...latest.values()].sort((left, right) => left.key.localeCompare(right.key))
+}
+
 function main() {
   const argv = process.argv.slice(2)
   const value = (name: string) => {
@@ -259,11 +304,12 @@ function main() {
   const home = resolve(process.env.REA_LAB_BENCH_HOME ?? join(process.env.LOCALAPPDATA ?? join(homedir(), '.cache'), 'rea-lab-bench'))
   const resultsFile = value('--results') ? resolve(value('--results')!) : study ? join(home, 'runs', study, 'results.jsonl') : undefined
   if (!resultsFile || !existsSync(resultsFile)) throw new Error('Give --study <name> or --results <file> with graded runs')
-  // A resumed batch may append a run twice; the last record of each key wins.
-  const latest = new Map<string, RunRecord>()
-  for (const line of readFileSync(resultsFile, 'utf8').split('\n')) if (line.trim()) latest.set(JSON.parse(line).key, JSON.parse(line))
-  const records = [...latest.values()].sort((left, right) => left.key.localeCompare(right.key))
-  const { markdown } = buildReport(records)
+  const records = readRecords(resultsFile)
+  const compareFile = value('--compare')
+  if (compareFile !== undefined && !existsSync(compareFile)) throw new Error(`--compare: no results file at ${compareFile}`)
+  const theirs = compareFile === undefined ? [] : readRecords(resolve(compareFile))
+  const options: ReportOptions = compareFile === undefined ? {} : { compare: { study: theirs[0]?.study ?? 'the other study', records: theirs } }
+  const { markdown } = buildReport(records, options)
   const out = resolve(value('--out') ?? dirname(resultsFile))
   mkdirSync(out, { recursive: true })
   writeFileSync(join(out, 'report.md'), markdown)
@@ -273,7 +319,7 @@ function main() {
     const target = join(ROOT, 'bench', 'results', study)
     mkdirSync(target, { recursive: true })
     writeFileSync(join(target, 'results.jsonl'), records.map((record) => JSON.stringify(sanitize(record))).join('\n') + '\n')
-    writeFileSync(join(target, 'report.md'), buildReport(records.map((record) => sanitize(record))).markdown)
+    writeFileSync(join(target, 'report.md'), buildReport(records.map((record) => sanitize(record)), options).markdown)
     console.log(`Published sanitised results in ${target}`)
   }
 }
