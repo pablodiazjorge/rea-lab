@@ -118,34 +118,28 @@ list stays complete; availability depends on the operation, target, and host.
 
 ## Locate code in a native binary
 
-When the question is where a function or table with a described behavior
-lives in a native binary, especially one without symbols, search from anchors
-to candidates instead of reading the whole program:
+To find where a function or table with a described behavior lives in a native
+binary, especially one without symbols, work from anchors to candidates:
 
-1. Find anchors first. Use `search_strings` with a `pattern` for messages,
-   file names, formats or options the behavior would use, then `xrefs` with
-   the string's `address` to reach the code that uses it. From a known
-   function, `procedure_callers` and `procedure_callees` walk the call graph
-   one step at a time, and `procedure_references` lists its references.
-2. Do not list every procedure to find one. `list_procedures` returns the
-   whole inventory, which for a program with a few hundred functions is too
-   large for many clients to return inline. Use `search_procedures` with a
-   `pattern` when a name narrows the search, and `resolve_containing_procedure`
-   with an `address` to turn a reference or a data address into its function.
-3. Read code only for candidates. Request `procedure_pseudo_code` for one
-   candidate, or `batch_decompile` with a short list of `addresses`, and check
-   it against the described behavior before widening the search. For a large
-   function, `analyze_function` keeps a dossier whose pseudocode
-   `inspect_analysis_view` returns a page at a time.
-4. Pass the argument each schema names: `procedure` (a name or an address)
-   for procedure tools, `address` for `xrefs`, `read_bytes` and
-   `resolve_containing_procedure`, and `pattern` for searches.
-5. Confirm the answer before reporting it. Call `procedure_info` or
-   `resolve_containing_procedure` for the chosen function and cite that
-   Evidence for its start address, so the cited Evidence states the address
-   you report; cite the Evidence that shows the behavior for the reasoning.
-   A caller or callee of the described function is a different answer: check
-   which one the question asks for.
+1. Start from anchors the behavior implies: strings, imported library calls or
+   option names. `search_strings` and `search_procedures` take a `pattern`;
+   `xrefs` takes the `address` of a match and returns the code that uses it, and
+   `resolve_containing_procedure` turns that code address into its function.
+   When a name search already gives a candidate, go straight to step 2.
+2. Read code only for candidates: `procedure_pseudo_code` for one, or
+   `batch_decompile` for a short list of `addresses`. `procedure_callers` and
+   `procedure_callees` move one step in the call graph. Procedure tools take
+   `procedure`, a name or an address.
+3. When no anchor fits, note which one is missing and try the next cheapest one,
+   such as a narrower string, a library call or a caller of a known function,
+   before asking `list_procedures` for the whole inventory, whose result can be
+   too large for a client to return inline.
+4. Reuse a result instead of repeating an identical call.
+5. Before answering, check whether the question asks for the described
+   function itself or for its caller or callee, and cite an Evidence whose
+   result states the start address you report, such as a `batch_decompile`,
+   `procedure_info` or `resolve_containing_procedure` result for that function.
+   Call `procedure_info` only when no earlier result states it.
 
 ## Work summary-first
 

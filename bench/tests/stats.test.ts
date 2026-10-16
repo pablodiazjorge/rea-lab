@@ -1,6 +1,6 @@
 import { strict as assert } from 'node:assert'
 import { test } from 'node:test'
-import { hodgesLehmann, holm, mcnemarExact, median, wilcoxonSignedRankExact, wilson } from '../stats.ts'
+import { hodgesLehmann, hodgesLehmannInterval, holm, mcnemarExact, median, wilcoxonSignedRankExact, wilson } from '../stats.ts'
 
 const close = (actual: number, expected: number, digits = 4) =>
   assert.ok(Math.abs(actual - expected) < 10 ** -digits, `${actual} is not close to ${expected}`)
@@ -75,4 +75,15 @@ test('holm adjusts in step-down order and keeps the input order', () => {
   assert.deepEqual(holm([0.01, 0.04]), [0.02, 0.04])
   assert.deepEqual(holm([0.04, 0.01]), [0.04, 0.02])
   assert.deepEqual(holm([0.6, 0.7]), [1, 1])
+})
+
+test('hodgesLehmannInterval takes the exact order statistics of the Walsh averages', () => {
+  // Six differences: P(T <= 0) = 1/64 <= 0.025 < P(T <= 1), so the interval runs from the smallest to the largest average.
+  assert.deepEqual(hodgesLehmannInterval([1, 2, 3, 4, 5, 6]), { low: 1, high: 6 })
+  // Nine differences: P(T <= 5) = 10/512 <= 0.025 < P(T <= 6) = 14/512, so the 6th smallest and 6th largest averages.
+  const differences = [0.952, -0.147, 1.022, 0.43, 0.62, 0.59, 0.49, -0.08, 0.01]
+  const averages = differences.flatMap((first, index) => differences.slice(index).map((second) => (first + second) / 2)).sort((a, b) => a - b)
+  assert.deepEqual(hodgesLehmannInterval(differences), { low: averages[5], high: averages[averages.length - 6] })
+  // Five differences cannot reach 95 %: the smallest tail already has probability 1/32 > 0.025.
+  assert.equal(hodgesLehmannInterval([1, 2, 3, 4, 5]), null)
 })

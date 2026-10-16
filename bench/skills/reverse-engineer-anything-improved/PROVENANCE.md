@@ -2,11 +2,18 @@
 
 This folder is a modified copy of the `reverse-engineer-anything` skill shipped in `rea-agents@6.4.0` ([morluto/rea](https://github.com/morluto/rea)), under the MIT licence, copyright (c) 2026 morluto; the licence is in [LICENSE](LICENSE).
 
-rea-lab changed `SKILL.md` only:
+rea-lab changed `SKILL.md` only, and every line of the original is still there in the same order. The `references/` files are unchanged. Study 5 compares this skill with the original ([ADR 0025](../../../docs/adr/0025-skill-comparison.md)).
 
-- a section, "Locate code in a native binary", on finding where a described function or table lives: anchors before code, no full procedure listing, code only for candidates, the argument names each tool's schema uses, and a confirmation whose Evidence states the reported address;
-- a pointer to that section from the native route;
-- one sentence on reading a result that the client saved to a file instead of repeating the call;
-- the version in the front matter, `37+rea-lab.1`.
+## What changed and where each change comes from
 
-The `references/` files are unchanged. Study 5 compares this skill with the original ([ADR 0025](../../../docs/adr/0025-skill-comparison.md)). The section names only tools that rea 6.4.0 and rea's main branch both offer, with the same argument names, so it can be proposed to rea as a small addition.
+The front matter's version is `37+rea-lab.1`. A pointer from the native route leads to a new section, "Locate code in a native binary", and one sentence after the oversized-result paragraph asks the agent to read a result that the client saved to a file instead of repeating the call. The section's steps and their sources:
+
+| Step | Change | Source |
+|---|---|---|
+| 1 | Start from anchors the behavior implies (strings, imported library calls, option names); `xrefs` from a match, then `resolve_containing_procedure` on the code address it returns | Study 3 transcripts; imports as anchors from ReVa's [binary-triage skill](https://github.com/cyberkaida/reverse-engineering-assistant/tree/main/ReVa/skills/binary-triage), which surveys strings, imports and cross-references before decompiling; the tool contract of `resolve_containing_procedure` in rea 6.4.0, which returns a negative result for an address outside a procedure |
+| 2 | Read code only for candidates; the argument names `procedure` and `addresses` | Study 3 (306 `procedure_pseudo_code` calls); study 1's input validation failures (`address` for `procedure`, `query` for `pattern`) |
+| 3 | When no anchor fits, try the next cheapest one before the whole inventory | Study 3 (all 21 `list_procedures` results were too large to return inline); SkillsBench ([Li and others, 2026](https://arxiv.org/abs/2602.12670), sections 5.1.3 and 6): focused skills do better than exhaustive ones, and skills that impose one pipeline without applicability boundaries or a lightweight fallback can hurt |
+| 4 | Reuse a result instead of repeating an identical call | Reveree ([Benkraouda and others, 2026](https://arxiv.org/abs/2609.01185), sections 5.2.3 and 5.3.2): failed runs repeat commands and re-analyse, and the strategies that help re-analyse less; ZGCM-1 ([arXiv 2609.13356](https://arxiv.org/abs/2609.13356), section 11.2) gives no credit to non-convergent repeated tool use |
+| 5 | Check whether the question asks for the function or its caller or callee, and cite an Evidence that states the reported start address, calling `procedure_info` only when no earlier result does | Study 3 (three of four misses with rea answered a function one step away in the call graph; the cited Evidence stated the answer in 38 of 72 runs); ZGCM-1, section 11.2 (callers and callees confirm which function owns the behavior) |
+
+The wording follows Anthropic's [skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices): concise steps, one default with an escape hatch, and a verification step. The section names only tools that rea 6.4.0 and rea's main branch both offer, with the same argument names, so it can be proposed to rea as a small addition.

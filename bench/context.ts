@@ -9,7 +9,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { benchHome } from './run.ts'
 
-type Usage = { input_tokens?: number; cache_creation_input_tokens?: number; cache_read_input_tokens?: number }
+type Usage = { input_tokens?: number; cache_creation_input_tokens?: number; cache_read_input_tokens?: number; output_tokens?: number }
 const inputOf = (usage: Usage) => (usage.input_tokens ?? 0) + (usage.cache_creation_input_tokens ?? 0) + (usage.cache_read_input_tokens ?? 0)
 const median = (values: number[]) => {
   const sorted = [...values].sort((left, right) => left - right)
@@ -21,6 +21,9 @@ type RunContext = {
   /** Distinct API requests (assistant message ids) and the input of the first one. */
   requests: number
   firstRequestInput: number
+  /** The first request's cache writes and reads: whether its prefix, skill included, was already cached. */
+  firstRequestCacheWrite: number
+  firstRequestCacheRead: number
   totalInput: number
   toolCalls: Map<string, number>
   /** rea results Claude Code saved to a file, by tool, with their file names and sizes in bytes. */
@@ -92,6 +95,8 @@ function readRun(runDir: string, condition: string): RunContext {
     condition,
     requests: usages.length,
     firstRequestInput: usages.length ? inputOf(usages[0]) : 0,
+    firstRequestCacheWrite: usages[0]?.cache_creation_input_tokens ?? 0,
+    firstRequestCacheRead: usages[0]?.cache_read_input_tokens ?? 0,
     totalInput: usages.reduce((total, usage) => total + inputOf(usage), 0),
     toolCalls,
     saved,
@@ -139,6 +144,9 @@ function main() {
         return [condition, {
           runs: group.length,
           firstRequestInputMedian: median(group.map((run) => run.firstRequestInput)),
+          // Cache writes of the first request depend on what earlier runs left cached, not on the skill's guidance.
+          firstRequestCache: { writeMedian: median(group.map((run) => run.firstRequestCacheWrite)), readMedian: median(group.map((run) => run.firstRequestCacheRead)), runsWithColdPrefix: group.filter((run) => run.firstRequestCacheRead === 0).length },
+          totalInputWithoutFirstCacheWrite: median(group.map((run) => run.totalInput - run.firstRequestCacheWrite)),
           totalInputMedianPerMessage: median(group.map((run) => run.totalInput)),
           medianRequests: median(group.map((run) => run.requests)),
           savedResults: { runs: group.filter((run) => run.saved.length > 0).length, results: group.reduce((total, run) => total + run.saved.length, 0), readBackRuns: group.filter((run) => run.readBack).length },

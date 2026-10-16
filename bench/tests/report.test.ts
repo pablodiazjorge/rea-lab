@@ -181,14 +181,16 @@ test('a study 5 report pairs the cost per task with an exact Wilcoxon test and a
   assert.match(markdown, /\| Family \| B \| C1 \| C2 \|/)
   assert.match(markdown, /## rea usage and Evidence \(conditions B, C1 and C2\)/)
   assert.match(markdown, /## Answered address in the cited Evidence \(conditions B, C1 and C2\)/)
-  assert.match(markdown, /## Cost per run, paired by task \(exact Wilcoxon signed-rank\)/)
-  // Six tasks, all lower in the second condition: W+ = 0, p = 2/64; Holm doubles the smaller of two equal p-values.
-  assert.match(markdown, /\| C1 vs C2 \| 6 \| 0\.1750 USD \| 0\.1250 USD \| -0\.0500 USD \| -0\.0500 USD \| 0 \| 0 \| 0\.0313 \| 0\.0625 \|/)
-  assert.match(markdown, /\| B vs C1 \| 6 \| 0\.2250 USD \| 0\.1750 USD \| -0\.0500 USD \| -0\.0500 USD \| 0 \| 0 \| 0\.0313 \| 0\.0625 \|/)
+  assert.match(markdown, /## Co-primary outcomes \(exact tests, Holm within each hypothesis\)/)
+  // Six tasks, all cheaper in the second condition: W+ = 0 and p = 2/64 on the log ratios. Six differences give
+  // the widest exact interval, the smallest and largest Walsh averages: here the cheapest and dearest task ratios.
+  assert.match(markdown, /\| C1 vs C2 \| 6 \| 0\.1750 USD \| 0\.1250 USD \| 0\.7\d\d \| 0\.667 to 0\.750 \| 0 \| 0\.0313 \| 0\.0313 \|/)
+  assert.match(markdown, /\| B vs C1 \| 6 \| 0\.2250 USD \| 0\.1750 USD \| 0\.7\d\d \| 0\.750 to 0\.800 \| 0 \| 0\.0313 \| 0\.0625 \|/)
   assert.match(markdown, /\| B vs C2 \| 6 \| .* \| 0\.0313 \| n\/a \|/)
-  assert.match(markdown, /## Per-run measures by condition \(medians\)\n\n\| Condition \| Runs \| Cost \|[^\n]*\n\|---[^\n]*\n\| B \| 12 \|/)
-  // The improved skill's citations state the address in all 12 runs, the official one's in none.
-  assert.match(markdown, /## Answered address in the cited Evidence, paired \(exact McNemar\)[\s\S]*\| C1 vs C2 \| 12 \| 0 \| 12 \| 0\.0005 \|/)
+  // The improved skill's citations state the address in all 12 runs, the official one's in none. Holm within H1
+  // doubles the smaller p-value (0.0005); within H2 the citations do not differ (p = 1), so the cost is doubled.
+  assert.match(markdown, /### Answered address in the cited Evidence, paired by task and repetition[\s\S]*\| C1 vs C2 \| 12 \| 0 \| 12 \| 0\.0005 \| 0\.0010 \|\n\| B vs C1 \| 12 \| 0 \| 0 \| 1\.0000 \| 1\.0000 \|/)
+  assert.match(markdown, /## Tokens and calls per run by condition \(medians\)[\s\S]*\| Condition \| Runs \| Cost \| Turns \| Input \| Cache writes \| Cache reads \| Output \|[^\n]*\n\|---[^\n]*\n\| B \| 12 \|/)
   // The McNemar table on correctness uses the study 5 pairs too.
   assert.match(markdown, /\| C1 vs C2 \| 12 \| 0 \| 0 \| 1\.0000 \|/)
 })

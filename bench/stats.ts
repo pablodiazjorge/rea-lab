@@ -109,3 +109,34 @@ export function holm(pValues: readonly number[]): number[] {
   })
   return adjusted
 }
+
+/**
+ * Exact confidence interval for the Hodges-Lehmann shift of paired differences, from the null distribution
+ * of the signed-rank statistic without ties: the k-th smallest and largest Walsh averages, where k is the
+ * largest count with P(T <= k - 1) <= alpha / 2. Null when there are too few differences for that level.
+ */
+export function hodgesLehmannInterval(differences: readonly number[], confidence = 0.95): { low: number; high: number } | null {
+  const n = differences.length
+  const total = (n * (n + 1)) / 2
+  let counts = new Float64Array(total + 1)
+  counts[0] = 1
+  for (let rank = 1; rank <= n; rank++) {
+    const next = counts.slice()
+    for (let sum = 0; sum + rank <= total; sum++) if (counts[sum] !== 0) next[sum + rank] += counts[sum]
+    counts = next
+  }
+  const assignments = 2 ** n
+  const alpha = 1 - confidence
+  let cumulative = 0
+  let k = 0
+  for (let sum = 0; sum <= total; sum++) {
+    cumulative += counts[sum] / assignments
+    if (cumulative > alpha / 2) break
+    k = sum + 1
+  }
+  if (k === 0) return null
+  const averages: number[] = []
+  for (let first = 0; first < n; first++) for (let second = first; second < n; second++) averages.push((differences[first] + differences[second]) / 2)
+  averages.sort((left, right) => left - right)
+  return { low: averages[k - 1], high: averages[total - k] }
+}
