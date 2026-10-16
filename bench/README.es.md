@@ -10,9 +10,11 @@
 |---|---|
 | A | `llvm-readobj`, `llvm-objdump`, `llvm-strings`, `llvm-nm` y algunos filtros de texto, a través de Bash, además de lectura de archivos |
 | B | Lo de A, más rea por MCP con Ghidra |
-| C | Lo de B, más la skill de rea (`reverse-engineer-anything`) |
+| C | Lo de B, más la skill de rea (`reverse-engineer-anything`), instalada para que Claude Code la ofrezca (estudio 1) |
+| C1 | Lo de B, más la skill propia de rea en el prompt del sistema, con sus referencias legibles (estudio 5) |
+| C2 | Lo de B, más la skill mejorada del laboratorio ([`skills/`](skills/reverse-engineer-anything-improved/PROVENANCE.md)) en el prompt del sistema, con sus referencias legibles (estudio 5) |
 
-El modelo, el esfuerzo, la estructura del prompt y los límites son los mismos en todas las condiciones. No se permite ningún intérprete, así que el agente no puede ejecutar el objetivo: la tarea es de análisis estático.
+En el estudio 1 el agente no cargó nunca la skill que ofrecía C, así que el estudio 5 inyecta su texto y mide su contenido ([ADR 0025](../docs/adr/0025-skill-comparison.md)); el estudio fija cada skill inyectada por su SHA-256. El modelo, el esfuerzo, la estructura del prompt y los límites son los mismos en todas las condiciones. No se permite ningún intérprete, así que el agente no puede ejecutar el objetivo: la tarea es de análisis estático.
 
 ## Tarea y respuesta
 
@@ -42,6 +44,8 @@ Las tasas de resolución llevan intervalos de Wilson al 95 %, y cada par de cond
 ## Aislamiento
 
 Cada ejecución tiene su propia carpeta fuera del repositorio, su propio `CLAUDE_CONFIG_DIR` vacío, `--strict-mcp-config`, `--setting-sources user` y `--permission-mode dontAsk`, de modo que no le llega nada de la configuración del usuario y lo que no está permitido se deniega sin preguntar. Detalles en el [ADR 0018](../docs/adr/0018-benchmark-isolation.md).
+
+Un conjunto construido tiene que estar fuera de la carpeta del banco: allí viven las ejecuciones, y el estudio 4 mostró ejecuciones que intentaban listar las carpetas por encima de la suya, donde estaría la verdad de referencia de un conjunto. El arnés se niega a usar un conjunto dentro de la carpeta del banco.
 
 Con `--provider deepseek`, el mismo Claude Code lo sirve la API de DeepSeek compatible con la de Anthropic. La ejecución recibe la dirección de DeepSeek, su clave y un modelo `deepseek-*` explícito en todas las ranuras de modelo, nunca el token de Anthropic, y la búsqueda de herramientas se fuerza para que los esquemas de rea sigan diferidos, como con los modelos de Anthropic. Cada ejecución registra el modelo que sirvió de verdad la API, y su coste se calcula a partir del uso con los precios de DeepSeek ([`prices.ts`](prices.ts)); la cifra del propio Claude Code, que usa precios de Claude, se guarda aparte.
 

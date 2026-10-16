@@ -6,10 +6,12 @@
 //
 // Usage:
 //   node bench/run.ts --study <name> --model <id> [--provider anthropic|deepseek] [--effort <level>] [--set public|<built folder>]
-//     [--challenges c01-compare,...] [--variants x64-O2-strip,...] [--cells id:variant,...] [--conditions A,B,C]
+//     [--challenges c01-compare,...] [--variants x64-O2-strip,...] [--cells id:variant,...] [--conditions A,B,C | B,C1,C2]
 //     [--repetitions <n> | A=<n>,B=<n>,C=<n>] [--order-seed <n>] [--timeout-min <n>] [--max-budget-usd <n>] [--dry-run | --probe]
 //
 //   --dry-run  prints the planned runs and the prompt, without starting Claude Code
+//   C1 and C2  inject rea's official skill or the lab's improved skill into the system prompt (ADR 0025)
+//   A built set must live outside the benchmark home, so no run can reach its ground truth (ADR 0018)
 //   --probe    one trivial session per condition, to check isolation before spending real runs
 //   --probe-prompt <text>  with --probe, send this prompt instead (for example to check what a command may do)
 //   --provider deepseek  Claude Code served by DeepSeek's Anthropic-compatible API instead of Anthropic: the model must be
@@ -20,12 +22,13 @@ import { spawn, spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { appendFileSync, copyFileSync, cpSync, createWriteStream, existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
-import { delimiter, dirname, join, resolve } from 'node:path'
+import { delimiter, dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseStreamJson } from './claude.ts'
 import { CONDITIONS, BUILT_IN_TOOLS, mcpConfig, runSettings, taskPrompt, toolResultsFolder, type ConditionId, type SetKind } from './conditions.ts'
 import { gradeRun, type Challenge } from './grade.ts'
 import { deepseekCost } from './prices.ts'
+import { injectedSkillFolder, skillDigest, skillFolder, skillSystemPrompt } from './skill.ts'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const REA_VERSION: string = JSON.parse(readFileSync(join(ROOT, 'node_modules', 'rea-agents', 'package.json'), 'utf8')).version
@@ -320,6 +323,14 @@ async function executeRun(run: PlannedRun, set: ChallengeSet, options: Options, 
   if (condition.withSkill) {
     cpSync(join(ROOT, 'node_modules', 'rea-agents', 'skills', 'reverse-engineer-anything'), join(config, 'skills', 'reverse-engineer-anything'), { recursive: true })
   }
+  // ADR 0025: the skill's text goes into the system prompt; its references/ stay readable in the run.
+  const skillPromptFile = join(runDir, 'skill-prompt.md')
+  if (condition.injectedSkill !== undefined) {
+    const source = skillFolder(ROOT, condition.injectedSkill)
+    const references = join(injectedSkillFolder(config), 'references')
+    if (existsSync(join(source, 'references'))) cpSync(join(source, 'references'), references, { recursive: true })
+    writeFileSync(skillPromptFile, skillSystemPrompt(source, references))
+  }
   const mcpFile = join(runDir, 'mcp.json')
   writeFileSync(mcpFile, `${JSON.stringify(mcpConfig(condition, ROOT, temp), null, 2)}\n`)
 
@@ -329,6 +340,7 @@ async function executeRun(run: PlannedRun, set: ChallengeSet, options: Options, 
     '--model', options.model, '--effort', options.effort,
     '--tools', BUILT_IN_TOOLS.join(','), '--permission-mode', 'dontAsk',
     '--max-budget-usd', String(options.maxBudgetUsd),
+    ...(condition.injectedSkill !== undefined ? ['--append-system-prompt-file', skillPromptFile] : []),
   ]
 
   const eventsFile = join(runDir, 'events.jsonl')
@@ -371,7 +383,10 @@ async function executeRun(run: PlannedRun, set: ChallengeSet, options: Options, 
     workDir: work,
     variant: run.variant,
     kind: set.kind,
-    extraRoots: set.kind === 'real' ? [toolResultsFolder(config)] : [],
+    extraRoots: [
+      ...(set.kind === 'real' ? [toolResultsFolder(config)] : []),
+      ...(condition.injectedSkill !== undefined ? [injectedSkillFolder(config)] : []),
+    ],
     configDir: config,
   })
   const record = {
@@ -385,6 +400,7 @@ async function executeRun(run: PlannedRun, set: ChallengeSet, options: Options, 
     ...(run.challenge.program === undefined ? {} : { program: run.challenge.program }),
     variant: run.variant,
     condition: run.condition,
+    ...(condition.injectedSkill !== undefined ? { injected_skill: condition.injectedSkill } : {}),
     repetition: run.repetition,
     target_sha256: run.binary.sha256,
     client: 'claude-code',
@@ -442,10 +458,32 @@ async function probe(runs: PlannedRun[], set: ChallengeSet, options: Options, co
   }
 }
 
+/** The digest of every skill the conditions inject, by condition (ADR 0025). */
+export function injectedSkills(conditions: ConditionId[]) {
+  const skills: Partial<Record<ConditionId, ReturnType<typeof skillDigest> & { skill: string }>> = {}
+  for (const condition of conditions) {
+    const skill = CONDITIONS[condition].injectedSkill
+    if (skill !== undefined) skills[condition] = { skill, ...skillDigest(skillFolder(ROOT, skill)) }
+  }
+  return skills
+}
+
+/**
+ * A built set inside the benchmark home sits a few folders above every run, with its ground truth: study 4
+ * showed runs trying to list those folders. The policy denied them, but the set must not be there (ADR 0018).
+ */
+export function refuseSetInsideHome(setFolder: string, home: string) {
+  const path = relative(resolve(home), resolve(setFolder))
+  if (path === '' || (!path.startsWith('..') && !isAbsolute(path))) {
+    throw new Error(`The set folder ${setFolder} is inside the benchmark home ${home}; move it outside, so no run can reach its ground truth`)
+  }
+}
+
 async function main() {
   const options = parseOptions(process.argv.slice(2))
   const home = benchHome()
   const set = loadSet(options.set)
+  refuseSetInsideHome(set.folder, home)
   const runs = planRuns(set, options)
   const { path: claude, pinned } = claudeExecutable()
   const version = claudeVersion(claude)
@@ -461,10 +499,12 @@ async function main() {
   const studyDir = join(home, 'runs', options.study)
   mkdirSync(studyDir, { recursive: true })
   const studyFile = join(studyDir, 'study.json')
+  const skills = injectedSkills(options.conditions)
   const study = {
     study: options.study, client_version: version, rea_version: REA_VERSION, model: options.model,
     ...(options.provider === 'deepseek' ? { provider: options.provider } : {}),
     effort: options.effort, set: set.name, set_sha256: set.answersSha256,
+    ...(Object.keys(skills).length > 0 ? { skills } : {}),
   }
   if (existsSync(studyFile)) {
     const previous = JSON.parse(readFileSync(studyFile, 'utf8'))
@@ -476,6 +516,11 @@ async function main() {
     // Studies started before the answers hash was recorded (studies 1 and 2) keep resuming as before.
     if (previous.set_sha256 !== undefined && previous.set_sha256 !== study.set_sha256) {
       throw new Error(`Study ${options.study} was started with another answers.json (SHA-256 ${previous.set_sha256})`)
+    }
+    // An injected skill that changed after the study started would compare a different text (ADR 0025).
+    for (const [condition, digest] of Object.entries(skills)) {
+      const before = previous.skills?.[condition]
+      if (before === undefined || before.sha256 !== digest.sha256) throw new Error(`Study ${options.study} was started with another skill for ${condition} (SHA-256 ${before?.sha256 ?? 'none'})`)
     }
   } else writeFileSync(studyFile, `${JSON.stringify(study, null, 2)}\n`)
 

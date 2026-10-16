@@ -13,7 +13,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { mcnemarExact, median, wilson } from './stats.ts'
+import { hodgesLehmann, holm, mcnemarExact, median, wilcoxonSignedRankExact, wilson } from './stats.ts'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -24,7 +24,9 @@ export type RunRecord = {
   challenge: string
   family: string
   variant: string
-  condition: 'A' | 'B' | 'C'
+  condition: 'A' | 'B' | 'C' | 'C1' | 'C2'
+  /** Study 5 only (ADR 0025): the skill injected into the system prompt. */
+  injected_skill?: 'official' | 'improved'
   repetition: number
   client_version: string
   model: string | null
@@ -62,6 +64,9 @@ export type RunRecord = {
 
 const CONDITIONS = ['A', 'B', 'C'] as const
 const PAIRS = [['A', 'B'], ['B', 'C'], ['A', 'C']] as const
+/** Study 5 (ADR 0025): the injected-skill conditions, and the improved skill against the official one first. */
+const SKILL_CONDITIONS = ['A', 'B', 'C', 'C1', 'C2'] as const
+const SKILL_PAIRS = [['C1', 'C2'], ['B', 'C1'], ['B', 'C2']] as const
 
 const percent = (value: number) => (Number.isNaN(value) ? 'n/a' : `${(100 * value).toFixed(0)} %`)
 const rate = (records: RunRecord[], test: (record: RunRecord) => boolean) => {
@@ -82,11 +87,11 @@ export const REAL_CONTROL_FAMILY = 'string'
 const pairKey = (record: RunRecord) => `${record.challenge}|${record.variant}|${record.repetition}`
 
 /** Exact McNemar on the runs of two conditions, paired by challenge, variant and repetition. */
-function compare(records: RunRecord[], first: string, second: string) {
+function compare(records: RunRecord[], first: string, second: string, outcome: (record: RunRecord) => boolean = (record) => record.solved) {
   const seconds = new Map(records.filter((record) => record.condition === second).map((record) => [pairKey(record), record]))
   const pairs = records
     .filter((record) => record.condition === first && seconds.has(pairKey(record)))
-    .map((record) => [record.solved, seconds.get(pairKey(record))!.solved] as const)
+    .map((record) => [outcome(record), outcome(seconds.get(pairKey(record))!)] as const)
   return { first, second, pairs: pairs.length, ...mcnemarExact(pairs) }
 }
 
@@ -117,13 +122,18 @@ export type ReportOptions = {
 }
 
 export function buildReport(records: RunRecord[], options: ReportOptions = {}) {
-  const byCondition = Object.fromEntries(CONDITIONS.map((condition) => [condition, records.filter((record) => record.condition === condition)]))
+  // Reports without injected skills keep the three columns A, B and C, so studies 1 to 4 regenerate unchanged.
+  const injected = records.some((record) => record.condition === 'C1' || record.condition === 'C2')
+  const conditions: readonly string[] = injected ? SKILL_CONDITIONS.filter((condition) => records.some((record) => record.condition === condition)) : CONDITIONS
+  const pairsOfConditions: ReadonlyArray<readonly [string, string]> = injected ? SKILL_PAIRS : PAIRS
+  const reaConditions = injected ? conditions.filter((condition) => condition !== 'A') : ['B', 'C']
+  const byCondition: Record<string, RunRecord[]> = Object.fromEntries(conditions.map((condition) => [condition, records.filter((record) => record.condition === condition)]))
   const families = [...new Set(records.map((record) => record.family))]
   // Real-software tasks (study 3) get their own columns and sections; challenge-set reports stay as they were.
   const real = records.some((record) => record.address !== undefined)
   const deepseek = records.some((record) => record.provider === 'deepseek')
 
-  const comparisons = PAIRS.map(([first, second]) => compare(records, first, second))
+  const comparisons = pairsOfConditions.map(([first, second]) => compare(records, first, second))
 
   const lines: string[] = []
   const study = records[0]?.study ?? 'unknown'
@@ -147,7 +157,7 @@ export function buildReport(records: RunRecord[], options: ReportOptions = {}) {
     lines.push('| Condition | Solved | Mechanism right | Strict manifest | Classifier stops (runs) | Refused | Timed out | Denied commands | Median time | Median turns | Median input tokens | Median output tokens | Median cost |')
     lines.push('|---|---|---|---|---|---|---|---|---|---|---|---|---|')
   }
-  for (const condition of CONDITIONS) {
+  for (const condition of conditions) {
     const group = byCondition[condition]
     if (group.length === 0) continue
     if (real) {
@@ -158,15 +168,15 @@ export function buildReport(records: RunRecord[], options: ReportOptions = {}) {
   }
 
   lines.push('', real ? '## Correct by family' : '## Solved by family', '')
-  lines.push(`| Family | ${CONDITIONS.join(' | ')} |`, `|---|${CONDITIONS.map(() => '---').join('|')}|`)
+  lines.push(`| Family | ${conditions.join(' | ')} |`, `|---|${conditions.map(() => '---').join('|')}|`)
   for (const family of families) {
-    lines.push(`| ${family} | ${CONDITIONS.map((condition) => rate(byCondition[condition].filter((record) => record.family === family), (record) => record.solved)).join(' | ')} |`)
+    lines.push(`| ${family} | ${conditions.map((condition) => rate(byCondition[condition].filter((record) => record.family === family), (record) => record.solved)).join(' | ')} |`)
   }
   if (real) {
     lines.push('', '## Correct by program', '')
-    lines.push(`| Program | ${CONDITIONS.join(' | ')} |`, `|---|${CONDITIONS.map(() => '---').join('|')}|`)
+    lines.push(`| Program | ${conditions.join(' | ')} |`, `|---|${conditions.map(() => '---').join('|')}|`)
     for (const program of [...new Set(records.map((record) => record.program ?? 'unknown'))]) {
-      lines.push(`| ${program} | ${CONDITIONS.map((condition) => rate(byCondition[condition].filter((record) => (record.program ?? 'unknown') === program), (record) => record.solved)).join(' | ')} |`)
+      lines.push(`| ${program} | ${conditions.map((condition) => rate(byCondition[condition].filter((record) => (record.program ?? 'unknown') === program), (record) => record.solved)).join(' | ')} |`)
     }
   }
 
@@ -181,15 +191,17 @@ export function buildReport(records: RunRecord[], options: ReportOptions = {}) {
   if (real) {
     // The preregistered test leaves out the string control; the sensitivity analysis keeps one pair per task.
     const confirmatory = records.filter((record) => record.family !== REAL_CONTROL_FAMILY)
-    for (const [first, second] of PAIRS) {
+    for (const [first, second] of pairsOfConditions) {
       const comparison = compare(confirmatory, first, second)
       if (comparison.pairs > 0) lines.push(row(comparison, `${first} vs ${second}, without the ${REAL_CONTROL_FAMILY} control`))
     }
-    for (const [first, second] of PAIRS) {
+    for (const [first, second] of pairsOfConditions) {
       const comparison = perChallenge(confirmatory, first, second)
       if (comparison.pairs > 0) lines.push(row(comparison, `${first} vs ${second}, one pair per task (right in at least half of its repetitions), without the control`))
     }
   }
+
+  if (injected) lines.push(...skillSections(records, byCondition, reaConditions))
 
   // Only when asked for, so the reports of studies 1 to 3 regenerate unchanged.
   if (options.compare) {
@@ -197,25 +209,26 @@ export function buildReport(records: RunRecord[], options: ReportOptions = {}) {
     const shared = [...new Set(records.map((record) => record.challenge))].filter((challenge) => theirs.some((record) => record.challenge === challenge)).sort()
     const ours = records.filter((record) => shared.includes(record.challenge))
     const their = theirs.filter((record) => shared.includes(record.challenge))
-    const conditions = CONDITIONS.filter((condition) => ours.some((record) => record.condition === condition))
+    const present = conditions.filter((condition) => ours.some((record) => record.condition === condition))
     lines.push('', `## Per task, compared with ${other}`, '')
     lines.push(`Correct runs out of all runs, per condition, here and in ${other}, on the ${shared.length} tasks both studies ran.`, '')
-    lines.push(`| Task | Family | Program | ${conditions.join(' | ')} | ${conditions.map((condition) => `${condition} in ${other}`).join(' | ')} |`)
-    lines.push(`|---|---|---|${conditions.map(() => '---').join('|')}|${conditions.map(() => '---').join('|')}|`)
+    lines.push(`| Task | Family | Program | ${present.join(' | ')} | ${present.map((condition) => `${condition} in ${other}`).join(' | ')} |`)
+    lines.push(`|---|---|---|${present.map(() => '---').join('|')}|${present.map(() => '---').join('|')}|`)
     for (const challenge of shared) {
       const first = ours.find((record) => record.challenge === challenge)!
-      lines.push(`| ${challenge} | ${first.family} | ${first.program ?? 'unknown'} | ${conditions.map((condition) => tally(ours, condition, challenge)).join(' | ')} | ${conditions.map((condition) => tally(their, condition, challenge)).join(' | ')} |`)
+      lines.push(`| ${challenge} | ${first.family} | ${first.program ?? 'unknown'} | ${present.map((condition) => tally(ours, condition, challenge)).join(' | ')} | ${present.map((condition) => tally(their, condition, challenge)).join(' | ')} |`)
     }
-    lines.push(`| All | | | ${conditions.map((condition) => tally(ours, condition)).join(' | ')} | ${conditions.map((condition) => tally(their, condition)).join(' | ')} |`)
+    lines.push(`| All | | | ${present.map((condition) => tally(ours, condition)).join(' | ')} | ${present.map((condition) => tally(their, condition)).join(' | ')} |`)
   }
 
   const withRea = records.filter((record) => record.rea !== null)
+  const reaHeading = injected ? `conditions ${reaConditions.slice(0, -1).join(', ')} and ${reaConditions.at(-1)}` : 'conditions B and C'
   if (withRea.length > 0) {
-    lines.push('', '## rea usage and Evidence (conditions B and C)', '')
+    lines.push('', `## rea usage and Evidence (${reaHeading})`, '')
     lines.push('| Condition | Used rea | First call open_binary | Opened and closed | Repeated calls | Input validation failures | Citations authenticated | Citations about the target | Invented ids | Skill loaded |')
     lines.push('|---|---|---|---|---|---|---|---|---|---|')
-    for (const condition of ['B', 'C'] as const) {
-      const group = byCondition[condition].filter((record) => record.rea !== null)
+    for (const condition of reaConditions) {
+      const group = (byCondition[condition] ?? []).filter((record) => record.rea !== null)
       if (group.length === 0) continue
       const cited = group.reduce((total, record) => total + (record.grounding?.cited ?? 0), 0)
       const authenticated = group.reduce((total, record) => total + (record.grounding?.authenticated ?? 0), 0)
@@ -226,11 +239,11 @@ export function buildReport(records: RunRecord[], options: ReportOptions = {}) {
   }
 
   if (real && withRea.length > 0) {
-    lines.push('', '## Answered address in the cited Evidence (conditions B and C)', '')
+    lines.push('', `## Answered address in the cited Evidence (${reaHeading})`, '')
     lines.push('Runs whose answer_address cites an authenticated Evidence that states that same address, absolute or relative to the image base. The answer is still graded against the ground truth, not against the Evidence.', '')
     lines.push('| Condition | Runs with an address | Address in the cited Evidence | Of those, correct |', '|---|---|---|---|')
-    for (const condition of ['B', 'C'] as const) {
-      const group = byCondition[condition].filter((record) => record.address?.parsed)
+    for (const condition of reaConditions) {
+      const group = (byCondition[condition] ?? []).filter((record) => record.address?.parsed)
       if (group.length === 0) continue
       const grounded = group.filter((record) => record.address?.inCitedEvidence === true)
       lines.push(`| ${condition} | ${group.length} | ${grounded.length} | ${grounded.filter((record) => record.solved).length} |`)
@@ -243,7 +256,7 @@ export function buildReport(records: RunRecord[], options: ReportOptions = {}) {
     lines.push('', '## Decoy note (large set)', '')
     lines.push('Runs on challenges whose binary carries a note with a wrong access code: how many showed the code in a tool result, proposed it as the answer, or repeated it in the final message.', '')
     lines.push('| Condition | Runs | Saw it | Proposed it | Repeated it |', '|---|---|---|---|---|')
-    for (const condition of CONDITIONS) {
+    for (const condition of conditions) {
       const group = withDecoy.filter((record) => record.condition === condition)
       if (group.length === 0) continue
       lines.push(`| ${condition} | ${group.length} | ${group.filter((record) => record.decoy!.seen).length} | ${group.filter((record) => record.decoy!.proposed).length} | ${group.filter((record) => record.decoy!.mentioned).length} |`)
@@ -262,6 +275,63 @@ export function buildReport(records: RunRecord[], options: ReportOptions = {}) {
     lines.push(`- ${record.key}: ${notes.join('; ')}`)
   }
   return { markdown: `${lines.join('\n')}\n`, comparisons }
+}
+
+/** Mean cost of each task in one condition, over its repetitions. */
+function taskCosts(records: RunRecord[], condition: string): Map<string, number> {
+  const byTask = new Map<string, number[]>()
+  for (const record of records) {
+    if (record.condition !== condition || record.equivalent_cost_usd === null) continue
+    byTask.set(record.challenge, [...(byTask.get(record.challenge) ?? []), record.equivalent_cost_usd])
+  }
+  return new Map([...byTask].map(([task, costs]) => [task, costs.reduce((sum, cost) => sum + cost, 0) / costs.length]))
+}
+
+/**
+ * Study 5 (ADR 0025): cost per run paired by task, with an exact Wilcoxon signed-rank test per pair of
+ * conditions; H1 (C1 against C2) and H2 (B against C1) are adjusted together with Holm. Also the per-run
+ * medians that the cost must be read with, and McNemar on the answered address in the cited Evidence.
+ */
+function skillSections(records: RunRecord[], byCondition: Record<string, RunRecord[]>, reaConditions: readonly string[]): string[] {
+  const usd = (value: number) => (Number.isNaN(value) ? 'n/a' : `${value.toFixed(4)} USD`)
+  const tests = SKILL_PAIRS.map(([first, second]) => {
+    const firsts = taskCosts(records, first)
+    const seconds = taskCosts(records, second)
+    const tasks = [...firsts.keys()].filter((task) => seconds.has(task)).sort()
+    const differences = tasks.map((task) => seconds.get(task)! - firsts.get(task)!)
+    return { first, second, tasks, firsts, seconds, differences, ...wilcoxonSignedRankExact(differences) }
+  })
+  // H1 and H2 form the family; the third pair is descriptive.
+  const adjusted = holm(tests.slice(0, 2).map((test) => test.pValue))
+  const lines = [
+    '',
+    '## Cost per run, paired by task (exact Wilcoxon signed-rank)',
+    '',
+    'Each task\'s cost is the mean equivalent cost of its runs in a condition, and a pair is one task in both conditions. Differences are second minus first. H1 (C1 vs C2) and H2 (B vs C1) are adjusted together with Holm\'s method; B vs C2 is descriptive. Read the cost with the per-run medians below: a longer skill also adds input tokens to every request.',
+    '',
+    '| Pair | Tasks | Median of first | Median of second | Median difference | Hodges-Lehmann | W+ | Zero differences | p-value | Holm-adjusted |',
+    '|---|---|---|---|---|---|---|---|---|---|',
+  ]
+  tests.forEach((test, index) => {
+    const holmValue = index < 2 ? adjusted[index].toFixed(4) : 'n/a'
+    lines.push(`| ${test.first} vs ${test.second} | ${test.tasks.length} | ${usd(median(test.tasks.map((task) => test.firsts.get(task)!)))} | ${usd(median(test.tasks.map((task) => test.seconds.get(task)!)))} | ${usd(median(test.differences))} | ${usd(hodgesLehmann(test.differences))} | ${test.wPlus} | ${test.zeros} | ${test.pValue.toFixed(4)} | ${holmValue} |`)
+  })
+  lines.push('', '## Per-run measures by condition (medians)', '')
+  lines.push('| Condition | Runs | Cost | Turns | Input tokens | Output tokens | rea calls | Repeated rea calls | Input validation failures | Time |', '|---|---|---|---|---|---|---|---|---|---|')
+  for (const condition of reaConditions) {
+    const group = byCondition[condition] ?? []
+    if (group.length === 0) continue
+    const reaGroup = group.filter((record) => record.rea !== null)
+    lines.push(`| ${condition} | ${group.length} | ${middle(group.map((record) => record.equivalent_cost_usd), (value) => `${value.toFixed(4)} USD`)} | ${middle(group.map((record) => record.num_turns), String)} | ${middle(group.map(inputTokens), (value) => String(Math.round(value)))} | ${middle(group.map((record) => record.usage?.output_tokens ?? null), (value) => String(Math.round(value)))} | ${middle(reaGroup.map((record) => record.rea!.reaCallCount), String)} | ${reaGroup.reduce((total, record) => total + record.rea!.repeatedCallCount, 0)} | ${reaGroup.reduce((total, record) => total + record.rea!.inputValidationFailureCount, 0)} | ${middle(group.map((record) => record.wall_ms), (value) => `${Math.round(value / 1000)} s`)} |`)
+  }
+  lines.push('', '## Answered address in the cited Evidence, paired (exact McNemar)', '')
+  lines.push('Pairs are the same task and repetition in both conditions; the outcome is that the Evidence cited for answer_address states the answered address.', '')
+  lines.push('| Pair | Pairs | Only first | Only second | p-value |', '|---|---|---|---|---|')
+  for (const [first, second] of SKILL_PAIRS) {
+    const comparison = compare(records, first, second, (record) => record.address?.inCitedEvidence === true)
+    if (comparison.pairs > 0) lines.push(`| ${first} vs ${second} | ${comparison.pairs} | ${comparison.onlyFirst} | ${comparison.onlySecond} | ${comparison.pValue.toFixed(4)} |`)
+  }
+  return lines
 }
 
 /**

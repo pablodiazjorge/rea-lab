@@ -28,6 +28,8 @@ type RunContext = {
   /** Whether the agent tried to read a saved tool result, and whether it read a saved rea result back. */
   readAttempted: boolean
   readBack: boolean
+  /** Successful calls that read the references of a skill injected into the system prompt (study 5, ADR 0025). */
+  skillReferenceReads: number
   /** rea tools that Claude Code's init event listed for the run. */
   advertisedReaTools: number
 }
@@ -95,6 +97,7 @@ function readRun(runDir: string, condition: string): RunContext {
     saved,
     readAttempted: reads.length > 0,
     readBack,
+    skillReferenceReads: [...toolUseIds].filter(([id, name]) => !name.startsWith('mcp__') && !failedCalls.has(id) && toolInputs.get(id)!.includes('injected-skill')).length,
     advertisedReaTools,
   }
 }
@@ -106,7 +109,7 @@ function main() {
   const studyDir = join(benchHome(), 'runs', study)
   const runs: RunContext[] = []
   for (const key of readdirSync(studyDir).sort()) {
-    const match = /-([A-C])-r\d+$/.exec(key)
+    const match = /-(A|B|C|C1|C2)-r\d+$/.exec(key)
     if (!match || !existsSync(join(studyDir, key, 'events.jsonl'))) continue
     runs.push(readRun(join(studyDir, key), match[1]))
   }
@@ -127,6 +130,24 @@ function main() {
     for (const file of run.saved) (tools.get(file.tool) ?? tools.set(file.tool, { calls: 0, runs: 0, saved: [] }).get(file.tool)!).saved.push(file.bytes)
   }
   const usedTool = (name: string) => withRea.filter((run) => (run.toolCalls.get(name) ?? 0) > 0).length
+  // Study 5 only (ADR 0025): the same measures for each condition with rea, so the skills can be compared;
+  // studies without injected skills print exactly what they printed before.
+  const skillConditions = runs.some((run) => run.condition === 'C1' || run.condition === 'C2')
+    ? Object.fromEntries(['B', 'C1', 'C2'].map((condition) => {
+        const group = byCondition(condition)
+        const calls = (name: string) => group.reduce((total, run) => total + (run.toolCalls.get(name) ?? 0), 0)
+        return [condition, {
+          runs: group.length,
+          firstRequestInputMedian: median(group.map((run) => run.firstRequestInput)),
+          totalInputMedianPerMessage: median(group.map((run) => run.totalInput)),
+          medianRequests: median(group.map((run) => run.requests)),
+          savedResults: { runs: group.filter((run) => run.saved.length > 0).length, results: group.reduce((total, run) => total + run.saved.length, 0), readBackRuns: group.filter((run) => run.readBack).length },
+          skillReferenceReads: { runs: group.filter((run) => run.skillReferenceReads > 0).length, calls: group.reduce((total, run) => total + run.skillReferenceReads, 0) },
+          reaCalls: Object.fromEntries(['list_procedures', 'search_procedures', 'search_strings', 'xrefs', 'procedure_pseudo_code', 'batch_decompile', 'resolve_containing_procedure', 'procedure_info'].map((tool) => [tool, calls(`mcp__rea__${tool}`)])),
+          toolSearchMedianCalls: median(group.map((run) => run.toolCalls.get('ToolSearch') ?? 0)),
+        }]
+      }))
+    : undefined
   console.log(JSON.stringify({
     study,
     note: 'Post hoc and exploratory; measured from the saved transcripts, which are not published (ADR 0014).',
@@ -150,6 +171,7 @@ function main() {
     overheadShareOfInput: shares.length ? { median: median(shares), min: Math.min(...shares), max: Math.max(...shares) } : null,
     totalInputMedianPerMessage: Object.fromEntries(['A', 'B'].map((condition) => [condition, median(byCondition(condition).map((run) => run.totalInput))])),
     medianRequests: Object.fromEntries(['A', 'B'].map((condition) => [condition, median(byCondition(condition).map((run) => run.requests))])),
+    ...(skillConditions ? { skillConditions } : {}),
   }, null, 2))
 }
 

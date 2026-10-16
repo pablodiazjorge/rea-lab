@@ -1,9 +1,11 @@
-// The three benchmark conditions (ADR 0018). Only the presence of rea and of its skill changes between
-// them; tools, prompt structure, model and limits stay the same.
+// The benchmark conditions (ADR 0018). Only the presence of rea and of a skill changes between them; tools,
+// prompt structure, model and limits stay the same. C offers rea's skill as an installed skill (study 1); C1
+// and C2 inject a skill's text into the system prompt (study 5, ADR 0025).
 
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { LARGE_MECHANISMS, MECHANISMS, claimIdsFor } from './answer.ts'
+import { injectedSkillFolder, type InjectedSkill } from './skill.ts'
 
 /** Which challenge set a run uses: the small set of study 1, the large set of study 2 or the real-software tasks of study 3. */
 export type SetKind = 'small' | 'large' | 'real'
@@ -11,14 +13,17 @@ export type SetKind = 'small' | 'large' | 'real'
 /** A real-software task as the prompt needs it (ADR 0024): the question, never the answer. */
 export type TaskQuestion = { question?: unknown }
 
-export type ConditionId = 'A' | 'B' | 'C'
+export type ConditionId = 'A' | 'B' | 'C' | 'C1' | 'C2'
 
-export type Condition = { id: ConditionId; label: string; withRea: boolean; withSkill: boolean }
+/** withSkill: the skill is installed for Claude Code to offer. injectedSkill: its text goes into the system prompt. */
+export type Condition = { id: ConditionId; label: string; withRea: boolean; withSkill: boolean; injectedSkill?: InjectedSkill }
 
 export const CONDITIONS: Readonly<Record<ConditionId, Condition>> = {
   A: { id: 'A', label: 'command-line tools only', withRea: false, withSkill: false },
   B: { id: 'B', label: 'command-line tools and rea', withRea: true, withSkill: false },
   C: { id: 'C', label: 'command-line tools, rea and its skill', withRea: true, withSkill: true },
+  C1: { id: 'C1', label: 'command-line tools, rea and its official skill in the system prompt', withRea: true, withSkill: false, injectedSkill: 'official' },
+  C2: { id: 'C2', label: 'command-line tools, rea and the improved skill in the system prompt', withRea: true, withSkill: false, injectedSkill: 'improved' },
 }
 
 /** Built-in Claude Code tools offered in every condition (`--tools`). MCP tools are not affected by it. */
@@ -56,7 +61,11 @@ export const toolResultsFolder = (configDir: string) => join(configDir, 'project
 
 /** The settings.json written into the run's own CLAUDE_CONFIG_DIR (loaded with --setting-sources user). */
 export function runSettings(condition: Condition, repoRoot: string, kind: SetKind = 'small', configDir?: string) {
-  const readable = kind === 'real' && configDir !== undefined ? [toolResultsFolder(configDir)] : []
+  const readable = [
+    ...(kind === 'real' && configDir !== undefined ? [toolResultsFolder(configDir)] : []),
+    // An injected skill's references/ (ADR 0025), which its text tells the agent to read on demand.
+    ...(condition.injectedSkill !== undefined && configDir !== undefined ? [injectedSkillFolder(configDir)] : []),
+  ]
   return {
     permissions: {
       allow: [

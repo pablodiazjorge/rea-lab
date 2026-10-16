@@ -155,3 +155,40 @@ test('the published report of study 4 regenerates byte for byte with its compari
   const markdown = buildReport(results('study-4'), { compare: { study: 'study-3', records: results('study-3') } }).markdown
   assert.equal(markdown, readFileSync(new URL('../results/study-4/report.md', import.meta.url), 'utf8'))
 })
+
+test('a study 5 report pairs the cost per task with an exact Wilcoxon test and adjusts H1 and H2 with Holm', () => {
+  const tasks = ['r01', 'r02', 'r03', 'r04', 'r05', 'r06']
+  const skillRecord = (task: string, condition: 'B' | 'C1' | 'C2', repetition: number, cost: number, grounded: boolean) =>
+    record(task, condition, true, {
+      study: 's5',
+      key: `${task}-x64-O2-strip-${condition}-r${repetition}`,
+      family: 'behaviour',
+      program: 'demo',
+      repetition,
+      mechanismCorrect: undefined,
+      equivalent_cost_usd: cost,
+      address: { parsed: true, form: 'va', inside: true, exactStart: true, inCitedEvidence: grounded },
+      sourceNameCorrect: false,
+      ...(condition === 'B' ? {} : { injected_skill: condition === 'C1' ? 'official' : 'improved' }),
+    } as Partial<RunRecord>)
+  // Every task costs less with the official skill than without it, and less again with the improved one.
+  const records = tasks.flatMap((task, index) => [1, 2].flatMap((repetition) => [
+    skillRecord(task, 'B', repetition, 0.2 + index / 100, false),
+    skillRecord(task, 'C1', repetition, 0.15 + index / 100, false),
+    skillRecord(task, 'C2', repetition, 0.1 + index / 100, true),
+  ]))
+  const { markdown } = buildReport(records)
+  assert.match(markdown, /\| Family \| B \| C1 \| C2 \|/)
+  assert.match(markdown, /## rea usage and Evidence \(conditions B, C1 and C2\)/)
+  assert.match(markdown, /## Answered address in the cited Evidence \(conditions B, C1 and C2\)/)
+  assert.match(markdown, /## Cost per run, paired by task \(exact Wilcoxon signed-rank\)/)
+  // Six tasks, all lower in the second condition: W+ = 0, p = 2/64; Holm doubles the smaller of two equal p-values.
+  assert.match(markdown, /\| C1 vs C2 \| 6 \| 0\.1750 USD \| 0\.1250 USD \| -0\.0500 USD \| -0\.0500 USD \| 0 \| 0 \| 0\.0313 \| 0\.0625 \|/)
+  assert.match(markdown, /\| B vs C1 \| 6 \| 0\.2250 USD \| 0\.1750 USD \| -0\.0500 USD \| -0\.0500 USD \| 0 \| 0 \| 0\.0313 \| 0\.0625 \|/)
+  assert.match(markdown, /\| B vs C2 \| 6 \| .* \| 0\.0313 \| n\/a \|/)
+  assert.match(markdown, /## Per-run measures by condition \(medians\)\n\n\| Condition \| Runs \| Cost \|[^\n]*\n\|---[^\n]*\n\| B \| 12 \|/)
+  // The improved skill's citations state the address in all 12 runs, the official one's in none.
+  assert.match(markdown, /## Answered address in the cited Evidence, paired \(exact McNemar\)[\s\S]*\| C1 vs C2 \| 12 \| 0 \| 12 \| 0\.0005 \|/)
+  // The McNemar table on correctness uses the study 5 pairs too.
+  assert.match(markdown, /\| C1 vs C2 \| 12 \| 0 \| 0 \| 1\.0000 \|/)
+})

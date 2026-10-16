@@ -43,6 +43,7 @@ emit({
   prompt_text: prompt,
   allow: settings.permissions.allow,
   additional_directories: settings.permissions.additionalDirectories ?? [],
+  appended_system_prompt: args.includes('--append-system-prompt-file') ? readFileSync(value('--append-system-prompt-file'), 'utf8') : null,
 })
 
 if (process.env.FAKE_CLAUDE_MODE === 'auth-error') {

@@ -120,7 +120,8 @@ const PERSONAL = [
   ['a local user path', /\b[A-Za-z]:[\\/]+Users[\\/]+(?!<|Public\b|Default\b)[^\\/\s"'`<>]+/i],
   ['a local user path', /(?:^|[\s"'`(])\/(?:[a-z]\/)?Users\/(?!<|Public\b|Shared\b)[^/\s"'`<>]+/],
   ['a home path', /(?:^|[\s"'`(])\/home\/(?!<|runner\b)[^/\s"'`<>]+/],
-  ['an email address', /\b[\w.+-]+@[\w-]+(?:\.[\w-]+)+\b/],
+  // The last domain label starts with a letter, so a package version such as name@6.4.0 is not an address.
+  ['an email address', /\b[\w.+-]+@[\w-]+(?:\.[\w-]+)*\.[A-Za-z][\w-]*\b/],
 ]
 // CI runners use generic account names (such as "runner") that also appear in ordinary prose.
 if (!process.env.CI && userName && userName.length >= 3) {

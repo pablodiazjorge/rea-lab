@@ -47,3 +47,65 @@ export function median(values: readonly number[]): number {
   const middle = Math.floor(sorted.length / 2)
   return sorted.length % 2 === 1 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2
 }
+
+export type Wilcoxon = { n: number; zeros: number; wPlus: number; wMinus: number; pValue: number }
+
+/**
+ * Exact two-sided Wilcoxon signed-rank test on paired differences (second minus first). Differences of zero
+ * are dropped (Wilcoxon's method) and tied absolute differences share their average rank. The null
+ * distribution is counted over doubled ranks, which are integers even with ties, so the p-value is exact.
+ */
+export function wilcoxonSignedRankExact(differences: readonly number[]): Wilcoxon {
+  // Costs are sums of floating-point prices: treat differences below a nano-dollar as zero, and round before ranking.
+  const nonZero = differences.filter((difference) => Math.abs(difference) >= 1e-9)
+  const zeros = differences.length - nonZero.length
+  const n = nonZero.length
+  if (n === 0) return { n, zeros, wPlus: 0, wMinus: 0, pValue: 1 }
+  const order = nonZero.map((difference, index) => ({ size: Number(Math.abs(difference).toFixed(9)), index })).sort((left, right) => left.size - right.size)
+  const doubled = new Array<number>(n)
+  for (let start = 0; start < n; ) {
+    let end = start
+    while (end + 1 < n && order[end + 1].size === order[start].size) end++
+    // The average of ranks start+1 .. end+1, doubled.
+    for (let position = start; position <= end; position++) doubled[order[position].index] = start + end + 2
+    start = end + 1
+  }
+  const total = doubled.reduce((sum, rank) => sum + rank, 0)
+  const positive = nonZero.reduce((sum, difference, index) => sum + (difference > 0 ? doubled[index] : 0), 0)
+  let counts = new Float64Array(total + 1)
+  counts[0] = 1
+  for (const rank of doubled) {
+    const next = counts.slice()
+    for (let sum = 0; sum + rank <= total; sum++) if (counts[sum] !== 0) next[sum + rank] += counts[sum]
+    counts = next
+  }
+  const assignments = 2 ** n
+  let lower = 0
+  let upper = 0
+  for (let sum = 0; sum <= total; sum++) {
+    if (sum <= positive) lower += counts[sum]
+    if (sum >= positive) upper += counts[sum]
+  }
+  return { n, zeros, wPlus: positive / 2, wMinus: (total - positive) / 2, pValue: Math.min(1, (2 * Math.min(lower, upper)) / assignments) }
+}
+
+/** Hodges-Lehmann estimate of the paired shift: the median of all Walsh averages (d_i + d_j) / 2, i <= j. */
+export function hodgesLehmann(differences: readonly number[]): number {
+  const averages: number[] = []
+  for (let first = 0; first < differences.length; first++) {
+    for (let second = first; second < differences.length; second++) averages.push((differences[first] + differences[second]) / 2)
+  }
+  return median(averages)
+}
+
+/** Holm's step-down adjustment of a family of p-values, returned in their original order. */
+export function holm(pValues: readonly number[]): number[] {
+  const order = pValues.map((pValue, index) => ({ pValue, index })).sort((left, right) => left.pValue - right.pValue)
+  const adjusted = new Array<number>(pValues.length)
+  let running = 0
+  order.forEach(({ pValue, index }, rank) => {
+    running = Math.max(running, Math.min(1, (pValues.length - rank) * pValue))
+    adjusted[index] = running
+  })
+  return adjusted
+}

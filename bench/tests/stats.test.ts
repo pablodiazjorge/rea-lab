@@ -1,6 +1,6 @@
 import { strict as assert } from 'node:assert'
 import { test } from 'node:test'
-import { mcnemarExact, median, wilson } from '../stats.ts'
+import { hodgesLehmann, holm, mcnemarExact, median, wilcoxonSignedRankExact, wilson } from '../stats.ts'
 
 const close = (actual: number, expected: number, digits = 4) =>
   assert.ok(Math.abs(actual - expected) < 10 ** -digits, `${actual} is not close to ${expected}`)
@@ -39,4 +39,40 @@ test('median handles odd, even and empty lists', () => {
   assert.equal(median([3, 1, 2]), 2)
   assert.equal(median([4, 1, 3, 2]), 2.5)
   assert.ok(Number.isNaN(median([])))
+})
+
+test('wilcoxonSignedRankExact matches the paired example in the help page of R wilcox.test', () => {
+  // R: wilcox.test(x, y, paired = TRUE) on the depression scores of its help page gives V = 40, p = 0.03906.
+  const x = [1.83, 0.5, 1.62, 2.48, 1.68, 1.88, 1.55, 3.06, 1.3]
+  const y = [0.878, 0.647, 0.598, 2.05, 1.06, 1.29, 1.06, 3.14, 1.29]
+  const result = wilcoxonSignedRankExact(x.map((value, index) => value - y[index]))
+  assert.equal(result.n, 9)
+  assert.equal(result.wPlus, 40)
+  assert.equal(result.wMinus, 5)
+  close(result.pValue, 20 / 512, 9)
+})
+
+test('wilcoxonSignedRankExact drops zeros, handles ties exactly and is symmetric', () => {
+  close(wilcoxonSignedRankExact([1, 2, 3, 4, 5]).pValue, 2 / 32, 9)
+  close(wilcoxonSignedRankExact([-1, -2, -3, -4, -5]).pValue, 2 / 32, 9)
+  const zeros = wilcoxonSignedRankExact([0, 1, 2])
+  assert.equal(zeros.n, 2)
+  assert.equal(zeros.zeros, 1)
+  close(zeros.pValue, 0.5, 9)
+  // Three tied absolute differences share rank 2: W+ = 8 of 10, and 4 of 16 sign patterns reach it.
+  const ties = wilcoxonSignedRankExact([1, 1, -1, 2])
+  assert.equal(ties.wPlus, 8)
+  close(ties.pValue, 0.5, 9)
+  assert.equal(wilcoxonSignedRankExact([]).pValue, 1)
+})
+
+test('hodgesLehmann is the median of the Walsh averages', () => {
+  assert.equal(hodgesLehmann([1, 2, 3]), 2)
+  assert.equal(hodgesLehmann([-1, 2, 10]), 3.25)
+})
+
+test('holm adjusts in step-down order and keeps the input order', () => {
+  assert.deepEqual(holm([0.01, 0.04]), [0.02, 0.04])
+  assert.deepEqual(holm([0.04, 0.01]), [0.04, 0.02])
+  assert.deepEqual(holm([0.6, 0.7]), [1, 1])
 })

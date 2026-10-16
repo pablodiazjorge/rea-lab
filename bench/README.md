@@ -10,9 +10,11 @@ What does rea add to a coding agent that reverse engineers native Windows binari
 |---|---|
 | A | `llvm-readobj`, `llvm-objdump`, `llvm-strings`, `llvm-nm` and a few text filters, through Bash, plus file reading |
 | B | A, plus rea over MCP with Ghidra |
-| C | B, plus rea's skill (`reverse-engineer-anything`) |
+| C | B, plus rea's skill (`reverse-engineer-anything`), installed for Claude Code to offer (study 1) |
+| C1 | B, plus rea's own skill in the system prompt, with its references readable (study 5) |
+| C2 | B, plus the lab's improved skill ([`skills/`](skills/reverse-engineer-anything-improved/PROVENANCE.md)) in the system prompt, with its references readable (study 5) |
 
-The model, effort, prompt structure and limits are the same in every condition. No interpreter is allowed, so the agent cannot run the target: the task is static analysis.
+In study 1 the agent never loaded the skill that C offered, so study 5 injects the skill's text instead and measures its content ([ADR 0025](../docs/adr/0025-skill-comparison.md)); the study locks each injected skill by SHA-256. The model, effort, prompt structure and limits are the same in every condition. No interpreter is allowed, so the agent cannot run the target: the task is static analysis.
 
 ## Task and answer
 
@@ -42,6 +44,8 @@ Solve rates carry Wilson 95 % intervals, and each pair of conditions is compared
 ## Isolation
 
 Each run has its own folder outside the repository, its own empty `CLAUDE_CONFIG_DIR`, `--strict-mcp-config`, `--setting-sources user` and `--permission-mode dontAsk`, so nothing from the user's setup reaches it and anything not allowed is denied without prompting. Details in [ADR 0018](../docs/adr/0018-benchmark-isolation.md).
+
+A built set must live outside the benchmark home: runs live there, and study 4 showed runs trying to list the folders above their own, where a set's ground truth would be. The harness refuses a set folder inside the benchmark home.
 
 With `--provider deepseek`, the same Claude Code is served by DeepSeek's Anthropic-compatible API. The run gets the DeepSeek endpoint, its key and an explicit `deepseek-*` model in every model slot, never the Anthropic token, and tool search is forced on so rea's schemas stay deferred as with Anthropic models. Each run records the model the API actually served, and its cost is computed from the usage with DeepSeek's prices ([`prices.ts`](prices.ts)); Claude Code's own figure, which uses Claude prices, is kept apart.
 

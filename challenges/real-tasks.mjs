@@ -7,8 +7,9 @@
 //
 // Usage:
 //   node challenges/real-tasks.mjs draw --role study|pilot --seed <n> --out <file> [--build build/real]
-//       [--programs lua,md4c] [--quotas behaviour=1,chain=1,data=1] [--exclude <task file>] [--id-prefix q]
-//       a pilot on study programs: other programs, other quotas, and no target or described function of the excluded file
+//       [--programs lua,md4c] [--quotas behaviour=1,chain=1,data=1] [--exclude <task file>]... [--id-prefix q]
+//       a pilot on study programs: other programs, other quotas, and no target or described function of the excluded files
+//       (--exclude repeats: study 5 draws new targets on study 3's programs, excluding study 3's and pilot 4's)
 //   node challenges/real-tasks.mjs replace <file> <task id> --reason "<why>"   take the next candidate in the seeded order
 //   node challenges/real-tasks.mjs verify <file> [--build build/real]           every task still matches the ground truth
 //   node challenges/real-tasks.mjs resolve <file> [--build build/real]          write <build>/answers.json for the benchmark
@@ -32,6 +33,8 @@ const flagValue = (name) => {
   const index = rest.indexOf(name)
   return index >= 0 ? rest[index + 1] : undefined
 }
+/** Every value of a flag that may repeat. */
+const flagValues = (name) => rest.flatMap((item, index) => (item === name && index + 1 < rest.length ? [rest[index + 1]] : []))
 const buildRoot = resolve(flagValue('--build') ?? join(ROOT, 'build', 'real'))
 const sha256 = (text) => createHash('sha256').update(text).digest('hex')
 const readJson = (path) => JSON.parse(readFileSync(path, 'utf8'))
@@ -114,7 +117,7 @@ function draw() {
     : QUOTAS
   for (const family of Object.keys(quotas)) if (!(family in QUOTAS) || !(quotas[family] >= 1)) throw new Error(`bad quota for ${family}`)
   // Targets and described functions of another task file (the study's) never appear here.
-  const excluded = flagValue('--exclude') ? readJson(flagValue('--exclude')).tasks : []
+  const excluded = flagValues('--exclude').flatMap((file) => readJson(file).tasks)
   const tasks = []
   const reserves = {}
   const programQuotasOut = {}

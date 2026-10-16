@@ -1,7 +1,7 @@
 import { strict as assert } from 'node:assert'
 import { spawnSync } from 'node:child_process'
 import { createHash, randomBytes } from 'node:crypto'
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { test } from 'node:test'
@@ -167,4 +167,84 @@ test('a real-software batch runs each task on its program target and records the
   assert.deepEqual(diagnostics.work_files, ['target.exe'])
   assert.ok(diagnostics.prompt_text.includes(QUESTION))
   assert.deepEqual(diagnostics.additional_directories, [join(studyDir, record.key, 'claude-config', 'projects')])
+})
+
+/** A one-program real set, for end-to-end runs of the harness against the fake Claude Code. */
+function realFixture() {
+  const folder = mkdtempSync(join(tmpdir(), 'rea-lab-bench-real-'))
+  const binary = randomBytes(512)
+  mkdirSync(join(folder, 'demo'), { recursive: true })
+  writeFileSync(join(folder, 'demo', 'target.exe'), binary)
+  const sha256 = createHash('sha256').update(binary).digest('hex')
+  writeFileSync(join(folder, 'manifest.json'), JSON.stringify({ set: 'real', programs: [{ id: 'demo', role: 'pilot', file: 'demo/target.exe', sha256, image_base: '0x140000000' }] }))
+  writeFileSync(join(folder, 'answers.json'), JSON.stringify({ set: 'real', role: 'pilot', version: 1, tasks: [{ id: task.id, program: 'demo', family: task.family, question: QUESTION, answer: { kind: 'function', name: 'gz_zero', start: '0x140001000', end: '0x140001080' } }] }))
+  return folder
+}
+
+function realBench(home: string, folder: string, conditions: string) {
+  const runner = fileURLToPath(new URL('../run.ts', import.meta.url))
+  const fake = fileURLToPath(new URL('./fake-claude.mjs', import.meta.url))
+  return spawnSync(process.execPath, [runner, '--study', 'skills', '--model', 'fake-model', '--set', folder, '--conditions', conditions], {
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      REA_LAB_BENCH_HOME: home,
+      REA_LAB_BENCH_CLAUDE: fake,
+      REA_LAB_BENCH_OAUTH_TOKEN: 'test-token',
+      FAKE_CLAUDE_CLAIMS: JSON.stringify([{ id: 'answer_address', value: '0x140001000', confidence: 'derived', authority: 'analyst-inference' }]),
+    },
+  })
+}
+
+test('C1 and C2 inject the official and the improved skill into the system prompt, with readable references', () => {
+  const home = mkdtempSync(join(tmpdir(), 'rea-lab-bench-home-'))
+  const result = realBench(home, realFixture(), 'B,C1,C2')
+  assert.equal(result.status, 0, result.stderr)
+  const studyDir = join(home, 'runs', 'skills')
+  const records = readFileSync(join(studyDir, 'results.jsonl'), 'utf8').trim().split('\n').map((line) => JSON.parse(line))
+  const byCondition = Object.fromEntries(records.map((record) => [record.condition, record]))
+  const diagnostics = (key: string) => readFileSync(join(studyDir, key, 'events.jsonl'), 'utf8').split('\n').filter(Boolean).map((line) => JSON.parse(line)).find((event) => event.subtype === 'fake_diagnostics')
+
+  // B gets no skill; C1 and C2 get the text, never an installed skill, and the record names which one.
+  assert.equal(diagnostics(byCondition.B.key).appended_system_prompt, null)
+  assert.equal(byCondition.B.injected_skill, undefined)
+  const officialPrompt = diagnostics(byCondition.C1.key).appended_system_prompt
+  const improvedPrompt = diagnostics(byCondition.C2.key).appended_system_prompt
+  assert.match(officialPrompt, /## Route the target first/)
+  assert.doesNotMatch(officialPrompt, /## Locate code in a native binary/)
+  assert.match(improvedPrompt, /## Locate code in a native binary/)
+  assert.equal(byCondition.C1.injected_skill, 'official')
+  assert.equal(byCondition.C2.injected_skill, 'improved')
+  for (const condition of ['C1', 'C2']) {
+    const record = byCondition[condition]
+    const skillDir = join(studyDir, record.key, 'claude-config', 'injected-skill')
+    assert.ok(readFileSync(join(skillDir, 'references', 'native-and-artifacts.md'), 'utf8').length > 0)
+    assert.ok(diagnostics(record.key).additional_directories.includes(skillDir))
+    assert.ok(diagnostics(record.key).appended_system_prompt.includes(join(skillDir, 'references')))
+    assert.equal(record.isolation.ok, true, record.isolation.problems.join(', '))
+    assert.equal(record.isolation.skillOffered, false)
+  }
+
+  // The study locks both skills by digest, and they differ.
+  const study = JSON.parse(readFileSync(join(studyDir, 'study.json'), 'utf8'))
+  assert.equal(study.skills.C1.skill, 'official')
+  assert.equal(study.skills.C2.skill, 'improved')
+  assert.match(study.skills.C1.sha256, /^[0-9a-f]{64}$/)
+  assert.notEqual(study.skills.C1.sha256, study.skills.C2.sha256)
+  assert.ok(study.skills.C2.body_bytes > study.skills.C1.body_bytes)
+  assert.equal(study.skills.B, undefined)
+})
+
+test('a set folder inside the benchmark home is refused before any run', () => {
+  const home = mkdtempSync(join(tmpdir(), 'rea-lab-bench-home-'))
+  const inside = join(home, 'sets', 'demo')
+  mkdirSync(inside, { recursive: true })
+  const outside = realFixture()
+  for (const name of ['manifest.json', 'answers.json']) writeFileSync(join(inside, name), readFileSync(join(outside, name)))
+  mkdirSync(join(inside, 'demo'))
+  writeFileSync(join(inside, 'demo', 'target.exe'), readFileSync(join(outside, 'demo', 'target.exe')))
+  const result = realBench(home, inside, 'B')
+  assert.notEqual(result.status, 0)
+  assert.match(result.stderr, /is inside the benchmark home/)
+  assert.equal(readdirSync(home).includes('runs'), false)
 })
