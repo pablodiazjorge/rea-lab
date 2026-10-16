@@ -97,6 +97,7 @@ El equipo que ejecutaba el estudio se reinició dos veces. Cada vez cortó una e
 - El coste es el coste equivalente de Claude Code, no dinero gastado: las ejecuciones usaron una suscripción.
 - rea 6.4.0, la versión del estudio 1, congelada para poder comparar.
 - La heurística de revisión marcó intentos de usar Python o de escribir fuera de la carpeta de la ejecución en 39 ejecuciones (19 en A y 20 en B). La política de permisos los denegó todos y ninguno llegó a ejecutarse; no se excluyó ninguna ejecución.
+- Añadido el 16 de octubre de 2026: las ejecuciones se lanzaron desde la app de escritorio de Claude, cuyo entorno fija dos ajustes de Claude Code: `DISABLE_MICROCOMPACT=1`, que desactiva la limpieza de los resultados viejos de herramientas del contexto, y `API_TIMEOUT_MS=900000`. El arnés no los filtraba, así que con toda probabilidad llegaron a todas las ejecuciones. Se aplicaron a todas las condiciones por igual, así que ninguna comparación cambia, pero las cifras absolutas de tokens y de coste pueden ser más altas que con los valores por defecto de Claude Code. Desde el estudio 5 el arnés los descarta ([ADR 0018](../../docs/adr/0018-benchmark-isolation.md)).
 
 ## Cómo reproducirlo
 

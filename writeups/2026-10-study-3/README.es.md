@@ -143,6 +143,7 @@ Estas medidas no estaban prerregistradas. Son exploratorias y salen de las trans
 - rea 6.4.0, la versión de los estudios 1 y 2, congelada para poder comparar.
 - Hasta la corrección de más arriba, el calificador solo autenticaba la evidencia devuelta directamente y no leía los archivos donde Claude Code guarda los resultados grandes, que este estudio permitió por primera vez.
 - La heurística de revisión marcó 28 ejecuciones (19 en A y 9 en B) por intentos de ejecutar Python o por rutas fuera de la carpeta de la ejecución. La política de permisos denegó todas las llamadas a intérpretes. Los comandos que sí se ejecutaron eran falsos positivos, como un `grep` de la palabra `python` entre las cadenas del programa, y las rutas de fuera o estaban denegadas o eran patrones de `sed` y `awk` leídos como unidades de disco. No se excluyó ninguna ejecución.
+- Añadido el 16 de octubre de 2026: las ejecuciones se lanzaron desde la app de escritorio de Claude, cuyo entorno fija dos ajustes de Claude Code: `DISABLE_MICROCOMPACT=1`, que desactiva la limpieza de los resultados viejos de herramientas del contexto, y `API_TIMEOUT_MS=900000`. El arnés no los filtraba, así que con toda probabilidad llegaron a todas las ejecuciones. Se aplicaron a todas las condiciones por igual, así que ninguna comparación cambia, pero las cifras absolutas de tokens y de coste pueden ser más altas que con los valores por defecto de Claude Code. Desde el estudio 5 el arnés los descarta ([ADR 0018](../../docs/adr/0018-benchmark-isolation.md)).
 
 ## Cómo reproducirlo
 

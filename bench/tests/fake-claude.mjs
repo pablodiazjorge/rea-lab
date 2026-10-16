@@ -37,7 +37,7 @@ emit({
   subtype: 'fake_diagnostics',
   config_dir_files: readdirSync(configDir),
   work_files: readdirSync(process.cwd()),
-  inherited: Object.keys(process.env).filter((name) => /^(CLAUDE|ANTHROPIC_|REA_|GHIDRA_|MCP_)/i.test(name)).sort(),
+  inherited: Object.keys(process.env).filter((name) => /^(CLAUDE|ANTHROPIC_|REA_|GHIDRA_|MCP_|DISABLE_|ENABLE_|FORCE_|MAX_|API_TIMEOUT_MS$)/i.test(name)).sort(),
   has_token: Boolean(process.env.CLAUDE_CODE_OAUTH_TOKEN),
   prompt_mentions_target: prompt.includes('target.exe'),
   prompt_text: prompt,

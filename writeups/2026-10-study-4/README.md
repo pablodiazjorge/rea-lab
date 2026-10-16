@@ -108,6 +108,7 @@ Reviewing the read-backs for this study found an error in study 3's addendum: it
 - The ground truth was stored in the benchmark's folder, above the runs. The permission policy denied every attempt to reach it, but a weaker policy would have exposed it.
 - The cost comes from DeepSeek's published prices and each run's token usage, not from the invoice; in the pilot, the computed cost matched DeepSeek's dashboard.
 - The programs, build and tasks have the limitations described in study 3: four small C programs built with llvm-mingw, four clusters, and questions written by the author.
+- Added on 16 October 2026: the runs were launched from the Claude desktop app, whose environment sets two Claude Code switches, `DISABLE_MICROCOMPACT=1`, which turns off the clearing of old tool results from the context, and `API_TIMEOUT_MS=900000`. The harness did not filter them, so they very likely reached every run. They applied to every condition alike, so no comparison changes, but absolute token counts and costs may be higher than with Claude Code's defaults. From study 5 the harness drops them ([ADR 0018](../../docs/adr/0018-benchmark-isolation.md)).
 
 ## Reproduce it
 

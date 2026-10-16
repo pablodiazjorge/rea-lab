@@ -40,6 +40,11 @@ function bench(home: string, set: string, study: string, conditions: string, ext
       FAKE_CLAUDE_ANSWER: 'indigo-tundra-61',
       CLAUDECODE: '1',
       ANTHROPIC_MODEL: 'should-not-leak',
+      // Claude Code tuning switches without a CLAUDE prefix, as the desktop app sets them.
+      DISABLE_MICROCOMPACT: '1',
+      API_TIMEOUT_MS: '900000',
+      FORCE_PROMPT_CACHING_5M: '1',
+      MAX_THINKING_TOKENS: '1024',
       ...extra,
     },
   })
@@ -69,7 +74,7 @@ test('a batch isolates, grades and records each run, and resumes without repeati
   assert.deepEqual(a.work_files, ['target.exe'])
   assert.deepEqual(a.config_dir_files, [])
   assert.deepEqual(c.config_dir_files, ['skills'])
-  assert.deepEqual(a.inherited, ['CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC', 'CLAUDE_CODE_OAUTH_TOKEN', 'CLAUDE_CONFIG_DIR'])
+  assert.deepEqual(a.inherited, ['CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC', 'CLAUDE_CODE_OAUTH_TOKEN', 'CLAUDE_CONFIG_DIR', 'DISABLE_AUTOUPDATER'])
   assert.equal(a.has_token, true)
   assert.equal(a.prompt_mentions_target, true)
   assert.equal(a.allow.includes('mcp__rea'), false)

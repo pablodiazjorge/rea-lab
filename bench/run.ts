@@ -264,7 +264,9 @@ export function planRuns(
  * cannot fall back to the Anthropic subscription.
  */
 function childEnvironment(configDir: string, token: string, provider: Provider = 'anthropic', model = ''): NodeJS.ProcessEnv {
-  const blocked = /^(CLAUDE|ANTHROPIC_|REA_|CODEX_|GHIDRA_|JAVA_HOME$|MCP_|OTEL_)/i
+  // Claude Code also reads tuning switches without a CLAUDE prefix. Until study 4 the desktop app that launched
+  // the studies passed DISABLE_MICROCOMPACT=1 and API_TIMEOUT_MS to every run; they are blocked from study 5 on.
+  const blocked = /^(CLAUDE|ANTHROPIC_|REA_|CODEX_|GHIDRA_|JAVA_HOME$|MCP_|OTEL_|DISABLE_|ENABLE_|FORCE_|MAX_|API_TIMEOUT_MS$|USE_(LOCAL|STAGING)_OAUTH$|BASH_(DEFAULT_TIMEOUT_MS|MAX_TIMEOUT_MS|MAX_OUTPUT_LENGTH)$)/i
   const env: NodeJS.ProcessEnv = {}
   for (const [name, value] of Object.entries(process.env)) if (!blocked.test(name)) env[name] = value
   const tools = JSON.parse(readFileSync(join(ROOT, 'tools.json'), 'utf8')).tools

@@ -73,6 +73,7 @@ Four pilots on the public challenges (35 runs, not part of the study) shaped the
 - The cost is Claude Code's equivalent cost, not money spent: the runs used a subscription.
 - rea 6.4.0, frozen before 6.5.0 was published.
 - The review heuristic that flags commands trying to run a program caught 23 attempts to use Python or to write outside the run folder. All were denied by the permission policy and none ran; no run was excluded.
+- Added on 16 October 2026: the runs were launched from the Claude desktop app, whose environment sets two Claude Code switches, `DISABLE_MICROCOMPACT=1`, which turns off the clearing of old tool results from the context, and `API_TIMEOUT_MS=900000`. The harness did not filter them, so they very likely reached every run. They applied to every condition alike, so no comparison changes, but absolute token counts and costs may be higher than with Claude Code's defaults. From study 5 the harness drops them ([ADR 0018](../../docs/adr/0018-benchmark-isolation.md)).
 
 ## Reproduce it
 

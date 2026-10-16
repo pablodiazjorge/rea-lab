@@ -108,6 +108,7 @@ Al revisar las relecturas de este estudio apareció un error en el anexo del est
 - La verdad de referencia estaba en la carpeta del banco de pruebas, por encima de las ejecuciones. La política de permisos denegó todos los intentos de llegar a ella, pero una política más débil la habría dejado al alcance.
 - El coste sale de los precios publicados por DeepSeek y del uso de tokens de cada ejecución, no de la factura; en el piloto, el coste calculado coincidió con el panel de DeepSeek.
 - Los programas, el build y las tareas tienen las limitaciones descritas en el estudio 3: cuatro programas pequeños en C compilados con llvm-mingw, cuatro grupos y preguntas redactadas por el autor.
+- Añadido el 16 de octubre de 2026: las ejecuciones se lanzaron desde la app de escritorio de Claude, cuyo entorno fija dos ajustes de Claude Code: `DISABLE_MICROCOMPACT=1`, que desactiva la limpieza de los resultados viejos de herramientas del contexto, y `API_TIMEOUT_MS=900000`. El arnés no los filtraba, así que con toda probabilidad llegaron a todas las ejecuciones. Se aplicaron a todas las condiciones por igual, así que ninguna comparación cambia, pero las cifras absolutas de tokens y de coste pueden ser más altas que con los valores por defecto de Claude Code. Desde el estudio 5 el arnés los descarta ([ADR 0018](../../docs/adr/0018-benchmark-isolation.md)).
 
 ## Cómo reproducirlo
 

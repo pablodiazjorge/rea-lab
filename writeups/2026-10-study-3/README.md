@@ -143,6 +143,7 @@ These measures were not preregistered. They are exploratory and come from the sa
 - rea 6.4.0, the version of studies 1 and 2, frozen for comparability.
 - Until the correction above, the grader authenticated only Evidence returned inline and did not read the files where Claude Code saves large results, which this study allowed for the first time.
 - The review heuristic flagged 28 runs (19 in A, 9 in B) for attempts to run Python or paths outside the run folder. The permission policy denied every interpreter call. The commands that ran were false positives, such as a `grep` for the word `python` among the program's strings, and the outside paths were either denied or `sed` and `awk` patterns read as drive letters. No run was excluded.
+- Added on 16 October 2026: the runs were launched from the Claude desktop app, whose environment sets two Claude Code switches, `DISABLE_MICROCOMPACT=1`, which turns off the clearing of old tool results from the context, and `API_TIMEOUT_MS=900000`. The harness did not filter them, so they very likely reached every run. They applied to every condition alike, so no comparison changes, but absolute token counts and costs may be higher than with Claude Code's defaults. From study 5 the harness drops them ([ADR 0018](../../docs/adr/0018-benchmark-isolation.md)).
 
 ## Reproduce it
 
