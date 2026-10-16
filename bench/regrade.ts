@@ -42,6 +42,7 @@ function main() {
       variant: previous.variant,
       kind: set.kind,
       extraRoots: set.kind === 'real' ? [toolResultsFolder(join(runDir, 'claude-config'))] : [],
+      configDir: join(runDir, 'claude-config'),
     })
     const record = { ...previous, ...grade }
     if (JSON.stringify(record) !== JSON.stringify(previous)) {

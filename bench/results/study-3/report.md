@@ -43,7 +43,7 @@ Correct: the answered address falls inside the target function or table. Without
 
 | Condition | Used rea | First call open_binary | Opened and closed | Repeated calls | Input validation failures | Citations authenticated | Citations about the target | Invented ids | Skill loaded |
 |---|---|---|---|---|---|---|---|---|---|
-| B | 72/72 (100 %, 95 %-100 %) | 72/72 (100 %, 95 %-100 %) | 71/72 (99 %, 93 %-100 %) | 0 | 5 | 142/144 | 142/144 | 2 | 0/72 (0 %, 0 %-5 %) |
+| B | 72/72 (100 %, 95 %-100 %) | 72/72 (100 %, 95 %-100 %) | 71/72 (99 %, 93 %-100 %) | 0 | 5 | 144/144 | 144/144 | 0 | 0/72 (0 %, 0 %-5 %) |
 
 ## Answered address in the cited Evidence (conditions B and C)
 

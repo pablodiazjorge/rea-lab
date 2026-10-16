@@ -1,10 +1,12 @@
 import { strict as assert } from 'node:assert'
-import { readFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { test } from 'node:test'
 import { parseAnswer } from '../answer.ts'
 import { parseStreamJson } from '../claude.ts'
-import { checkIsolation, executionAttempts, gradeRun, type Challenge } from '../grade.ts'
-import { closedJson, deliveredEvidence, reaMetrics } from '../rea.ts'
+import { checkIsolation, executionAttempts, gradeRun, savedResultReader, type Challenge } from '../grade.ts'
+import { closedJson, deliveredEvidence, reaMetrics, savedResultPath } from '../rea.ts'
 
 // Real, authenticated Evidence from the lab's own XOR writeup (rea 6.4.0, c02-xor x64 -O0 stripped).
 const bundle = JSON.parse(readFileSync(new URL('../../writeups/2026-10-own-xor/evidence-o0.json', import.meta.url), 'utf8'))
@@ -253,4 +255,58 @@ test('commands that try to run a program are flagged for review', () => {
   ]
   const run = parseStreamJson(transcript(commands.map((command) => ({ tool: 'Bash', input: { command }, result: '' })), 'done'))
   assert.deepEqual(executionAttempts(run), commands.slice(3))
+})
+
+/** A run folder whose Claude Code configuration holds one saved rea result, and the note that names it. */
+function savedResultRun(fileName: string, content: string) {
+  const runDir = mkdtempSync(join(tmpdir(), 'rea-lab-saved-'))
+  const configDir = join(runDir, 'claude-config')
+  const folder = join(configDir, 'projects', 'C--run-work', 'session', 'tool-results')
+  mkdirSync(folder, { recursive: true })
+  writeFileSync(join(folder, fileName), content)
+  // The transcript names the file where the run was recorded, which need not be where it is graded.
+  const note = `Error: result (104.841 characters) exceeds maximum allowed tokens. Output has been saved to C:\\recorded\\run\\claude-config\\projects\\C--run-work\\session\\tool-results\\${fileName}.\nFormat: JSON with schema: {evidence_id: string}`
+  return { runDir, configDir, note }
+}
+
+test('a rea result saved to a file authenticates only with the saved-result reader', () => {
+  const { runDir, configDir, note } = savedResultRun('mcp-rea-procedure_pseudo_code-1792000265245.txt', JSON.stringify(pseudoCode))
+  try {
+    // Claude Code 2.1.296 returns the note as an ordinary result, without an error flag.
+    const run = parseStreamJson(transcript([{ tool: 'mcp__rea__procedure_pseudo_code', result: note }], 'done'))
+    assert.equal(savedResultPath(note)?.endsWith('mcp-rea-procedure_pseudo_code-1792000265245.txt'), true)
+    const inline = deliveredEvidence(run)
+    assert.equal(inline.records.has(pseudoCode.evidence_id), false)
+    assert.equal(inline.undecodable, 1)
+    const withSaved = deliveredEvidence(run, savedResultReader(configDir))
+    assert.equal(withSaved.records.has(pseudoCode.evidence_id), true)
+    assert.equal(withSaved.undecodable, 0)
+    // A client that flags the note as an error is followed the same way.
+    const flagged = parseStreamJson(transcript([{ tool: 'mcp__rea__procedure_pseudo_code', result: note, isError: true }], 'done'))
+    assert.equal(deliveredEvidence(flagged, savedResultReader(configDir)).records.has(pseudoCode.evidence_id), true)
+    // A challenge set keeps inline delivery only, so a configuration folder changes nothing there.
+    const grade = gradeRun(run, xor, { withRea: true, withSkill: false, targetSha256, workDir: join(runDir, 'work'), variant: 'x64-O0-strip', configDir })
+    assert.equal(grade.grounding?.delivered, 0)
+  } finally {
+    rmSync(runDir, { recursive: true, force: true })
+  }
+})
+
+test('only the oversized-result note is followed, and only to a rea result inside the run', () => {
+  const { runDir, configDir, note } = savedResultRun('mcp-rea-procedure_pseudo_code-1.txt', JSON.stringify(pseudoCode))
+  try {
+    const read = savedResultReader(configDir)
+    const deliveredFrom = (text: string, isError = false) => deliveredEvidence(parseStreamJson(transcript([{ tool: 'mcp__rea__procedure_pseudo_code', result: text, isError }], 'done')), read)
+    assert.equal(deliveredFrom(note).records.size, 1)
+    assert.equal(deliveredFrom(`Error: capability_unavailable. ${note.slice(7)}`, true).records.size, 0)
+    assert.equal(deliveredFrom(`Result: ${note}`).records.size, 0)
+    assert.equal(read('C:\\recorded\\run\\claude-config\\projects\\C--run-work\\session\\tool-results\\toolu_01.txt'), undefined)
+    assert.equal(read('C:\\recorded\\run\\claude-config\\..\\..\\mcp-rea-procedure_pseudo_code-1.txt'), undefined)
+    assert.equal(read('C:\\elsewhere\\mcp-rea-procedure_pseudo_code-1.txt'), undefined)
+    // The saved Evidence must still come from the tool that was called.
+    const wrongTool = parseStreamJson(transcript([{ tool: 'mcp__rea__list_strings', result: note, isError: true }], 'done'))
+    assert.equal(deliveredEvidence(wrongTool, read).records.size, 0)
+  } finally {
+    rmSync(runDir, { recursive: true, force: true })
+  }
 })

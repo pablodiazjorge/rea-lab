@@ -1,0 +1,144 @@
+{
+  "study": "study-3",
+  "note": "Post hoc and exploratory; measured from the saved transcripts, which are not published (ADR 0014).",
+  "runsWithRea": 72,
+  "advertisedReaTools": 153,
+  "savedResults": {
+    "runs": 32,
+    "results": 43,
+    "byTool": {
+      "binary_overview": {
+        "calls": 4,
+        "saved": 0,
+        "bytes": null
+      },
+      "close_binary": {
+        "calls": 71,
+        "saved": 0,
+        "bytes": null
+      },
+      "list_procedures": {
+        "calls": 21,
+        "saved": 21,
+        "bytes": {
+          "min": 51423,
+          "median": 51581,
+          "max": 224135
+        }
+      },
+      "list_segments": {
+        "calls": 1,
+        "saved": 0,
+        "bytes": null
+      },
+      "list_strings": {
+        "calls": 1,
+        "saved": 1,
+        "bytes": {
+          "min": 59504,
+          "median": 59504,
+          "max": 59504
+        }
+      },
+      "open_binary": {
+        "calls": 72,
+        "saved": 0,
+        "bytes": null
+      },
+      "procedure_assembly": {
+        "calls": 2,
+        "saved": 0,
+        "bytes": null
+      },
+      "procedure_callees": {
+        "calls": 23,
+        "saved": 0,
+        "bytes": null
+      },
+      "procedure_callers": {
+        "calls": 60,
+        "saved": 0,
+        "bytes": null
+      },
+      "procedure_info": {
+        "calls": 7,
+        "saved": 0,
+        "bytes": null
+      },
+      "procedure_pseudo_code": {
+        "calls": 306,
+        "saved": 18,
+        "bytes": {
+          "min": 58190,
+          "median": 193565,
+          "max": 470561
+        }
+      },
+      "procedure_references": {
+        "calls": 1,
+        "saved": 1,
+        "bytes": {
+          "min": 95019,
+          "median": 95019,
+          "max": 95019
+        }
+      },
+      "read_bytes": {
+        "calls": 10,
+        "saved": 0,
+        "bytes": null
+      },
+      "resolve_containing_procedure": {
+        "calls": 49,
+        "saved": 0,
+        "bytes": null
+      },
+      "search_procedures": {
+        "calls": 16,
+        "saved": 2,
+        "bytes": {
+          "min": 52122,
+          "median": 80107,
+          "max": 108092
+        }
+      },
+      "search_strings": {
+        "calls": 101,
+        "saved": 0,
+        "bytes": null
+      },
+      "xrefs": {
+        "calls": 78,
+        "saved": 0,
+        "bytes": null
+      }
+    }
+  },
+  "pagedRoutesUsed": {
+    "analyze_function": 0,
+    "inspect_analysis_view": 0
+  },
+  "toolSearch": {
+    "runs": 72,
+    "medianCalls": 1
+  },
+  "firstRequestInputMedian": {
+    "A": 8972,
+    "B": 12189,
+    "C": null
+  },
+  "perRequestOverhead": 3217,
+  "overheadShareOfInput": {
+    "median": 0.11908439727166543,
+    "min": 0.03192209537194116,
+    "max": 0.19320805584101858
+  },
+  "totalInputMedianPerMessage": {
+    "A": 112967,
+    "B": 300694.5
+  },
+  "medianRequests": {
+    "A": 9,
+    "B": 11
+  }
+}

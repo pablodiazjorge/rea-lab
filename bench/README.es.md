@@ -20,7 +20,7 @@ Cada ejecución recibe un reto de [`challenges/`](../challenges/README.es.md), r
 
 ## Tareas con software real
 
-El estudio 3 cambia los crackmes por programas libres reales compilados sin símbolos ([ADR 0024](../docs/adr/0024-real-software-tasks.md)). Cada ejecución hace una pregunta sobre dónde está una función o una tabla, y la respuesta tiene dos reclamaciones: `answer_address`, la dirección virtual donde empieza, y `source_name`, una suposición de su nombre en el código fuente. La respuesta es correcta si la dirección cae dentro del rango del objetivo en el mapa del build completo; el inicio exacto, una dirección dada sin la base de imagen, el nombre en el código y, en B, si la Evidence citada recoge esa dirección se informan aparte. Una ejecución puede leer además los archivos donde Claude Code guarda los resultados demasiado grandes para devolverlos directamente. Las tareas salen de [`challenges/real-tasks.mjs`](../challenges/real-tasks.mjs) y el [prerregistro del estudio 3](preregistration-study-3.md) describe el diseño.
+El estudio 3 cambia los crackmes por programas libres reales compilados sin símbolos ([ADR 0024](../docs/adr/0024-real-software-tasks.md)). Cada ejecución hace una pregunta sobre dónde está una función o una tabla, y la respuesta tiene dos reclamaciones: `answer_address`, la dirección virtual donde empieza, y `source_name`, una suposición de su nombre en el código fuente. La respuesta es correcta si la dirección cae dentro del rango del objetivo en el mapa del build completo; el inicio exacto, una dirección dada sin la base de imagen, el nombre en el código y, en B, si la Evidence citada recoge esa dirección se informan aparte. Una ejecución puede leer además los archivos donde Claude Code guarda los resultados demasiado grandes para devolverlos directamente, y la evidencia de un resultado de rea guardado cuenta como entregada ([ADR 0019](../docs/adr/0019-reuse-rea-evaluation.md)). Las tareas salen de [`challenges/real-tasks.mjs`](../challenges/real-tasks.mjs) y el [prerregistro del estudio 3](preregistration-study-3.md) describe el diseño.
 
 ## Calificación
 
@@ -59,7 +59,7 @@ node bench/run.ts --study pilot --model <modelo>
 node bench/report.ts --study pilot
 ```
 
-Tras corregir un calificador, `node bench/regrade.ts --study <nombre>` vuelve a calificar un estudio a partir de sus transcripciones guardadas, sin repetir ninguna ejecución. Las transcripciones en bruto se quedan en la carpeta del banco. `node bench/report.ts --study <nombre> --publish` copia las ejecuciones calificadas, sin rutas personales, en `bench/results/<nombre>/` junto con el informe.
+Tras corregir un calificador, `node bench/regrade.ts --study <nombre>` vuelve a calificar un estudio a partir de sus transcripciones guardadas, sin repetir ninguna ejecución. Las transcripciones en bruto se quedan en la carpeta del banco. `node bench/report.ts --study <nombre> --publish` copia las ejecuciones calificadas, sin rutas personales, en `bench/results/<nombre>/` junto con el informe. `node bench/context.ts --study <nombre>` muestra medidas de contexto a posteriori sacadas de las transcripciones, como los resultados de rea guardados en archivos por herramienta y la entrada de la primera petición de cada ejecución, sin rutas locales.
 
 ## Limitaciones
 

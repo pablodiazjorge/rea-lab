@@ -20,7 +20,7 @@ Each run gets one challenge from [`challenges/`](../challenges/README.md), renam
 
 ## Real-software tasks
 
-Study 3 swaps the crackmes for real open-source programs compiled without symbols ([ADR 0024](../docs/adr/0024-real-software-tasks.md)). Each run asks one question about where a function or table lives, and the answer has two claims: `answer_address`, the virtual address where it starts, and `source_name`, a guess at its name in the source. The answer is correct when the address falls inside the target's range in the full build's map; the exact start, an address given without the image base, the source name and, in B, whether the cited Evidence states that address are reported apart. A run may also read the files where Claude Code saves tool results too large to return inline. The tasks come from [`challenges/real-tasks.mjs`](../challenges/real-tasks.mjs) and the [study 3 preregistration](preregistration-study-3.md) describes the design.
+Study 3 swaps the crackmes for real open-source programs compiled without symbols ([ADR 0024](../docs/adr/0024-real-software-tasks.md)). Each run asks one question about where a function or table lives, and the answer has two claims: `answer_address`, the virtual address where it starts, and `source_name`, a guess at its name in the source. The answer is correct when the address falls inside the target's range in the full build's map; the exact start, an address given without the image base, the source name and, in B, whether the cited Evidence states that address are reported apart. A run may also read the files where Claude Code saves tool results too large to return inline, and the Evidence inside a saved rea result counts as delivered ([ADR 0019](../docs/adr/0019-reuse-rea-evaluation.md)). The tasks come from [`challenges/real-tasks.mjs`](../challenges/real-tasks.mjs) and the [study 3 preregistration](preregistration-study-3.md) describes the design.
 
 ## Grading
 
@@ -59,7 +59,7 @@ node bench/run.ts --study pilot --model <model>
 node bench/report.ts --study pilot
 ```
 
-After a grader fix, `node bench/regrade.ts --study <name>` grades a study again from its saved transcripts, without repeating any run. Raw transcripts stay in the benchmark home. `node bench/report.ts --study <name> --publish` copies the graded runs, without personal paths, into `bench/results/<name>/` together with the report.
+After a grader fix, `node bench/regrade.ts --study <name>` grades a study again from its saved transcripts, without repeating any run. Raw transcripts stay in the benchmark home. `node bench/report.ts --study <name> --publish` copies the graded runs, without personal paths, into `bench/results/<name>/` together with the report. `node bench/context.ts --study <name>` prints post-hoc context measures from the transcripts, such as the rea results saved to files by tool and the input of each run's first request, without local paths.
 
 ## Limitations
 

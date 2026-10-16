@@ -60,12 +60,30 @@ const sameJson = (left: unknown, right: unknown) => JSON.stringify(canonical(lef
 
 const reaCalls = (run: ClaudeRun) => run.toolCalls.filter((call) => call.name.startsWith(REA_TOOL_PREFIX))
 
-/** Authenticates every Evidence that a successful rea call delivered to the agent, indexed by evidence_id. */
-export function deliveredEvidence(run: ClaudeRun): DeliveredEvidence {
+// Claude Code's note when an MCP result is too large to return inline. It replaces the result text, without an
+// error flag, and the complete result is written to a file the agent can read. The character count is formatted
+// for the host locale.
+const SAVED_RESULT = /^Error: result \([^)]*\) exceeds maximum allowed tokens\. Output has been saved to (.+?\.txt)\.(?:\s|$)/u
+
+/** The file named by Claude Code's oversized-result note, or undefined for any other result text. */
+export function savedResultPath(text: string): string | undefined {
+  return SAVED_RESULT.exec(text)?.[1]
+}
+
+/**
+ * Authenticates every Evidence that a rea call delivered to the agent, indexed by evidence_id. A successful call
+ * delivers its result inline. When `readSaved` is given (real-software sets, ADR 0019), a call whose result Claude
+ * Code saved to a file delivers that file's content instead of the note; a note whose file cannot be read stays
+ * undecodable, as before, and any other failed call delivers nothing.
+ */
+export function deliveredEvidence(run: ClaudeRun, readSaved?: (path: string) => string | undefined): DeliveredEvidence {
   const delivered: DeliveredEvidence = { records: new Map(), conflicts: new Set(), undecodable: 0 }
   for (const call of reaCalls(run)) {
-    if (!call.result || call.result.isError) continue
-    const value = closedJson(call.result.text)
+    if (!call.result) continue
+    const saved = readSaved ? savedResultPath(call.result.text) : undefined
+    const content = saved === undefined ? undefined : readSaved!(saved)
+    if (call.result.isError && content === undefined) continue
+    const value = closedJson(content ?? call.result.text)
     if (value === undefined) {
       delivered.undecodable++
       continue

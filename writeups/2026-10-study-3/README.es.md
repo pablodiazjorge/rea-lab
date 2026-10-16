@@ -4,7 +4,7 @@
 
 El [estudio 1](../2026-10-study-1/README.es.md) y el [estudio 2](../2026-10-study-2/README.es.md) le pedían a Claude Code la entrada que acepta un crackme sintético, con y sin el servidor MCP de ingeniería inversa [rea](https://github.com/morluto/rea). rea no cambió nada con crackmes pequeños y se quedó atrás con los grandes, y la mayoría de los fallos fueron una comprobación encontrada que no se podía invertir sin calcular. Los dos writeups dejaron escrito el siguiente paso: preguntas cuya respuesta sea un análisis, sobre software más parecido al real. Este estudio pregunta dónde está una función o una tabla descrita en programas libres reales, compilados aquí sin símbolos, con las respuestas conocidas de antemano y el análisis fijado antes de la primera ejecución.
 
-**Respuesta corta:** no hay diferencia que medir. Con cuatro programas que el modelo no había visto nunca, el agente localizó la función o la tabla pedida en 71 de 72 ejecuciones solo con herramientas de línea de órdenes y en 68 de 72 con rea (McNemar exacto, p = 0,375). Las dos condiciones están en el techo, así que solo se habría visto un efecto grande, y no lo hubo. rea volvió a costar más del doble, y 142 de sus 144 citas de evidencia se autenticaron.
+**Respuesta corta:** no hay diferencia que medir. Con cuatro programas que el modelo no había visto nunca, el agente localizó la función o la tabla pedida en 71 de 72 ejecuciones solo con herramientas de línea de órdenes y en 68 de 72 con rea (McNemar exacto, p = 0,375). Las dos condiciones están en el techo, así que solo se habría visto un efecto grande, y no lo hubo. rea volvió a costar más del doble, y sus 144 citas de evidencia se autenticaron (142 en la primera publicación; véase la corrección).
 
 ## Diseño
 
@@ -67,9 +67,9 @@ Ningún programa decide el resultado: moppe-emu reúne dos de los cuatro pares e
 
 **Cómo fallaron las ejecuciones.** Cinco ejecuciones dieron una dirección fuera del objetivo, siempre dentro de otra función del mismo programa. Tres de los cuatro fallos de B respondieron una función a un paso en el grafo de llamadas: dos veces en moppe-emu, `io_read` en lugar de `pit_read`, la función descrita, a la que solo llama `io_read`; y una vez en una tarea chain de SGIEmu, `emit_insn` en lugar de `emit_cop1`, la respuesta correcta, a la que solo llama `emit_insn`. El cuarto dio `p_and` en lugar de `pp_rel`, otra función del ensamblador de c5xtools. El único fallo de A, en una tarea chain de flint, dio `http_request_native` en lugar de `import_file_native`.
 
-**Cómo se usó rea.** El agente usó rea en todas las ejecuciones de B y siempre empezó con `open_binary`; cerró la sesión en 71 de 72, tras una mediana de 8 llamadas a rea. En 18 ejecuciones leyó un resultado de rea que Claude Code había guardado en un archivo, el acceso que el estudio 2 denegaba. Citó 144 registros de evidencia: 142 se autenticaron y trataban del objetivo. Los otros dos eran un mismo `evidence_id` real citado dos veces, que le llegó al agente dentro de uno de esos archivos guardados; el calificador solo autentica la evidencia devuelta directamente, así que los contó como desconocidos. rea rechazó 5 llamadas por entradas no válidas en 4 ejecuciones.
+**Cómo se usó rea.** El agente usó rea en todas las ejecuciones de B y siempre empezó con `open_binary`; cerró la sesión en 71 de 72, tras una mediana de 8 llamadas a rea. En 18 ejecuciones leyó un resultado de rea que Claude Code había guardado en un archivo, el acceso que el estudio 2 denegaba. Citó 144 registros de evidencia, y los 144 se autenticaron y trataban del objetivo. Dos de ellos, un mismo `evidence_id` real citado dos veces, le llegaron al agente dentro de uno de esos archivos guardados; al principio el calificador solo leía los resultados devueltos directamente y los contó como desconocidos, hasta la corrección de más abajo. rea rechazó 5 llamadas por entradas no válidas en 4 ejecuciones.
 
-**Qué demuestran las citas.** La RQ3 preguntaba si la dirección respondida aparece en la evidencia que cita `answer_address`. Aparece en 38 de las 72 ejecuciones de B, 37 de ellas correctas. En el resto, la evidencia citada respalda el razonamiento, como el código de la función o una referencia cruzada, pero no recoge la dirección. Como el calificador no lee los archivos guardados, 38 es una cota inferior.
+**Qué demuestran las citas.** La RQ3 preguntaba si la dirección respondida aparece en la evidencia que cita `answer_address`. Aparece en 38 de las 72 ejecuciones de B, 37 de ellas correctas. En el resto, la evidencia citada respalda el razonamiento, como el código de la función o una referencia cruzada, pero no recoge la dirección. Leer los archivos guardados, tras la corrección de más abajo, no cambió esta cifra.
 
 Las 144 ejecuciones llevaron 149 minutos de máquina (47 en A y 102 en B) y 30,02 USD de coste equivalente, con una suscripción.
 
@@ -90,13 +90,44 @@ La tarea publicada más cercana es Binary Function Search, del [informe técnico
 - Entre los tres estudios, no hay ninguna señal de que rea aumente cuántas tareas resuelve Claude Code con este modelo: ninguna con crackmes pequeños, una diferencia no significativa en contra con los grandes y ninguna aquí, donde las dos condiciones están en el techo. Cada vez cuesta más: alrededor del doble en los estudios 1 y 2, y 2,3 veces la mediana de coste aquí.
 - Encontrar una función descrita en un programa pequeño sin símbolos es fácil para este agente con `llvm-objdump` y `grep`, incluso en código que no ha visto nunca: 71 de 72, todas en el inicio exacto. Un banco de pruebas que distinga las condiciones necesita preguntas más difíciles o programas más grandes.
 - Con rea, tres de los cuatro fallos se quedaron a un paso en el grafo de llamadas: el agente llegó a la zona correcta y después respondió un llamador. Cuatro fallos son muy pocos para saber por qué.
-- La evidencia de rea sigue comprobándose (142 de 144 aquí, y las otras dos salían de un resultado de rea guardado en un archivo), pero a menudo una cita respalda el razonamiento sin recoger la respuesta: solo en 38 de 72 ejecuciones la evidencia citada contenía la dirección respondida.
+- La evidencia de rea sigue comprobándose (las 144 aquí, dos de ellas de un resultado de rea guardado en un archivo), pero a menudo una cita respalda el razonamiento sin recoger la respuesta: solo en 38 de 72 ejecuciones la evidencia citada contenía la dirección respondida.
 - Las paradas del clasificador de seguridad de los estudios 1 y 2 iban con las tareas de crackmes, no con la ingeniería inversa en sí.
 - Las siguientes preguntas son programas más grandes, builds de MSVC y C++, respuestas que sean análisis más allá de una ubicación (la disposición de una estructura, un protocolo, un comportamiento que cambia entre versiones) y otros agentes y modelos.
 
 ## Desviaciones
 
-El equipo que ejecutaba el estudio se reinició una vez, después de 14 ejecuciones, y cortó la ejecución 15 (`r04` con rea, segunda repetición) antes de terminar; no había producido resultado. El estudio se reanudó con la misma orden y desde el mismo commit: el arnés saltó las ejecuciones terminadas y repitió desde el principio la cortada. Su carpeta a medias se conserva. No hubo ninguna otra desviación.
+El equipo que ejecutaba el estudio se reinició una vez, después de 14 ejecuciones, y cortó la ejecución 15 (`r04` con rea, segunda repetición) antes de terminar; no había producido resultado. El estudio se reanudó con la misma orden y desde el mismo commit: el arnés saltó las ejecuciones terminadas y repitió desde el principio la cortada. Su carpeta a medias se conserva. No hubo ninguna otra desviación en cómo se ejecutó el estudio; la corrección del calificador del 16 de octubre de 2026 se explica aparte, más abajo.
+
+## Corrección (16 de octubre de 2026)
+
+Cuando el resultado de una herramienta es demasiado grande para devolverlo directamente, Claude Code 2.1.296 lo sustituye por un aviso, sin marca de error, y escribe el resultado completo en un archivo que el agente puede leer. El calificador solo autenticaba la evidencia devuelta directamente, así que los 43 resultados de rea guardados así contaban como no descodificables, y dos citas de uno de ellos como desconocidas. Ahora el calificador lee esos archivos en los conjuntos de software real, y empareja cada archivo con su llamada mediante el aviso de esa misma llamada ([ADR 0019](../../docs/adr/0019-reuse-rea-evaluation.md)); los conjuntos anteriores siguen con la entrega directa, así que los estudios 1 y 2 se califican igual. Las 144 ejecuciones se volvieron a calificar desde sus transcripciones guardadas:
+
+| Medida, condición B | En la primera publicación | Tras la corrección |
+|---|---|---|
+| Citas autenticadas y sobre el objetivo | 142 de 144 | 144 de 144 |
+| Identificadores inventados | 2 | 0 |
+| Registros de evidencia entregados | 632 | 675 |
+| Dirección respondida en la evidencia citada | 38 de 72 | 38 de 72 |
+
+No cambió nada más: ninguna respuesta, inicio exacto, prueba de McNemar ni métrica de uso de herramientas. El informe y las ejecuciones calificadas de `bench/results/study-3/` se regeneraron; la primera versión publicada está en el historial del repositorio.
+
+## Anexo: resultados grandes y coste del catálogo (a posteriori)
+
+Estas medidas no estaban prerregistradas. Son exploratorias y salen de las transcripciones guardadas, que no se publican ([ADR 0014](../../docs/adr/0014-publishing-evidence.md)). Las calcula `node bench/context.ts --study study-3`, y su salida está en [`bench/results/study-3/context.json`](../../bench/results/study-3/context.json).
+
+- **Resultados grandes.** Claude Code guardó en un archivo al menos un resultado de rea en 32 de las 72 ejecuciones de B, 43 resultados en total. El agente volvió a leer un resultado guardado en 18 de esas ejecuciones.
+
+  | Herramienta | Llamadas | Guardadas en un archivo | Tamaño de esos resultados |
+  |---|---|---|---|
+  | `list_procedures` | 21 | 21 | De 51 a 224 KB, mediana de 52 KB |
+  | `procedure_pseudo_code` | 306 | 18 | De 58 a 471 KB, mediana de 194 KB |
+  | `search_procedures` | 16 | 2 | 52 y 108 KB |
+  | `list_strings` | 1 | 1 | 60 KB |
+  | `procedure_references` | 1 | 1 | 95 KB |
+  | `search_strings` | 101 | 0 | |
+
+- **Rutas paginadas.** Ninguna ejecución llamó a `analyze_function` ni a `inspect_analysis_view`, que paginan el código de una función grande.
+- **Coste del catálogo.** rea 6.4.0 anunciaba 153 herramientas. Claude Code las listó solo por su nombre y cargó los esquemas con su búsqueda de herramientas, que usaron todas las ejecuciones de B, con una mediana de una vez. La primera petición de cada ejecución llevó una mediana de 12.189 tokens de entrada en B frente a 8.972 en A, unos 3.200 más. Ese coste se repite en cada petición: multiplicado por las peticiones de cada ejecución, es una mediana del 12 % de los tokens de entrada (del 3 % al 19 %). Los tokens de entrada suman entrada, creación de caché y lecturas de caché de cada petición, y dan las medianas del informe (300.695 en B y 112.967 en A).
 
 ## Limitaciones
 
@@ -108,7 +139,7 @@ El equipo que ejecutaba el estudio se reinició una vez, después de 14 ejecucio
 - Ninguna de las dos condiciones podía ejecutar un intérprete, a propósito.
 - El coste es el coste equivalente de Claude Code, no dinero gastado: las ejecuciones usaron una suscripción.
 - rea 6.4.0, la versión de los estudios 1 y 2, congelada para poder comparar.
-- El calificador autentica la evidencia devuelta directamente y no lee los archivos donde Claude Code guarda los resultados grandes, que este estudio permitió por primera vez; eso deja fuera dos citas y rebaja la comprobación de direcciones de arriba.
+- Hasta la corrección de más arriba, el calificador solo autenticaba la evidencia devuelta directamente y no leía los archivos donde Claude Code guarda los resultados grandes, que este estudio permitió por primera vez.
 - La heurística de revisión marcó 28 ejecuciones (19 en A y 9 en B) por intentos de ejecutar Python o por rutas fuera de la carpeta de la ejecución. La política de permisos denegó todas las llamadas a intérpretes. Los comandos que sí se ejecutaron eran falsos positivos, como un `grep` de la palabra `python` entre las cadenas del programa, y las rutas de fuera o estaban denegadas o eran patrones de `sed` y `awk` leídos como unidades de disco. No se excluyó ninguna ejecución.
 
 ## Cómo reproducirlo

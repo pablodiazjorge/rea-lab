@@ -325,6 +325,7 @@ async function executeRun(run: PlannedRun, set: ChallengeSet, options: Options, 
     variant: run.variant,
     kind: set.kind,
     extraRoots: set.kind === 'real' ? [toolResultsFolder(config)] : [],
+    configDir: config,
   })
   const record = {
     schema: 1,

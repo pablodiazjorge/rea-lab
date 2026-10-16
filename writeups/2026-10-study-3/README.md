@@ -4,7 +4,7 @@
 
 [Study 1](../2026-10-study-1/README.md) and [study 2](../2026-10-study-2/README.md) asked Claude Code for the input that a synthetic crackme accepts, with and without the reverse-engineering MCP server [rea](https://github.com/morluto/rea). rea changed nothing on small crackmes and fell behind on larger ones, and most failures were a check that was found but could not be inverted without computing. Both writeups named the next step: questions whose answer is an analysis, on software closer to the real thing. This study asks where a described function or table lives in real open-source programs, compiled here without symbols, with the answers known in advance and the analysis fixed before the first run.
 
-**Short answer:** no difference to measure. On four programs the model had never seen, the agent located the asked function or table in 71 of 72 runs with command-line tools alone and in 68 of 72 with rea (exact McNemar, p = 0.375). Both conditions are at the ceiling, so only a large effect could have shown, and none did. rea again cost more than twice as much, and 142 of its 144 Evidence citations authenticated.
+**Short answer:** no difference to measure. On four programs the model had never seen, the agent located the asked function or table in 71 of 72 runs with command-line tools alone and in 68 of 72 with rea (exact McNemar, p = 0.375). Both conditions are at the ceiling, so only a large effect could have shown, and none did. rea again cost more than twice as much, and all 144 of its Evidence citations authenticated (142 as first published; see the correction).
 
 ## Design
 
@@ -67,9 +67,9 @@ No program drives the result: moppe-emu holds two of the four pairs where only A
 
 **How the runs failed.** Five runs gave an address outside the target, every time inside another function of the same program. Three of the four failures in B answered a function one step away in the call graph: twice in moppe-emu, `io_read` instead of `pit_read`, the described function, which only `io_read` calls; and once in a SGIEmu chain task, `emit_insn` instead of `emit_cop1`, the right answer, which only `emit_insn` calls. The fourth gave `p_and` instead of `pp_rel`, another function of the c5xtools assembler. The one failure in A, a flint chain task, gave `http_request_native` instead of `import_file_native`.
 
-**How rea was used.** The agent used rea in every run of B and always started with `open_binary`; it closed the session in 71 of 72 runs, after a median of 8 rea calls. In 18 runs it read a rea result that Claude Code had saved to a file, the access that study 2 denied. It cited 144 pieces of Evidence: 142 authenticated and were about the target. The other two were one real `evidence_id` cited twice, which reached the agent inside one of those saved files; the grader authenticates only Evidence returned inline, so it counted them as unknown. rea rejected 5 calls for invalid input in 4 runs.
+**How rea was used.** The agent used rea in every run of B and always started with `open_binary`; it closed the session in 71 of 72 runs, after a median of 8 rea calls. In 18 runs it read a rea result that Claude Code had saved to a file, the access that study 2 denied. It cited 144 pieces of Evidence, and all 144 authenticated and were about the target. Two of them, one real `evidence_id` cited twice, reached the agent inside one of those saved files; the grader first read only inline results and counted them as unknown, until the correction below. rea rejected 5 calls for invalid input in 4 runs.
 
-**What the citations prove.** RQ3 asked whether the answered address appears in the Evidence that `answer_address` cites. It does in 38 of the 72 runs of B, 37 of them correct. In the rest, the cited Evidence supports the reasoning, such as the function's code or a cross-reference, but does not state the address itself. Because the grader does not read saved files, 38 is a lower bound.
+**What the citations prove.** RQ3 asked whether the answered address appears in the Evidence that `answer_address` cites. It does in 38 of the 72 runs of B, 37 of them correct. In the rest, the cited Evidence supports the reasoning, such as the function's code or a cross-reference, but does not state the address itself. Reading the saved files, after the correction below, left this number unchanged.
 
 The 144 runs took 149 minutes of machine time (47 in A, 102 in B) and 30.02 USD of equivalent cost, on a subscription.
 
@@ -90,13 +90,44 @@ The closest published task is Binary Function Search in the [ZGCM-1 technical re
 - Across three studies, there is no sign that rea raises how many tasks Claude Code solves with this model: none on small crackmes, a non-significant gap against it on larger ones, and none here, where both conditions are at the ceiling. It costs more each time: about twice as much in studies 1 and 2, and 2.3 times the median cost here.
 - Finding a described function in a small stripped program is easy for this agent with `llvm-objdump` and `grep`, even in code it has never seen: 71 of 72, every one at the exact start. A benchmark that can tell the conditions apart needs harder questions or larger programs.
 - With rea, three of the four misses were one step off in the call graph: the agent reached the right neighbourhood and then answered a caller. Four misses are too few to say why.
-- rea's Evidence keeps checking out (142 of 144 here, and the other two came from a rea result saved to a file), but a citation often supports the reasoning without stating the answer: in only 38 of 72 runs did the cited Evidence contain the answered address.
+- rea's Evidence keeps checking out (all 144 here, two of them from a rea result saved to a file), but a citation often supports the reasoning without stating the answer: in only 38 of 72 runs did the cited Evidence contain the answered address.
 - The safety classifier stops of studies 1 and 2 went with crackme tasks, not with reverse engineering itself.
 - The next questions are larger programs, MSVC and C++ builds, answers that are analyses beyond one location (a structure layout, a protocol, a changed behaviour between versions), and other agents and models.
 
 ## Deviations
 
-The machine running the study restarted once, after 14 runs, and cut run 15 (`r04` with rea, second repetition) before it finished; it had produced no result. The study resumed with the same command from the same commit: the harness skipped the finished runs and repeated the cut one from the start. Its partial folder is kept. There were no other deviations.
+The machine running the study restarted once, after 14 runs, and cut run 15 (`r04` with rea, second repetition) before it finished; it had produced no result. The study resumed with the same command from the same commit: the harness skipped the finished runs and repeated the cut one from the start. Its partial folder is kept. There were no other deviations in how the study ran; the grader correction of 16 October 2026 is reported apart, below.
+
+## Correction (16 October 2026)
+
+When a tool result is too large to return inline, Claude Code 2.1.296 replaces it with a note, without an error flag, and writes the full result to a file the agent can read. The grader authenticated only Evidence returned inline, so the 43 rea results saved this way counted as undecodable, and two citations of one of them as unknown. The grader now reads those files in real-software sets, matching each file to its call through that call's own note ([ADR 0019](../../docs/adr/0019-reuse-rea-evaluation.md)); older sets keep inline delivery, so studies 1 and 2 grade the same. The 144 runs were regraded from their saved transcripts:
+
+| Measure, condition B | As first published | After the correction |
+|---|---|---|
+| Citations authenticated and about the target | 142 of 144 | 144 of 144 |
+| Invented ids | 2 | 0 |
+| Evidence records delivered | 632 | 675 |
+| Answered address in the cited Evidence | 38 of 72 | 38 of 72 |
+
+Nothing else changed: no answer, exact start, McNemar test or tool-usage metric moved. The report and the graded runs in `bench/results/study-3/` were regenerated; the first published version is in the repository history.
+
+## Addendum: oversized results and catalog cost (post hoc)
+
+These measures were not preregistered. They are exploratory and come from the saved transcripts, which are not published ([ADR 0014](../../docs/adr/0014-publishing-evidence.md)). `node bench/context.ts --study study-3` computes them, and its output is in [`bench/results/study-3/context.json`](../../bench/results/study-3/context.json).
+
+- **Oversized results.** Claude Code saved at least one rea result to a file in 32 of the 72 runs of B, 43 results in all. The agent read a saved result back in 18 of those runs.
+
+  | Tool | Calls | Saved to a file | Size of those results |
+  |---|---|---|---|
+  | `list_procedures` | 21 | 21 | 51 to 224 KB, median 52 KB |
+  | `procedure_pseudo_code` | 306 | 18 | 58 to 471 KB, median 194 KB |
+  | `search_procedures` | 16 | 2 | 52 and 108 KB |
+  | `list_strings` | 1 | 1 | 60 KB |
+  | `procedure_references` | 1 | 1 | 95 KB |
+  | `search_strings` | 101 | 0 | |
+
+- **Paged routes.** No run called `analyze_function` or `inspect_analysis_view`, which page a large function's code.
+- **Catalog cost.** rea 6.4.0 advertised 153 tools. Claude Code listed them by name and loaded schemas through its tool search, which every run of B used, a median of once. The first request of a run carried a median of 12,189 input tokens in B against 8,972 in A, about 3,200 more. That overhead repeats on every request: multiplied by each run's requests, it is a median of 12 % of the run's input tokens (3 % to 19 %). Input tokens count input, cache creation and cache reads per request, which add up to the report's medians (300,695 in B, 112,967 in A).
 
 ## Limitations
 
@@ -108,7 +139,7 @@ The machine running the study restarted once, after 14 runs, and cut run 15 (`r0
 - Neither condition could run an interpreter, by design.
 - The cost is Claude Code's equivalent cost, not money spent: the runs used a subscription.
 - rea 6.4.0, the version of studies 1 and 2, frozen for comparability.
-- The grader authenticates Evidence returned inline and does not read the files where Claude Code saves large results, which this study allowed for the first time; that undercounts two citations and the address check above.
+- Until the correction above, the grader authenticated only Evidence returned inline and did not read the files where Claude Code saves large results, which this study allowed for the first time.
 - The review heuristic flagged 28 runs (19 in A, 9 in B) for attempts to run Python or paths outside the run folder. The permission policy denied every interpreter call. The commands that ran were false positives, such as a `grep` for the word `python` among the program's strings, and the outside paths were either denied or `sed` and `awk` patterns read as drive letters. No run was excluded.
 
 ## Reproduce it

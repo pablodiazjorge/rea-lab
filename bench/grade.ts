@@ -1,6 +1,8 @@
 // Deterministic grading of one run (ADR 0018, no LLM judge). The value is scored with the challenge
 // oracle; Evidence citations and tool usage are scored with rea's own code (ADR 0019).
 
+import { existsSync, readFileSync } from 'node:fs'
+import { isAbsolute, join, relative } from 'node:path'
 import { accepts } from '../challenges/oracle.mjs'
 import { acceptedMechanisms, claimIdsFor, claimValue, parseAddress, parseAnswer } from './answer.ts'
 import type { ClaudeRun } from './claude.ts'
@@ -156,10 +158,37 @@ export function outsidePaths(run: ClaudeRun, workDir: string, extraRoots: string
   return [...found]
 }
 
+/**
+ * Reads the files named by Claude Code's oversized-result notes. Each path is resolved inside the run's own
+ * configuration folder, from the part after `claude-config`, so the absolute path in the transcript never
+ * matters, and only rea results (`mcp-rea-<tool>-<time>.txt`) are read.
+ */
+export function savedResultReader(configDir: string): (path: string) => string | undefined {
+  return (path) => {
+    const parts = path.split(/[\\/]/)
+    const at = parts.lastIndexOf('claude-config')
+    if (at < 0 || !/^mcp-rea-[a-z0-9_]+-\d+\.txt$/.test(parts[parts.length - 1])) return undefined
+    const file = join(configDir, ...parts.slice(at + 1))
+    const inside = relative(configDir, file)
+    if (inside === '' || inside.startsWith('..') || isAbsolute(inside) || !existsSync(file)) return undefined
+    return readFileSync(file, 'utf8')
+  }
+}
+
 export function gradeRun(
   run: ClaudeRun,
   challenge: Challenge,
-  options: { withRea: boolean; withSkill: boolean; targetSha256: string; workDir: string; variant: string; kind?: SetKind; extraRoots?: string[] },
+  options: {
+    withRea: boolean
+    withSkill: boolean
+    targetSha256: string
+    workDir: string
+    variant: string
+    kind?: SetKind
+    extraRoots?: string[]
+    /** The run's Claude Code configuration folder; in real-software sets, rea results saved there are authenticated too. */
+    configDir?: string
+  },
 ): Grade {
   const kind = options.kind ?? 'small'
   const finalText = run.result?.text ?? run.finalText
@@ -177,7 +206,10 @@ export function gradeRun(
   for (const call of run.toolCalls) toolCalls[call.name] = (toolCalls[call.name] ?? 0) + 1
 
   let grounding: Grounding | null = null
-  const delivered = options.withRea ? deliveredEvidence(run) : null
+  // Real-software sets let the agent read the results Claude Code saved to files (ADR 0018), so the Evidence in
+  // them counts as delivered (ADR 0019). Older sets keep inline delivery only, so their grading does not change.
+  const readSaved = kind === 'real' && options.configDir !== undefined ? savedResultReader(options.configDir) : undefined
+  const delivered = options.withRea ? deliveredEvidence(run, readSaved) : null
   if (delivered) {
     const cited = (answer.claims ?? []).filter((claim) => claim.evidence_id !== undefined)
     const authenticated = cited.filter((claim) => delivered.records.has(claim.evidence_id!) && !delivered.conflicts.has(claim.evidence_id!))
