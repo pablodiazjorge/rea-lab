@@ -1,6 +1,6 @@
 import { strict as assert } from 'node:assert'
 import { test } from 'node:test'
-import { buildReport, sanitize, type RunRecord } from '../report.ts'
+import { buildReport, readRecords, sanitize, type RunRecord } from '../report.ts'
 
 const record = (challenge: string, condition: 'A' | 'B' | 'C', solved: boolean, extra: Partial<RunRecord> = {}): RunRecord => ({
   study: 'unit',
@@ -78,9 +78,9 @@ test('sanitize removes other user profile paths, even ones typed only in part', 
   assert.deepEqual(sanitize(flagged, String.raw`D:\elsewhere`).outsidePaths, ['<home>', '<home>/x', '<home>/y', '<home>/z'])
 })
 
-test('the published reports of studies 1 and 2 regenerate byte for byte from their results', async () => {
+test('the published reports of studies 1 to 3 regenerate byte for byte from their results', async () => {
   const { readFileSync } = await import('node:fs')
-  for (const study of ['study-1', 'study-2']) {
+  for (const study of ['study-1', 'study-2', 'study-3']) {
     const folder = new URL(`../results/${study}/`, import.meta.url)
     // As report.ts does: the last record of each key wins, sorted by key.
     const latest = new Map<string, RunRecord>()
@@ -119,4 +119,39 @@ test('a real-software report adds address columns, per-program rates, the test w
   assert.match(markdown, /\| A vs B, one pair per task \(right in at least half of its repetitions\), without the control \| 2 \| 0 \| 1 \|/)
   assert.match(markdown, /## Answered address in the cited Evidence \(conditions B and C\)[\s\S]*\| B \| 4 \| 3 \| 3 \|/)
   assert.doesNotMatch(markdown, /Mechanism right|## Solved by family/)
+})
+
+test('a DeepSeek report names the provider, prices the runs as money spent and compares task by task when asked', () => {
+  const realRecord = (study: string, task: string, condition: 'A' | 'B', correct: boolean, repetition = 1, provider?: 'deepseek') =>
+    record(task, condition, correct, {
+      study,
+      key: `${task}-x64-O2-strip-${condition}-r${repetition}`,
+      family: 'behaviour',
+      program: 'flint',
+      repetition,
+      mechanismCorrect: undefined,
+      address: { parsed: true, form: 'va', inside: correct, exactStart: correct, inCitedEvidence: null },
+      sourceNameCorrect: false,
+      ...(provider ? { provider, model: 'deepseek-flash', requested_model: 'deepseek-flash' } : {}),
+    })
+  const ours = [realRecord('s4', 'r02', 'A', true, 1, 'deepseek'), realRecord('s4', 'r02', 'B', false, 1, 'deepseek'), realRecord('s4', 'r09', 'A', true, 1, 'deepseek'), realRecord('s4', 'r09', 'B', true, 1, 'deepseek')]
+  // The other study ran r02 three times and never ran r09; r01 is not in this study.
+  const theirs = [1, 2, 3].flatMap((repetition) => [realRecord('s3', 'r02', 'A', true, repetition), realRecord('s3', 'r02', 'B', repetition !== 2, repetition)])
+    .concat([realRecord('s3', 'r01', 'A', true), realRecord('s3', 'r01', 'B', true)])
+  const plain = buildReport(ours).markdown
+  assert.match(plain, /model deepseek-flash served by DeepSeek, effort medium/)
+  assert.match(plain, /at DeepSeek's published prices[^\n]*: money spent, not Claude Code's equivalent cost/)
+  assert.doesNotMatch(plain, /## Per task, compared with/)
+  const compared = buildReport(ours, { compare: { study: 's3', records: theirs } }).markdown
+  assert.match(compared, /## Per task, compared with s3\n\nCorrect runs out of all runs, per condition, here and in s3, on the 1 tasks both studies ran\.\n\n\| Task \| Family \| Program \| A \| B \| A in s3 \| B in s3 \|\n\|---\|---\|---\|---\|---\|---\|---\|\n\| r02 \| behaviour \| flint \| 1\/1 \| 0\/1 \| 3\/3 \| 2\/3 \|\n\| All \| \| \| 1\/1 \| 0\/1 \| 3\/3 \| 2\/3 \|/)
+  // A report of a study Anthropic served keeps its wording.
+  assert.match(buildReport(theirs).markdown, /Cost is the equivalent cost reported by Claude Code, not money spent\./)
+})
+
+test('the published report of study 4 regenerates byte for byte with its comparison with study 3', async () => {
+  const { readFileSync } = await import('node:fs')
+  const { fileURLToPath } = await import('node:url')
+  const results = (study: string) => readRecords(fileURLToPath(new URL(`../results/${study}/results.jsonl`, import.meta.url)))
+  const markdown = buildReport(results('study-4'), { compare: { study: 'study-3', records: results('study-3') } }).markdown
+  assert.equal(markdown, readFileSync(new URL('../results/study-4/report.md', import.meta.url), 'utf8'))
 })
