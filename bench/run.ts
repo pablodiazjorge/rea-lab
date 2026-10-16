@@ -5,13 +5,16 @@
 // interrupted batch resumes where it stopped.
 //
 // Usage:
-//   node bench/run.ts --study <name> --model <id> [--effort <level>] [--set public|<built folder>]
+//   node bench/run.ts --study <name> --model <id> [--provider anthropic|deepseek] [--effort <level>] [--set public|<built folder>]
 //     [--challenges c01-compare,...] [--variants x64-O2-strip,...] [--cells id:variant,...] [--conditions A,B,C]
 //     [--repetitions <n> | A=<n>,B=<n>,C=<n>] [--order-seed <n>] [--timeout-min <n>] [--max-budget-usd <n>] [--dry-run | --probe]
 //
 //   --dry-run  prints the planned runs and the prompt, without starting Claude Code
 //   --probe    one trivial session per condition, to check isolation before spending real runs
 //   --probe-prompt <text>  with --probe, send this prompt instead (for example to check what a command may do)
+//   --provider deepseek  Claude Code served by DeepSeek's Anthropic-compatible API instead of Anthropic: the model must be
+//              an explicit deepseek-* id, the key comes from <bench home>/deepseek-key, REA_LAB_BENCH_DEEPSEEK_KEY_FILE or
+//              REA_LAB_BENCH_DEEPSEEK_KEY, and the cost is computed from the usage with DeepSeek's prices (bench/prices.ts)
 
 import { spawn, spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
@@ -22,13 +25,20 @@ import { fileURLToPath } from 'node:url'
 import { parseStreamJson } from './claude.ts'
 import { CONDITIONS, BUILT_IN_TOOLS, mcpConfig, runSettings, taskPrompt, toolResultsFolder, type ConditionId, type SetKind } from './conditions.ts'
 import { gradeRun, type Challenge } from './grade.ts'
+import { deepseekCost } from './prices.ts'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const REA_VERSION: string = JSON.parse(readFileSync(join(ROOT, 'node_modules', 'rea-agents', 'package.json'), 'utf8')).version
 
+export type Provider = 'anthropic' | 'deepseek'
+
+/** DeepSeek's Anthropic-compatible endpoint. An unknown model name there silently becomes deepseek-flash. */
+const DEEPSEEK_BASE_URL = 'https://api.deepseek.com/anthropic'
+
 type Options = {
   study: string
   model: string
+  provider: Provider
   effort: string
   set: string
   challenges: string[] | null
@@ -73,11 +83,17 @@ function parseOptions(argv: string[]): Options {
   const model = value('--model')
   if (!study || !/^[a-z0-9][a-z0-9-]*$/.test(study)) throw new Error('--study is required (lowercase letters, digits and dashes)')
   if (!model) throw new Error('--model is required, so every study states the exact model it used')
+  const provider = (value('--provider') ?? 'anthropic') as Provider
+  if (provider !== 'anthropic' && provider !== 'deepseek') throw new Error(`Unknown provider ${provider}`)
+  // DeepSeek maps any name it does not know, claude-* included, to deepseek-flash, so only its own ids are accepted.
+  if (provider === 'deepseek' && !/^deepseek-[a-z0-9.-]+(\[1m\])?$/.test(model)) throw new Error(`--provider deepseek needs an explicit deepseek-* model, not ${model}`)
+  if (provider === 'anthropic' && model.startsWith('deepseek-')) throw new Error(`${model} needs --provider deepseek`)
   const conditions = (list('--conditions') ?? ['A', 'B', 'C']) as ConditionId[]
   for (const condition of conditions) if (!CONDITIONS[condition]) throw new Error(`Unknown condition ${condition}`)
   return {
     study,
     model,
+    provider,
     effort: value('--effort') ?? 'medium',
     set: value('--set') ?? 'public',
     challenges: list('--challenges') ?? null,
@@ -131,7 +147,18 @@ function claudeVersion(path: string): string {
   return match[1]
 }
 
-/** The token for the child process only. It is never printed or written into a run folder. */
+/** The provider's credential for the child process only. It is never printed or written into a run folder. */
+function credential(home: string, provider: Provider): string {
+  if (provider === 'deepseek') {
+    if (process.env.REA_LAB_BENCH_DEEPSEEK_KEY) return process.env.REA_LAB_BENCH_DEEPSEEK_KEY
+    const file = process.env.REA_LAB_BENCH_DEEPSEEK_KEY_FILE ?? join(home, 'deepseek-key')
+    if (!existsSync(file)) throw new Error(`No DeepSeek API key. Save it in ${file}, or set REA_LAB_BENCH_DEEPSEEK_KEY_FILE or REA_LAB_BENCH_DEEPSEEK_KEY.`)
+    return readFileSync(file, 'utf8').trim()
+  }
+  return authenticationToken(home)
+}
+
+/** The Anthropic token for the child process only. It is never printed or written into a run folder. */
 function authenticationToken(home: string): string {
   if (process.env.REA_LAB_BENCH_OAUTH_TOKEN) return process.env.REA_LAB_BENCH_OAUTH_TOKEN
   const file = process.env.REA_LAB_BENCH_TOKEN_FILE ?? join(home, 'oauth-token')
@@ -228,8 +255,12 @@ export function planRuns(
   return runs
 }
 
-/** Environment for the child: inherited variables minus anything that could leak configuration in. */
-function childEnvironment(configDir: string, token: string): NodeJS.ProcessEnv {
+/**
+ * Environment for the child: inherited variables minus anything that could leak configuration in, plus the
+ * provider's credential. A DeepSeek run gets its endpoint, key and model and never the Anthropic token, so it
+ * cannot fall back to the Anthropic subscription.
+ */
+function childEnvironment(configDir: string, token: string, provider: Provider = 'anthropic', model = ''): NodeJS.ProcessEnv {
   const blocked = /^(CLAUDE|ANTHROPIC_|REA_|CODEX_|GHIDRA_|JAVA_HOME$|MCP_|OTEL_)/i
   const env: NodeJS.ProcessEnv = {}
   for (const [name, value] of Object.entries(process.env)) if (!blocked.test(name)) env[name] = value
@@ -237,10 +268,26 @@ function childEnvironment(configDir: string, token: string): NodeJS.ProcessEnv {
   const llvm = tools.find((tool: { id: string }) => tool.id === 'llvm-mingw')
   const pathName = Object.keys(env).find((name) => name.toUpperCase() === 'PATH') ?? 'PATH'
   env[pathName] = [join(ROOT, 'tools', llvm.dir, 'bin'), env[pathName]].join(delimiter)
+  const credentials: NodeJS.ProcessEnv = provider === 'deepseek'
+    ? {
+        ANTHROPIC_BASE_URL: DEEPSEEK_BASE_URL,
+        ANTHROPIC_AUTH_TOKEN: token,
+        // Every model slot names the same explicit id, so no request can be mapped to another model.
+        ANTHROPIC_MODEL: model,
+        ANTHROPIC_DEFAULT_OPUS_MODEL: model,
+        ANTHROPIC_DEFAULT_SONNET_MODEL: model,
+        ANTHROPIC_DEFAULT_HAIKU_MODEL: model,
+        CLAUDE_CODE_SUBAGENT_MODEL: model,
+        // Claude Code turns tool search off for a base URL that is not Anthropic's and would then send every rea
+        // schema with each request (127,161 input tokens for a trivial run against 5,745 without rea). Forcing it
+        // keeps the schemas deferred, as in the Anthropic studies; a probe showed DeepSeek supports it.
+        ENABLE_TOOL_SEARCH: 'true',
+      }
+    : { CLAUDE_CODE_OAUTH_TOKEN: token }
   return {
     ...env,
     CLAUDE_CONFIG_DIR: configDir,
-    CLAUDE_CODE_OAUTH_TOKEN: token,
+    ...credentials,
     DISABLE_AUTOUPDATER: '1',
     CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: '1',
   }
@@ -289,7 +336,7 @@ async function executeRun(run: PlannedRun, set: ChallengeSet, options: Options, 
   const outcome = await new Promise<{ exitCode: number | null; timedOut: boolean }>((resolvePromise, reject) => {
     const child = spawn(...command(context.claude, args), {
       cwd: work,
-      env: childEnvironment(config, context.token),
+      env: childEnvironment(config, context.token, options.provider, options.model),
       stdio: ['pipe', 'pipe', 'pipe'],
       detached: process.platform !== 'win32',
       windowsHide: true,
@@ -342,6 +389,8 @@ async function executeRun(run: PlannedRun, set: ChallengeSet, options: Options, 
     target_sha256: run.binary.sha256,
     client: 'claude-code',
     client_version: context.version,
+    // Anthropic runs keep exactly their fields, so their records do not change.
+    ...(options.provider === 'deepseek' ? { provider: options.provider, served_models: transcript.servedModels } : {}),
     requested_model: options.model,
     model: transcript.model,
     effort: options.effort,
@@ -357,7 +406,11 @@ async function executeRun(run: PlannedRun, set: ChallengeSet, options: Options, 
     duration_ms: transcript.result?.durationMs ?? null,
     duration_api_ms: transcript.result?.durationApiMs ?? null,
     num_turns: transcript.result?.numTurns ?? null,
-    equivalent_cost_usd: transcript.result?.totalCostUsd ?? null,
+    // With DeepSeek, Claude Code's own figure uses Claude prices; the cost is computed from the usage instead (ADR 0020).
+    equivalent_cost_usd: options.provider === 'deepseek'
+      ? (transcript.result?.usage ? deepseekCost(options.model, transcript.result.usage, new Date(started)) : null)
+      : transcript.result?.totalCostUsd ?? null,
+    ...(options.provider === 'deepseek' ? { client_reported_cost_usd: transcript.result?.totalCostUsd ?? null, started_at: new Date(started).toISOString() } : {}),
     usage: transcript.result?.usage ?? null,
     mcp_servers: transcript.mcpServers,
     ...grade,
@@ -396,24 +449,30 @@ async function main() {
   const runs = planRuns(set, options)
   const { path: claude, pinned } = claudeExecutable()
   const version = claudeVersion(claude)
-  console.log(`Study ${options.study}: ${runs.length} runs, ${set.name} set, Claude Code ${version}${pinned ? '' : ' (from PATH, not pinned)'}, rea ${REA_VERSION}, model ${options.model}, effort ${options.effort}`)
+  console.log(`Study ${options.study}: ${runs.length} runs, ${set.name} set, Claude Code ${version}${pinned ? '' : ' (from PATH, not pinned)'}, rea ${REA_VERSION}, model ${options.model}${options.provider === 'deepseek' ? ' served by DeepSeek' : ''}, effort ${options.effort}`)
   console.log(`Benchmark home: ${home}`)
   if (options.dryRun) {
     for (const run of runs) console.log(`  ${run.key}`)
     console.log(`\nPrompt for condition B (${runs[0]?.challenge.id ?? 'no run'}):\n${taskPrompt(CONDITIONS.B, set.kind, runs[0]?.challenge)}`)
     return
   }
-  const token = authenticationToken(home)
+  const token = credential(home, options.provider)
   if (options.probe) return probe(runs, set, options, { home, claude, version, token })
   const studyDir = join(home, 'runs', options.study)
   mkdirSync(studyDir, { recursive: true })
   const studyFile = join(studyDir, 'study.json')
-  const study = { study: options.study, client_version: version, rea_version: REA_VERSION, model: options.model, effort: options.effort, set: set.name, set_sha256: set.answersSha256 }
+  const study = {
+    study: options.study, client_version: version, rea_version: REA_VERSION, model: options.model,
+    ...(options.provider === 'deepseek' ? { provider: options.provider } : {}),
+    effort: options.effort, set: set.name, set_sha256: set.answersSha256,
+  }
   if (existsSync(studyFile)) {
     const previous = JSON.parse(readFileSync(studyFile, 'utf8'))
     for (const field of ['client_version', 'rea_version', 'model', 'effort', 'set'] as const) {
       if (previous[field] !== study[field]) throw new Error(`Study ${options.study} was started with ${field} ${previous[field]}, not ${study[field]}`)
     }
+    // Studies without a provider field were served by Anthropic.
+    if ((previous.provider ?? 'anthropic') !== options.provider) throw new Error(`Study ${options.study} was started with provider ${previous.provider ?? 'anthropic'}, not ${options.provider}`)
     // Studies started before the answers hash was recorded (studies 1 and 2) keep resuming as before.
     if (previous.set_sha256 !== undefined && previous.set_sha256 !== study.set_sha256) {
       throw new Error(`Study ${options.study} was started with another answers.json (SHA-256 ${previous.set_sha256})`)

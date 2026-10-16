@@ -60,14 +60,22 @@ const sameJson = (left: unknown, right: unknown) => JSON.stringify(canonical(lef
 
 const reaCalls = (run: ClaudeRun) => run.toolCalls.filter((call) => call.name.startsWith(REA_TOOL_PREFIX))
 
-// Claude Code's note when an MCP result is too large to return inline. It replaces the result text, without an
-// error flag, and the complete result is written to a file the agent can read. The character count is formatted
-// for the host locale.
-const SAVED_RESULT = /^Error: result \([^)]*\) exceeds maximum allowed tokens\. Output has been saved to (.+?\.txt)\.(?:\s|$)/u
+// Claude Code's notes when an MCP result is too large to return inline. Each replaces the result text, without an
+// error flag, and the complete result is written to a file the agent can read. Claude Code 2.1.296 uses the first
+// form with Anthropic models (the character count is formatted for the host locale, the file is named after the
+// tool) and the second, which adds a 2 KB preview, with DeepSeek (the file is named after the tool call id).
+const SAVED_RESULT = [
+  /^Error: result \([^)]*\) exceeds maximum allowed tokens\. Output has been saved to (.+?\.txt)\.(?:\s|$)/u,
+  /^<persisted-output>\s*Output too large \([^)]*\)\. Full output saved to: (.+?\.txt)\s/u,
+]
 
-/** The file named by Claude Code's oversized-result note, or undefined for any other result text. */
+/** The file named by one of Claude Code's oversized-result notes, or undefined for any other result text. */
 export function savedResultPath(text: string): string | undefined {
-  return SAVED_RESULT.exec(text)?.[1]
+  for (const note of SAVED_RESULT) {
+    const path = note.exec(text)?.[1]
+    if (path !== undefined) return path
+  }
+  return undefined
 }
 
 /**

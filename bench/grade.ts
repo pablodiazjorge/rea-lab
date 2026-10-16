@@ -161,13 +161,14 @@ export function outsidePaths(run: ClaudeRun, workDir: string, extraRoots: string
 /**
  * Reads the files named by Claude Code's oversized-result notes. Each path is resolved inside the run's own
  * configuration folder, from the part after `claude-config`, so the absolute path in the transcript never
- * matters, and only rea results (`mcp-rea-<tool>-<time>.txt`) are read.
+ * matters, and only files in a `tool-results` folder are read: `mcp-rea-<tool>-<time>.txt` with Anthropic models,
+ * `<tool call id>.txt` with DeepSeek. The Evidence inside must still come from the tool that was called.
  */
 export function savedResultReader(configDir: string): (path: string) => string | undefined {
   return (path) => {
     const parts = path.split(/[\\/]/)
     const at = parts.lastIndexOf('claude-config')
-    if (at < 0 || !/^mcp-rea-[a-z0-9_]+-\d+\.txt$/.test(parts[parts.length - 1])) return undefined
+    if (at < 0 || parts[parts.length - 2] !== 'tool-results' || !/^[A-Za-z0-9_-]+\.txt$/.test(parts[parts.length - 1])) return undefined
     const file = join(configDir, ...parts.slice(at + 1))
     const inside = relative(configDir, file)
     if (inside === '' || inside.startsWith('..') || isAbsolute(inside) || !existsSync(file)) return undefined

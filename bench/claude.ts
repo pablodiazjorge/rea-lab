@@ -36,6 +36,8 @@ export type ClaudeResult = {
 export type ClaudeRun = {
   sessionId: string | null
   model: string | null
+  /** Models named by the API in the main agent's messages, in order of first use: what actually served the run. */
+  servedModels: string[]
   claudeCodeVersion: string | null
   tools: string[]
   mcpServers: Array<{ name: string; status: string }>
@@ -92,6 +94,7 @@ export function parseStreamJson(lines: Iterable<string>): ClaudeRun {
   const run: ClaudeRun = {
     sessionId: null,
     model: null,
+    servedModels: [],
     claudeCodeVersion: null,
     tools: [],
     mcpServers: [],
@@ -144,6 +147,7 @@ export function parseStreamJson(lines: Iterable<string>): ClaudeRun {
         run.syntheticMessages++
         continue
       }
+      if (typeof message.model === 'string' && !run.servedModels.includes(message.model)) run.servedModels.push(message.model)
       // One API message can arrive split over several events that share its id.
       const messageId = stringOrNull(message.id)
       if (messageId === null || messageId !== lastMessageId) run.assistantTurns++

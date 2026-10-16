@@ -43,6 +43,8 @@ Las tasas de resolución llevan intervalos de Wilson al 95 %, y cada par de cond
 
 Cada ejecución tiene su propia carpeta fuera del repositorio, su propio `CLAUDE_CONFIG_DIR` vacío, `--strict-mcp-config`, `--setting-sources user` y `--permission-mode dontAsk`, de modo que no le llega nada de la configuración del usuario y lo que no está permitido se deniega sin preguntar. Detalles en el [ADR 0018](../docs/adr/0018-benchmark-isolation.md).
 
+Con `--provider deepseek`, el mismo Claude Code lo sirve la API de DeepSeek compatible con la de Anthropic. La ejecución recibe la dirección de DeepSeek, su clave y un modelo `deepseek-*` explícito en todas las ranuras de modelo, nunca el token de Anthropic, y la búsqueda de herramientas se fuerza para que los esquemas de rea sigan diferidos, como con los modelos de Anthropic. Cada ejecución registra el modelo que sirvió de verdad la API, y su coste se calcula a partir del uso con los precios de DeepSeek ([`prices.ts`](prices.ts)); la cifra del propio Claude Code, que usa precios de Claude, se guarda aparte.
+
 ## Cómo se ejecuta
 
 ```powershell

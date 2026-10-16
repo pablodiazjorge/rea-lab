@@ -43,6 +43,8 @@ Solve rates carry Wilson 95 % intervals, and each pair of conditions is compared
 
 Each run has its own folder outside the repository, its own empty `CLAUDE_CONFIG_DIR`, `--strict-mcp-config`, `--setting-sources user` and `--permission-mode dontAsk`, so nothing from the user's setup reaches it and anything not allowed is denied without prompting. Details in [ADR 0018](../docs/adr/0018-benchmark-isolation.md).
 
+With `--provider deepseek`, the same Claude Code is served by DeepSeek's Anthropic-compatible API. The run gets the DeepSeek endpoint, its key and an explicit `deepseek-*` model in every model slot, never the Anthropic token, and tool search is forced on so rea's schemas stay deferred as with Anthropic models. Each run records the model the API actually served, and its cost is computed from the usage with DeepSeek's prices ([`prices.ts`](prices.ts)); Claude Code's own figure, which uses Claude prices, is kept apart.
+
 ## Running it
 
 ```powershell

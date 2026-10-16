@@ -292,6 +292,20 @@ test('a rea result saved to a file authenticates only with the saved-result read
   }
 })
 
+test('the persisted-output note Claude Code writes with DeepSeek is followed to a file named after the call', () => {
+  const fileName = 'call_00_ET_Qh8j686LCXls1H1ATvK09059.txt'
+  const { configDir, runDir } = savedResultRun(fileName, JSON.stringify(pseudoCode))
+  try {
+    const note = `<persisted-output>\nOutput too large (50.4KB). Full output saved to: C:\\recorded\\run\\claude-config\\projects\\C--run-work\\session\\tool-results\\${fileName}\n\nPreview (first 2KB):\n${JSON.stringify(pseudoCode).slice(0, 200)}`
+    assert.equal(savedResultPath(note)?.endsWith(fileName), true)
+    const run = parseStreamJson(transcript([{ tool: 'mcp__rea__procedure_pseudo_code', result: note }], 'done'))
+    assert.equal(deliveredEvidence(run).undecodable, 1)
+    assert.equal(deliveredEvidence(run, savedResultReader(configDir)).records.has(pseudoCode.evidence_id), true)
+  } finally {
+    rmSync(runDir, { recursive: true, force: true })
+  }
+})
+
 test('only the oversized-result note is followed, and only to a rea result inside the run', () => {
   const { runDir, configDir, note } = savedResultRun('mcp-rea-procedure_pseudo_code-1.txt', JSON.stringify(pseudoCode))
   try {
@@ -300,7 +314,7 @@ test('only the oversized-result note is followed, and only to a rea result insid
     assert.equal(deliveredFrom(note).records.size, 1)
     assert.equal(deliveredFrom(`Error: capability_unavailable. ${note.slice(7)}`, true).records.size, 0)
     assert.equal(deliveredFrom(`Result: ${note}`).records.size, 0)
-    assert.equal(read('C:\\recorded\\run\\claude-config\\projects\\C--run-work\\session\\tool-results\\toolu_01.txt'), undefined)
+    assert.equal(read('C:\\recorded\\run\\claude-config\\projects\\C--run-work\\session\\notes\\mcp-rea-procedure_pseudo_code-1.txt'), undefined)
     assert.equal(read('C:\\recorded\\run\\claude-config\\..\\..\\mcp-rea-procedure_pseudo_code-1.txt'), undefined)
     assert.equal(read('C:\\elsewhere\\mcp-rea-procedure_pseudo_code-1.txt'), undefined)
     // The saved Evidence must still come from the tool that was called.
