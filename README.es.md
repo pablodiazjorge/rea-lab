@@ -38,7 +38,7 @@ No hay fechas: cada fase se cierra cuando cumple sus criterios de salida.
 | F3 | Retos con semilla y respuesta conocida, y primeros writeups | hecha |
 | F4 | Banco de pruebas y estudio 1: qué le aporta rea a un agente | hecha |
 | F5 | Mod de Claude Code con un panel de evidencia en directo | hecha |
-| F6 | Segunda ola de contribuciones, skill mejorada y segundo agente | prevista |
+| F6 | Segunda ola de contribuciones y skill mejorada | prevista |
 | F7 | Análisis dinámico dentro de Windows Sandbox | opcional |
 
 ## Estado

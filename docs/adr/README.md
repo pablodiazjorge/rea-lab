@@ -6,7 +6,7 @@ One short file per decision that is hard to reverse, surprising without context 
 |---|---|---|
 | [0001](0001-repository-layout.md) | One public lab repo with nested, ignored repos | accepted |
 | [0002](0002-language-policy.md) | English by default, bilingual only where people read | accepted |
-| [0003](0003-agents-md-single-source.md) | AGENTS.md is the single source of agent instructions | accepted |
+| [0003](0003-agents-md-single-source.md) | AGENTS.md is the single source of agent instructions | accepted, amended in F6 |
 | [0004](0004-portable-mcp-launcher.md) | Per-project MCP registration through a portable launcher | accepted (F1) |
 | [0005](0005-pinned-rea-version.md) | rea is pinned to an exact version | accepted |
 | [0006](0006-tools-manifest.md) | tools.json is the single source of tool versions | accepted (F1) |

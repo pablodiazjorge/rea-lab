@@ -38,7 +38,7 @@ There are no dates: each phase closes when it meets its exit criteria.
 | F3 | Seeded challenges with known answers and first writeups | done |
 | F4 | Benchmark and study 1: what rea adds to an agent | done |
 | F5 | Claude Code mod with a live evidence pane | done |
-| F6 | Second upstream wave, improved skill, second agent | planned |
+| F6 | Second upstream wave and improved skill | planned |
 | F7 | Dynamic analysis inside Windows Sandbox | optional |
 
 ## Status
