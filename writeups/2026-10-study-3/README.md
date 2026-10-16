@@ -67,7 +67,7 @@ No program drives the result: moppe-emu holds two of the four pairs where only A
 
 **How the runs failed.** Five runs gave an address outside the target, every time inside another function of the same program. Three of the four failures in B answered a function one step away in the call graph: twice in moppe-emu, `io_read` instead of `pit_read`, the described function, which only `io_read` calls; and once in a SGIEmu chain task, `emit_insn` instead of `emit_cop1`, the right answer, which only `emit_insn` calls. The fourth gave `p_and` instead of `pp_rel`, another function of the c5xtools assembler. The one failure in A, a flint chain task, gave `http_request_native` instead of `import_file_native`.
 
-**How rea was used.** The agent used rea in every run of B and always started with `open_binary`; it closed the session in 71 of 72 runs, after a median of 8 rea calls. In 18 runs it read a rea result that Claude Code had saved to a file, the access that study 2 denied. It cited 144 pieces of Evidence, and all 144 authenticated and were about the target. Two of them, one real `evidence_id` cited twice, reached the agent inside one of those saved files; the grader first read only inline results and counted them as unknown, until the correction below. rea rejected 5 calls for invalid input in 4 runs.
+**How rea was used.** The agent used rea in every run of B and always started with `open_binary`; it closed the session in 71 of 72 runs, after a median of 8 rea calls. In 14 runs it read back a rea result that Claude Code had saved to a file, the access that study 2 denied (18 as first published; see the correction). It cited 144 pieces of Evidence, and all 144 authenticated and were about the target. Two of them, one real `evidence_id` cited twice, reached the agent inside one of those saved files; the grader first read only inline results and counted them as unknown, until the correction below. rea rejected 5 calls for invalid input in 4 runs.
 
 **What the citations prove.** RQ3 asked whether the answered address appears in the Evidence that `answer_address` cites. It does in 38 of the 72 runs of B, 37 of them correct. In the rest, the cited Evidence supports the reasoning, such as the function's code or a cross-reference, but does not state the address itself. Reading the saved files, after the correction below, left this number unchanged.
 
@@ -111,11 +111,13 @@ When a tool result is too large to return inline, Claude Code 2.1.296 replaces i
 
 Nothing else changed: no answer, exact start, McNemar test or tool-usage metric moved. The report and the graded runs in `bench/results/study-3/` were regenerated; the first published version is in the repository history.
 
+A second correction, found while reviewing [study 4](../2026-10-study-4/README.md): this writeup said that the agent read a saved rea result back in 18 runs. That counted every run that called a tool on a saved result. In 3 of them every such call was denied, all of them `jq` commands chained after a `cd`, and in 1 the agent read a saved command output, not a rea result. It read a saved rea result back in 14 runs. `context.ts` now computes both figures, and [`context.json`](../../bench/results/study-3/context.json) was regenerated with them (`readAttemptRuns` 18, `readBackRuns` 14); nothing else in it changed.
+
 ## Addendum: oversized results and catalog cost (post hoc)
 
 These measures were not preregistered. They are exploratory and come from the saved transcripts, which are not published ([ADR 0014](../../docs/adr/0014-publishing-evidence.md)). `node bench/context.ts --study study-3` computes them, and its output is in [`bench/results/study-3/context.json`](../../bench/results/study-3/context.json).
 
-- **Oversized results.** Claude Code saved at least one rea result to a file in 32 of the 72 runs of B, 43 results in all. The agent read a saved result back in 18 of those runs.
+- **Oversized results.** Claude Code saved at least one rea result to a file in 32 of the 72 runs of B, 43 results in all. The agent read a saved rea result back in 14 of those runs; it tried in 18.
 
   | Tool | Calls | Saved to a file | Size of those results |
   |---|---|---|---|

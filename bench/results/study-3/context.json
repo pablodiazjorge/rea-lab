@@ -6,6 +6,8 @@
   "savedResults": {
     "runs": 32,
     "results": 43,
+    "readAttemptRuns": 18,
+    "readBackRuns": 14,
     "byTool": {
       "binary_overview": {
         "calls": 4,

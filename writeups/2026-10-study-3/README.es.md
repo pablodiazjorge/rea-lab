@@ -67,7 +67,7 @@ Ningún programa decide el resultado: moppe-emu reúne dos de los cuatro pares e
 
 **Cómo fallaron las ejecuciones.** Cinco ejecuciones dieron una dirección fuera del objetivo, siempre dentro de otra función del mismo programa. Tres de los cuatro fallos de B respondieron una función a un paso en el grafo de llamadas: dos veces en moppe-emu, `io_read` en lugar de `pit_read`, la función descrita, a la que solo llama `io_read`; y una vez en una tarea chain de SGIEmu, `emit_insn` en lugar de `emit_cop1`, la respuesta correcta, a la que solo llama `emit_insn`. El cuarto dio `p_and` en lugar de `pp_rel`, otra función del ensamblador de c5xtools. El único fallo de A, en una tarea chain de flint, dio `http_request_native` en lugar de `import_file_native`.
 
-**Cómo se usó rea.** El agente usó rea en todas las ejecuciones de B y siempre empezó con `open_binary`; cerró la sesión en 71 de 72, tras una mediana de 8 llamadas a rea. En 18 ejecuciones leyó un resultado de rea que Claude Code había guardado en un archivo, el acceso que el estudio 2 denegaba. Citó 144 registros de evidencia, y los 144 se autenticaron y trataban del objetivo. Dos de ellos, un mismo `evidence_id` real citado dos veces, le llegaron al agente dentro de uno de esos archivos guardados; al principio el calificador solo leía los resultados devueltos directamente y los contó como desconocidos, hasta la corrección de más abajo. rea rechazó 5 llamadas por entradas no válidas en 4 ejecuciones.
+**Cómo se usó rea.** El agente usó rea en todas las ejecuciones de B y siempre empezó con `open_binary`; cerró la sesión en 71 de 72, tras una mediana de 8 llamadas a rea. En 14 ejecuciones volvió a leer un resultado de rea que Claude Code había guardado en un archivo, el acceso que el estudio 2 denegaba (18 en la primera publicación; véase la corrección). Citó 144 registros de evidencia, y los 144 se autenticaron y trataban del objetivo. Dos de ellos, un mismo `evidence_id` real citado dos veces, le llegaron al agente dentro de uno de esos archivos guardados; al principio el calificador solo leía los resultados devueltos directamente y los contó como desconocidos, hasta la corrección de más abajo. rea rechazó 5 llamadas por entradas no válidas en 4 ejecuciones.
 
 **Qué demuestran las citas.** La RQ3 preguntaba si la dirección respondida aparece en la evidencia que cita `answer_address`. Aparece en 38 de las 72 ejecuciones de B, 37 de ellas correctas. En el resto, la evidencia citada respalda el razonamiento, como el código de la función o una referencia cruzada, pero no recoge la dirección. Leer los archivos guardados, tras la corrección de más abajo, no cambió esta cifra.
 
@@ -111,11 +111,13 @@ Cuando el resultado de una herramienta es demasiado grande para devolverlo direc
 
 No cambió nada más: ninguna respuesta, inicio exacto, prueba de McNemar ni métrica de uso de herramientas. El informe y las ejecuciones calificadas de `bench/results/study-3/` se regeneraron; la primera versión publicada está en el historial del repositorio.
 
+Una segunda corrección, encontrada al revisar el [estudio 4](../2026-10-study-4/README.es.md): este writeup decía que el agente volvió a leer un resultado de rea guardado en 18 ejecuciones. Esa cifra contaba todas las ejecuciones que llamaron a una herramienta sobre un resultado guardado. En 3 de ellas se denegaron todas esas llamadas, todas órdenes `jq` encadenadas tras un `cd`, y en 1 el agente leyó la salida guardada de una orden, no un resultado de rea. Volvió a leer un resultado de rea guardado en 14 ejecuciones. `context.ts` calcula ahora las dos cifras, y [`context.json`](../../bench/results/study-3/context.json) se regeneró con ellas (`readAttemptRuns` 18, `readBackRuns` 14); no cambió nada más.
+
 ## Anexo: resultados grandes y coste del catálogo (a posteriori)
 
 Estas medidas no estaban prerregistradas. Son exploratorias y salen de las transcripciones guardadas, que no se publican ([ADR 0014](../../docs/adr/0014-publishing-evidence.md)). Las calcula `node bench/context.ts --study study-3`, y su salida está en [`bench/results/study-3/context.json`](../../bench/results/study-3/context.json).
 
-- **Resultados grandes.** Claude Code guardó en un archivo al menos un resultado de rea en 32 de las 72 ejecuciones de B, 43 resultados en total. El agente volvió a leer un resultado guardado en 18 de esas ejecuciones.
+- **Resultados grandes.** Claude Code guardó en un archivo al menos un resultado de rea en 32 de las 72 ejecuciones de B, 43 resultados en total. El agente volvió a leer un resultado de rea guardado en 14 de esas ejecuciones; lo intentó en 18.
 
   | Herramienta | Llamadas | Guardadas en un archivo | Tamaño de esos resultados |
   |---|---|---|---|
