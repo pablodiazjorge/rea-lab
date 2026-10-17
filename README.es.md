@@ -7,7 +7,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/rea-6.4.0-6f42c1" alt="rea 6.4.0">
   <img src="https://img.shields.io/badge/Ghidra-12.1.4-d32f2f" alt="Ghidra 12.1.4">
-  <img src="https://img.shields.io/badge/phase-F6-blue" alt="Fase actual: F6">
+  <img src="https://img.shields.io/badge/now-upstream_contributions-blue" alt="Trabajo actual: contribuciones a rea">
   <a href="https://github.com/pablodiazjorge/rea-lab/actions/workflows/check.yml"><img src="https://github.com/pablodiazjorge/rea-lab/actions/workflows/check.yml/badge.svg" alt="Comprobaciones del repositorio"></a>
   <a href="https://github.com/pablodiazjorge/rea-lab/actions/workflows/windows-smoke.yml"><img src="https://github.com/pablodiazjorge/rea-lab/actions/workflows/windows-smoke.yml/badge.svg" alt="Prueba en Windows con Ghidra real"></a>
   <img src="https://img.shields.io/badge/code-MIT-green" alt="Licencia del código: MIT">
@@ -38,7 +38,7 @@ No hay fechas: cada fase se cierra cuando cumple sus criterios de salida.
 | F3 | Retos con semilla y respuesta conocida, y primeros writeups | hecha |
 | F4 | Banco de pruebas y estudio 1: qué le aporta rea a un agente | hecha |
 | F5 | Mod de Claude Code con un panel de evidencia en directo | hecha |
-| F6 | Segunda ola de contribuciones y skill mejorada | continua |
+| F6 | Segunda ola de contribuciones y skill mejorada | hecha |
 | F7 | Análisis dinámico dentro de Windows Sandbox | opcional |
 
 ## Estado
@@ -51,6 +51,7 @@ No hay fechas: cada fase se cierra cuando cumple sus criterios de salida.
 - [Estudio 3](writeups/2026-10-study-3/README.es.md), prerregistrado: con cuatro programas libres reales publicados después de los datos de entrenamiento del modelo, Claude Code localizó la función o la tabla descrita en 71 de 72 ejecuciones sin rea y en 68 de 72 con rea (McNemar exacto, p = 0,375, no significativo), así que las dos condiciones están en el techo; rea volvió a costar más del doble, y los 144 registros de evidencia citados se autenticaron tras una corrección del calificador (142 en la primera publicación).
 - [Estudio 4](writeups/2026-10-study-4/README.es.md), prerregistrado: las mismas tareas con una segunda familia de modelos, `deepseek-flash` de DeepSeek servido a Claude Code por la API de DeepSeek; localizó la función o la tabla en 20 de 20 ejecuciones sin rea y en 19 de 20 con rea (McNemar exacto, p = 1), el mismo techo, por 2,05 USD en total; el modelo intentó salir a la red o al equipo en 13 ejecuciones, y se denegaron todos los intentos.
 - [Estudio 5](writeups/2026-10-study-5/README.es.md), prerregistrado: la skill de rea y una versión mejorada, inyectadas en el prompt del sistema de Claude Code, en 30 tareas nuevas sobre los mismos programas; la skill mejorada encareció las ejecuciones un 14 % frente a la oficial (cociente de Hodges-Lehmann 1,14, Wilcoxon exacto p = 0,012), y la oficial no cambió nada medible frente a no tener skill; ni los aciertos ni las citas variaron. Se descartó la PR prevista a la skill de rea.
+- Un debate de diseño en rea, apoyado en el banco: en 339 ejecuciones de los cinco estudios ningún agente conservó su evidencia, así que el calificador tuvo que reconstruir cada registro a partir de la transcripción del cliente; [morluto/rea#4809](https://github.com/morluto/rea/issues/4809) propone un registro opcional del ledger de evidencia que rea escriba según se añaden los registros.
 - [rea-casebook](https://github.com/pablodiazjorge/rea-casebook) 1.0.4, un mod de Claude Code que lleva en directo el expediente de la evidencia que rea entrega al agente: la espera del arranque en frío de Ghidra, las preguntas abiertas, los hallazgos que tienen que citar `evidence_id` reales, un diario por sesión y exportaciones a Markdown o a artifact.
 
 ## Estructura

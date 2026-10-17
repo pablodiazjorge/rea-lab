@@ -7,7 +7,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/rea-6.4.0-6f42c1" alt="rea 6.4.0">
   <img src="https://img.shields.io/badge/Ghidra-12.1.4-d32f2f" alt="Ghidra 12.1.4">
-  <img src="https://img.shields.io/badge/phase-F6-blue" alt="Current phase: F6">
+  <img src="https://img.shields.io/badge/now-upstream_contributions-blue" alt="Current work: upstream contributions to rea">
   <a href="https://github.com/pablodiazjorge/rea-lab/actions/workflows/check.yml"><img src="https://github.com/pablodiazjorge/rea-lab/actions/workflows/check.yml/badge.svg" alt="Repository checks"></a>
   <a href="https://github.com/pablodiazjorge/rea-lab/actions/workflows/windows-smoke.yml"><img src="https://github.com/pablodiazjorge/rea-lab/actions/workflows/windows-smoke.yml/badge.svg" alt="Windows smoke test with real Ghidra"></a>
   <img src="https://img.shields.io/badge/code-MIT-green" alt="Code license: MIT">
@@ -38,7 +38,7 @@ There are no dates: each phase closes when it meets its exit criteria.
 | F3 | Seeded challenges with known answers and first writeups | done |
 | F4 | Benchmark and study 1: what rea adds to an agent | done |
 | F5 | Claude Code mod with a live evidence pane | done |
-| F6 | Second upstream wave and improved skill | ongoing |
+| F6 | Second upstream wave and improved skill | done |
 | F7 | Dynamic analysis inside Windows Sandbox | optional |
 
 ## Status
@@ -51,6 +51,7 @@ There are no dates: each phase closes when it meets its exit criteria.
 - [Study 3](writeups/2026-10-study-3/README.md), preregistered: on four real open-source programs published after the model's training data, Claude Code located the described function or table in 71 of 72 runs without rea and 68 of 72 with it (exact McNemar, p = 0.375, not significant), so both conditions are at the ceiling; rea again cost more than twice as much, and all 144 cited Evidence records authenticated after a grader correction (142 as first published).
 - [Study 4](writeups/2026-10-study-4/README.md), preregistered: the same tasks with a second model family, DeepSeek's `deepseek-flash` served to Claude Code through DeepSeek's API; it located the function or table in 20 of 20 runs without rea and 19 of 20 with it (exact McNemar, p = 1), the same ceiling, for 2.05 USD in all; the model tried to reach the network or the host in 13 runs, and every attempt was denied.
 - [Study 5](writeups/2026-10-study-5/README.md), preregistered: rea's own skill and an improved version, injected into Claude Code's system prompt, on 30 new tasks in the same programs; the improved skill made runs 14 % more expensive than the official one (Hodges-Lehmann ratio 1.14, exact Wilcoxon p = 0.012), and the official one changed nothing measurable against no skill; accuracy and citations did not differ. The planned pull request to rea's skill was dropped.
+- A design discussion upstream, backed by the benchmark: in 339 runs across the five studies no agent kept its Evidence, so the grader had to rebuild every record from the client's transcript; [morluto/rea#4809](https://github.com/morluto/rea/issues/4809) proposes an opt-in journal of the Evidence ledger, written by rea as records are added.
 - [rea-casebook](https://github.com/pablodiazjorge/rea-casebook) 1.0.4, a Claude Code mod that keeps a live casebook of the Evidence rea gives the agent: the wait for Ghidra's cold start, open unknowns, findings that must cite real `evidence_id` values, a journal per session and Markdown or artifact exports.
 
 ## Layout
