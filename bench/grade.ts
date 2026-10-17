@@ -24,6 +24,10 @@ export type AddressGrade = {
   exactStart: boolean
   /** Condition B: the answered address appears in the normalized result of an authenticated Evidence that the claim cites. */
   inCitedEvidence: boolean | null
+  /** With rea: the cited Evidence names the answered function, by its address or the decompiler's default name (ADR 0025). */
+  namedInCitedEvidence: boolean | null
+  /** With rea: the rea operation that produced the cited Evidence, null when nothing authenticated is cited. */
+  citedOperation: string | null
 }
 
 /** Every number in an Evidence result, from JSON numbers and from 0x hexadecimal strings. */
@@ -39,6 +43,20 @@ export function evidenceNumbers(value: unknown, found = new Set<number>()): Set<
 export const addressInEvidence = (evidence: Evidence, address: number, imageBase: number) => {
   const numbers = evidenceNumbers(evidence.normalized_result)
   return numbers.has(address) || numbers.has(address - imageBase)
+}
+
+/**
+ * Whether an Evidence result names the function at an address: the address appears in it, or the result is
+ * decompiled code whose signature carries the decompiler's default name for that address, such as Ghidra's
+ * `FUN_140001000`, which gives the start without a 0x prefix (ADR 0025). The request's own parameters do not
+ * count: a procedure tool given an address inside a function answers for the function that contains it.
+ */
+export const functionNamedInEvidence = (evidence: Evidence, address: number, imageBase: number) => {
+  if (addressInEvidence(evidence, address, imageBase)) return true
+  const code = evidence.normalized_result
+  if (typeof code !== 'string') return false
+  const signature = /\bFUN_([0-9a-f]{6,16})\s*\(/i.exec(code.split('{')[0])
+  return signature !== null && Number.parseInt(signature[1], 16) === address
 }
 
 export type Grounding = {
@@ -245,6 +263,8 @@ export function gradeRun(
         inside: parsed !== null && parsed.value >= start && parsed.value < end,
         exactStart: parsed !== null && parsed.value === start,
         inCitedEvidence: delivered === null ? null : parsed !== null && cited !== null && addressInEvidence(cited, parsed.value, imageBase),
+        namedInCitedEvidence: delivered === null ? null : parsed !== null && cited !== null && functionNamedInEvidence(cited, parsed.value, imageBase),
+        citedOperation: delivered === null ? null : (cited?.operation ?? null),
       },
       sourceNameCorrect: claimValue(answer.claims, 'source_name') === truth.name,
     }

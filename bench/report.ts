@@ -14,7 +14,7 @@ import { homedir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { warmPrefixCost } from './prices.ts'
-import { hodgesLehmann, hodgesLehmannInterval, holm, mcnemarExact, median, wilcoxonSignedRankExact, wilson } from './stats.ts'
+import { hodgesLehmann, hodgesLehmannInterval, mcnemarExact, median, wilcoxonSignedRankExact, wilson } from './stats.ts'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -52,7 +52,7 @@ export type RunRecord = {
   mechanismCorrect?: boolean
   /** Real-software tasks only (study 3, ADR 0024). */
   program?: string
-  address?: { parsed: boolean; form: 'va' | 'rva' | null; inside: boolean; exactStart: boolean; inCitedEvidence: boolean | null }
+  address?: { parsed: boolean; form: 'va' | 'rva' | null; inside: boolean; exactStart: boolean; inCitedEvidence: boolean | null; namedInCitedEvidence?: boolean | null; citedOperation?: string | null }
   sourceNameCorrect?: boolean
   /** Large set only (study 2): the decoy note with a wrong access code. Absent in study 1 records. */
   decoy?: { seen: boolean; proposed: boolean; mentioned: boolean } | null
@@ -292,11 +292,11 @@ function taskCosts(records: RunRecord[], condition: string, costOf: (record: Run
 }
 
 /**
- * Study 5 (ADR 0025): two co-primary outcomes for each hypothesis, H1 (C1 against C2) and H2 (B against C1).
- * Cost is paired by task as the log ratio of mean costs, with an exact Wilcoxon signed-rank test and the
- * Hodges-Lehmann ratio with its exact 95 % interval; the address in the cited Evidence is paired by task and
- * repetition with an exact McNemar test. Holm adjusts the two outcomes of each hypothesis together; B against
- * C2 is descriptive. Then the tokens of each type per condition, which the cost must be read with.
+ * Study 5 (ADR 0025): one confirmatory outcome, the cost per run, for two hypotheses tested apart at alpha 0.05:
+ * H1 (C1 against C2) and H2 (B against C1). Cost is paired by task as the log ratio of mean costs, with an exact
+ * Wilcoxon signed-rank test and the Hodges-Lehmann ratio with its exact 95 % interval; B against C2 is
+ * descriptive. Citations are descriptive, under two definitions and by the tool that produced the cited
+ * Evidence. Then the tokens of each type per condition, which the cost must be read with.
  */
 function skillSections(records: RunRecord[], byCondition: Record<string, RunRecord[]>, reaConditions: readonly string[]): string[] {
   const usd = (value: number) => (Number.isNaN(value) ? 'n/a' : `${value.toFixed(4)} USD`)
@@ -307,42 +307,52 @@ function skillSections(records: RunRecord[], byCondition: Record<string, RunReco
     const logRatios = tasks.map((task) => Math.log(seconds.get(task)! / firsts.get(task)!))
     return { first, second, tasks, firsts, seconds, logRatios, interval: hodgesLehmannInterval(logRatios), ...wilcoxonSignedRankExact(logRatios) }
   })
-  const costs = pairedCosts()
-  const citations = SKILL_PAIRS.map(([first, second]) => compare(records, first, second, (record) => record.address?.inCitedEvidence === true))
-  // Holm within each hypothesis: index 0 is H1 (C1 vs C2), index 1 is H2 (B vs C1).
-  const adjusted = [0, 1].map((index) => holm([costs[index].pValue, citations[index].pValue]))
-  const holmText = (index: number, outcome: 0 | 1) => (index < 2 ? adjusted[index][outcome].toFixed(4) : 'n/a')
+  const roles = ['H1', 'H2', 'descriptive']
   const ratio = (value: number) => (Number.isNaN(value) ? 'n/a' : Math.exp(value).toFixed(3))
+  const costHeader = ['| Pair | Role | Tasks | Median of first | Median of second | Ratio (Hodges-Lehmann) | 95 % interval | W+ | p-value |', '|---|---|---|---|---|---|---|---|---|']
+  const costRow = (test: ReturnType<typeof pairedCosts>[number], role: string) => {
+    const interval = test.interval ? `${ratio(test.interval.low)} to ${ratio(test.interval.high)}` : 'n/a'
+    return `| ${test.first} vs ${test.second} | ${role} | ${test.tasks.length} | ${usd(median(test.tasks.map((task) => test.firsts.get(task)!)))} | ${usd(median(test.tasks.map((task) => test.seconds.get(task)!)))} | ${ratio(hodgesLehmann(test.logRatios))} | ${interval} | ${test.wPlus} | ${test.pValue.toFixed(4)} |`
+  }
   const lines = [
     '',
-    '## Co-primary outcomes (exact tests, Holm within each hypothesis)',
+    '## Confirmatory outcome: cost per run, paired by task (exact tests)',
     '',
-    'H1 compares C1 with C2 and H2 compares B with C1, each on two co-primary outcomes: the cost per run and whether the Evidence cited for answer_address states the answered address. Holm\'s method adjusts the two outcomes of each hypothesis together; B vs C2 is descriptive.',
+    'H1 compares C1 with C2 and H2 compares B with C1, each tested apart at alpha 0.05; B vs C2 is descriptive. Each task\'s cost is the mean equivalent cost of its runs in a condition, and the outcome is the log of the second cost over the first. The ratio is the exponential of the Hodges-Lehmann estimate, with its exact 95 % interval; below 1 the second condition is cheaper.',
     '',
-    '### Cost per run, paired by task',
-    '',
-    'Each task\'s cost is the mean equivalent cost of its runs in a condition, and the outcome is the log of the second cost over the first. The ratio is the exponential of the Hodges-Lehmann estimate, with its exact 95 % interval; below 1 the second condition is cheaper.',
-    '',
-    '| Pair | Tasks | Median of first | Median of second | Ratio (Hodges-Lehmann) | 95 % interval | W+ | p-value | Holm-adjusted |',
-    '|---|---|---|---|---|---|---|---|---|',
+    ...costHeader,
+    ...pairedCosts().map((test, index) => costRow(test, roles[index])),
   ]
-  const costRow = (test: (typeof costs)[number], adjustedText: string) => {
-    const interval = test.interval ? `${ratio(test.interval.low)} to ${ratio(test.interval.high)}` : 'n/a'
-    return `| ${test.first} vs ${test.second} | ${test.tasks.length} | ${usd(median(test.tasks.map((task) => test.firsts.get(task)!)))} | ${usd(median(test.tasks.map((task) => test.seconds.get(task)!)))} | ${ratio(hodgesLehmann(test.logRatios))} | ${interval} | ${test.wPlus} | ${test.pValue.toFixed(4)} | ${adjustedText} |`
-  }
-  costs.forEach((test, index) => lines.push(costRow(test, holmText(index, 0))))
   if (records.some((record) => record.first_request_usage)) {
-    lines.push('', '#### Sensitivity: the first request\'s cache writes priced as cache reads', '')
+    lines.push('', '### Sensitivity: the first request\'s cache writes priced as cache reads', '')
     lines.push('Runs of one condition share a cached prompt prefix, so which run writes it depends on the run order. Here every run\'s first-request cache writes are priced as cache reads, as if the prefix were already cached; the result is descriptive.', '')
-    lines.push('| Pair | Tasks | Median of first | Median of second | Ratio (Hodges-Lehmann) | 95 % interval | W+ | p-value | Holm-adjusted |', '|---|---|---|---|---|---|---|---|---|')
-    pairedCosts((record) => warmPrefixCost(record.model, record.equivalent_cost_usd, record.first_request_usage)).forEach((test) => lines.push(costRow(test, 'n/a')))
+    lines.push(...costHeader)
+    pairedCosts((record) => warmPrefixCost(record.model, record.equivalent_cost_usd, record.first_request_usage)).forEach((test) => lines.push(costRow(test, 'descriptive')))
   }
-  lines.push('', '### Answered address in the cited Evidence, paired by task and repetition', '')
-  lines.push('The outcome is that the Evidence cited for answer_address states the answered address. Only Evidence whose normalized result carries the address can state it, so the outcome also reflects which tool the agent cites.', '')
-  lines.push('| Pair | Pairs | Only first | Only second | p-value | Holm-adjusted |', '|---|---|---|---|---|---|')
-  citations.forEach((comparison, index) => {
-    if (comparison.pairs > 0) lines.push(`| ${comparison.first} vs ${comparison.second} | ${comparison.pairs} | ${comparison.onlyFirst} | ${comparison.onlySecond} | ${comparison.pValue.toFixed(4)} | ${holmText(index, 1)} |`)
-  })
+
+  const states = (record: RunRecord) => record.address?.inCitedEvidence === true
+  const names = (record: RunRecord) => record.address?.namedInCitedEvidence === true
+  lines.push('', '## Citations (descriptive)', '')
+  lines.push('Two definitions. The cited Evidence states the address when the answered address appears as a number in the result of the Evidence cited for answer_address, as in studies 3 and 4. It names the function when it states the address, or when the result is decompiled code whose signature carries the decompiler\'s default name for that address (Ghidra\'s `FUN_` followed by the address, without 0x). The request\'s parameters never count: a procedure tool given an address inside a function answers for the function that contains it. Pairs are matched by task and repetition, and the McNemar p-values are descriptive.', '')
+  lines.push('| Condition | Runs | States the address | Names the function |', '|---|---|---|---|')
+  for (const condition of reaConditions) {
+    const group = byCondition[condition] ?? []
+    if (group.length > 0) lines.push(`| ${condition} | ${group.length} | ${group.filter(states).length} | ${group.filter(names).length} |`)
+  }
+  lines.push('', '| Pair | Pairs | States: only first | States: only second | States: p-value | Names: only first | Names: only second | Names: p-value |', '|---|---|---|---|---|---|---|---|')
+  for (const [first, second] of SKILL_PAIRS) {
+    const stated = compare(records, first, second, states)
+    const named = compare(records, first, second, names)
+    if (stated.pairs > 0) lines.push(`| ${first} vs ${second} | ${stated.pairs} | ${stated.onlyFirst} | ${stated.onlySecond} | ${stated.pValue.toFixed(4)} | ${named.onlyFirst} | ${named.onlySecond} | ${named.pValue.toFixed(4)} |`)
+  }
+  lines.push('', '### By the tool that produced the cited Evidence', '')
+  lines.push('| Cited tool | Condition | Runs | States the address | Names the function |', '|---|---|---|---|---|')
+  const operations = [...new Set(records.filter((record) => reaConditions.includes(record.condition)).map((record) => record.address?.citedOperation ?? 'none'))].sort()
+  for (const operation of operations)
+    for (const condition of reaConditions) {
+      const group = (byCondition[condition] ?? []).filter((record) => (record.address?.citedOperation ?? 'none') === operation)
+      if (group.length > 0) lines.push(`| ${operation === 'none' ? 'none' : `\`${operation}\``} | ${condition} | ${group.length} | ${group.filter(states).length} | ${group.filter(names).length} |`)
+    }
   lines.push('', '## Tokens and calls per run by condition (medians)', '')
   lines.push('Input tokens are split by type, since cache writes and reads are priced differently and most of the input is cached.', '')
   lines.push('| Condition | Runs | Cost | Turns | Input | Cache writes | Cache reads | Output | rea calls | Repeated rea calls | Input validation failures | Time |', '|---|---|---|---|---|---|---|---|---|---|---|---|')

@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url'
 import { parseAddress } from '../answer.ts'
 import { parseStreamJson } from '../claude.ts'
 import { CONDITIONS, SCRATCH_WRITES, runSettings, taskPrompt, toolResultsFolder } from '../conditions.ts'
-import { addressInEvidence, gradeRun, outsidePaths, type Challenge } from '../grade.ts'
+import { addressInEvidence, functionNamedInEvidence, gradeRun, outsidePaths, type Challenge } from '../grade.ts'
 import type { Evidence } from '../rea.ts'
 
 // The real-software tasks of study 3 (ADR 0024): prompt, permissions, address grading and one run end to end.
@@ -82,7 +82,7 @@ test('addresses are read as hexadecimal with 0x or as integers, and relative one
 test('a real-software answer is graded by the range of its target', () => {
   const inside = gradeRun(run(answer('0x140001010')), task, options)
   assert.equal(inside.solved, true)
-  assert.deepEqual(inside.address, { parsed: true, form: 'va', inside: true, exactStart: false, inCitedEvidence: null })
+  assert.deepEqual(inside.address, { parsed: true, form: 'va', inside: true, exactStart: false, inCitedEvidence: null, namedInCitedEvidence: null, citedOperation: null })
   assert.equal(inside.sourceNameCorrect, false)
   assert.equal('mechanismCorrect' in inside, false)
 
@@ -128,6 +128,21 @@ test('the answered address is found in an Evidence result, absolute or relative'
   assert.equal(addressInEvidence(relative, 0x140001000, 0x140000000), true)
 })
 
+test('decompiled code names its function through the signature, never through a call or the request', () => {
+  const code = (text: string, procedure = '0x140001000') => ({ normalized_result: text, parameters: { procedure } }) as unknown as Evidence
+  const own = code('\r\nvoid FUN_140001000(FILE *param_1)\r\n\r\n{\r\n  FUN_140002000(param_1);\r\n}\r\n')
+  // Ghidra's default name gives the start without 0x, so only the named test finds it.
+  assert.equal(addressInEvidence(own, 0x140001000, 0x140000000), false)
+  assert.equal(functionNamedInEvidence(own, 0x140001000, 0x140000000), true)
+  // A call to the answered function inside another function's code does not name it.
+  assert.equal(functionNamedInEvidence(own, 0x140002000, 0x140000000), false)
+  // The request asked for an address inside the function; the result is the containing function.
+  assert.equal(functionNamedInEvidence(code('\r\nint FUN_140005530(void)\r\n{\r\n  return 0;\r\n}\r\n', '0x1400056d7'), 0x1400056d7, 0x140000000), false)
+  // A function with a symbol name has no default name to match; a structured result still counts by its address.
+  assert.equal(functionNamedInEvidence(code('\r\nint main(void)\r\n{\r\n  FUN_140001000();\r\n}\r\n'), 0x140001000, 0x140000000), false)
+  assert.equal(functionNamedInEvidence({ normalized_result: { entry: '0x140001000' } } as unknown as Evidence, 0x140001000, 0x140000000), true)
+})
+
 test('a real-software batch runs each task on its program target and records the address grade', () => {
   const runner = fileURLToPath(new URL('../run.ts', import.meta.url))
   const fake = fileURLToPath(new URL('./fake-claude.mjs', import.meta.url))
@@ -159,7 +174,7 @@ test('a real-software batch runs each task on its program target and records the
   assert.equal(record.set, 'real-pilot')
   assert.equal(record.program, 'demo')
   assert.equal(record.solved, true)
-  assert.deepEqual(record.address, { parsed: true, form: 'va', inside: true, exactStart: true, inCitedEvidence: null })
+  assert.deepEqual(record.address, { parsed: true, form: 'va', inside: true, exactStart: true, inCitedEvidence: null, namedInCitedEvidence: null, citedOperation: null })
   assert.equal(record.sourceNameCorrect, true)
   // Studies without an injected skill keep the record shape of studies 3 and 4.
   assert.equal('first_request_usage' in record, false)

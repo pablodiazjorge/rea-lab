@@ -156,9 +156,15 @@ test('the published report of study 4 regenerates byte for byte with its compari
   assert.equal(markdown, readFileSync(new URL('../results/study-4/report.md', import.meta.url), 'utf8'))
 })
 
-test('a study 5 report pairs the cost per task with an exact Wilcoxon test and adjusts H1 and H2 with Holm', () => {
+test('a study 5 report tests the cost per task with an exact Wilcoxon test and describes the citations', () => {
   const tasks = ['r01', 'r02', 'r03', 'r04', 'r05', 'r06']
-  const skillRecord = (task: string, condition: 'B' | 'C1' | 'C2', repetition: number, cost: number, grounded: boolean) =>
+  // B cites a caller list, C1 the decompiled code (named only by the decompiler), C2 a result with the address.
+  const citations = {
+    B: { inCitedEvidence: false, namedInCitedEvidence: false, citedOperation: 'procedure_callers' },
+    C1: { inCitedEvidence: false, namedInCitedEvidence: true, citedOperation: 'procedure_pseudo_code' },
+    C2: { inCitedEvidence: true, namedInCitedEvidence: true, citedOperation: 'procedure_info' },
+  }
+  const skillRecord = (task: string, condition: 'B' | 'C1' | 'C2', repetition: number, cost: number) =>
     record(task, condition, true, {
       study: 's5',
       key: `${task}-x64-O2-strip-${condition}-r${repetition}`,
@@ -167,41 +173,47 @@ test('a study 5 report pairs the cost per task with an exact Wilcoxon test and a
       repetition,
       mechanismCorrect: undefined,
       equivalent_cost_usd: cost,
-      address: { parsed: true, form: 'va', inside: true, exactStart: true, inCitedEvidence: grounded },
+      address: { parsed: true, form: 'va', inside: true, exactStart: true, ...citations[condition] },
       sourceNameCorrect: false,
       ...(condition === 'B' ? {} : { injected_skill: condition === 'C1' ? 'official' : 'improved' }),
     } as Partial<RunRecord>)
   // Every task costs less with the official skill than without it, and less again with the improved one.
   const records = tasks.flatMap((task, index) => [1, 2].flatMap((repetition) => [
-    skillRecord(task, 'B', repetition, 0.2 + index / 100, false),
-    skillRecord(task, 'C1', repetition, 0.15 + index / 100, false),
-    skillRecord(task, 'C2', repetition, 0.1 + index / 100, true),
+    skillRecord(task, 'B', repetition, 0.2 + index / 100),
+    skillRecord(task, 'C1', repetition, 0.15 + index / 100),
+    skillRecord(task, 'C2', repetition, 0.1 + index / 100),
   ]))
   const { markdown } = buildReport(records)
   assert.match(markdown, /\| Family \| B \| C1 \| C2 \|/)
   assert.match(markdown, /## rea usage and Evidence \(conditions B, C1 and C2\)/)
   assert.match(markdown, /## Answered address in the cited Evidence \(conditions B, C1 and C2\)/)
-  assert.match(markdown, /## Co-primary outcomes \(exact tests, Holm within each hypothesis\)/)
-  // Six tasks, all cheaper in the second condition: W+ = 0 and p = 2/64 on the log ratios. Six differences give
-  // the widest exact interval, the smallest and largest Walsh averages: here the cheapest and dearest task ratios.
-  assert.match(markdown, /\| C1 vs C2 \| 6 \| 0\.1750 USD \| 0\.1250 USD \| 0\.7\d\d \| 0\.667 to 0\.750 \| 0 \| 0\.0313 \| 0\.0313 \|/)
-  assert.match(markdown, /\| B vs C1 \| 6 \| 0\.2250 USD \| 0\.1750 USD \| 0\.7\d\d \| 0\.750 to 0\.800 \| 0 \| 0\.0313 \| 0\.0625 \|/)
-  assert.match(markdown, /\| B vs C2 \| 6 \| .* \| 0\.0313 \| n\/a \|/)
-  // The improved skill's citations state the address in all 12 runs, the official one's in none. Holm within H1
-  // doubles the smaller p-value (0.0005); within H2 the citations do not differ (p = 1), so the cost is doubled.
-  assert.match(markdown, /### Answered address in the cited Evidence, paired by task and repetition[\s\S]*\| C1 vs C2 \| 12 \| 0 \| 12 \| 0\.0005 \| 0\.0010 \|\n\| B vs C1 \| 12 \| 0 \| 0 \| 1\.0000 \| 1\.0000 \|/)
+  assert.match(markdown, /## Confirmatory outcome: cost per run, paired by task \(exact tests\)/)
+  assert.doesNotMatch(markdown, /Holm/)
+  // Six tasks, all cheaper in the second condition: W+ = 0 and p = 2/64 on the log ratios, each hypothesis tested
+  // apart. Six differences give the widest exact interval, the smallest and largest Walsh averages: here the
+  // cheapest and dearest task ratios.
+  assert.match(markdown, /\| C1 vs C2 \| H1 \| 6 \| 0\.1750 USD \| 0\.1250 USD \| 0\.7\d\d \| 0\.667 to 0\.750 \| 0 \| 0\.0313 \|\n/)
+  assert.match(markdown, /\| B vs C1 \| H2 \| 6 \| 0\.2250 USD \| 0\.1750 USD \| 0\.7\d\d \| 0\.750 to 0\.800 \| 0 \| 0\.0313 \|\n/)
+  assert.match(markdown, /\| B vs C2 \| descriptive \| 6 \| .* \| 0\.0313 \|\n/)
+  // Citations: C2 states the address in all 12 runs; C1 names the function in all 12 only through the decompiler's
+  // name; B does neither. The McNemar p-values are descriptive.
+  const cited = markdown.split('## Citations (descriptive)')[1]
+  assert.ok(cited, 'the citations section is present')
+  assert.match(cited, /\| B \| 12 \| 0 \| 0 \|\n\| C1 \| 12 \| 0 \| 12 \|\n\| C2 \| 12 \| 12 \| 12 \|/)
+  assert.match(cited, /\| C1 vs C2 \| 12 \| 0 \| 12 \| 0\.0005 \| 0 \| 0 \| 1\.0000 \|\n\| B vs C1 \| 12 \| 0 \| 0 \| 1\.0000 \| 0 \| 12 \| 0\.0005 \|/)
+  assert.match(cited, /\| `procedure_callers` \| B \| 12 \| 0 \| 0 \|\n\| `procedure_info` \| C2 \| 12 \| 12 \| 12 \|\n\| `procedure_pseudo_code` \| C1 \| 12 \| 0 \| 12 \|/)
   assert.match(markdown, /## Tokens and calls per run by condition \(medians\)[\s\S]*\| Condition \| Runs \| Cost \| Turns \| Input \| Cache writes \| Cache reads \| Output \|[^\n]*\n\|---[^\n]*\n\| B \| 12 \|/)
   // The McNemar table on correctness uses the study 5 pairs too.
   assert.match(markdown, /\| C1 vs C2 \| 12 \| 0 \| 0 \| 1\.0000 \|/)
   // Without first-request usage there is no sensitivity table.
-  assert.doesNotMatch(markdown, /#### Sensitivity/)
+  assert.doesNotMatch(markdown, /### Sensitivity/)
 
   // C1 pays for writing a prefix of 10,000 tokens on every run, C2 for none: priced as reads, C1's cost drops by
   // 0.039 USD per run, so its ratio over B falls further and C2's advantage over C1 shrinks.
   const first = (writes: number) => ({ input_tokens: 0, output_tokens: 0, cache_creation_input_tokens: writes, cache_read_input_tokens: 0 })
   const withFirst = records.map((item) => ({ ...item, model: 'claude-sonnet-5-5', first_request_usage: first(item.condition === 'C1' ? 10_000 : 0) }))
-  const sensitivity = buildReport(withFirst).markdown.split('#### Sensitivity')[1]
+  const sensitivity = buildReport(withFirst).markdown.split('### Sensitivity')[1]?.split('## Citations')[0]
   assert.ok(sensitivity, 'the sensitivity table is present')
-  assert.match(sensitivity, /\| C1 vs C2 \| 6 \| 0\.1360 USD \| 0\.1250 USD \| 0\.9\d\d \|[^\n]*\| n\/a \|/)
-  assert.match(sensitivity, /\| B vs C1 \| 6 \| 0\.2250 USD \| 0\.1360 USD \| 0\.6\d\d \|[^\n]*\| n\/a \|/)
+  assert.match(sensitivity, /\| C1 vs C2 \| descriptive \| 6 \| 0\.1360 USD \| 0\.1250 USD \| 0\.9\d\d \|/)
+  assert.match(sensitivity, /\| B vs C1 \| descriptive \| 6 \| 0\.2250 USD \| 0\.1360 USD \| 0\.6\d\d \|/)
 })
