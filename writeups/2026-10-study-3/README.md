@@ -4,7 +4,7 @@
 
 [Study 1](../2026-10-study-1/README.md) and [study 2](../2026-10-study-2/README.md) asked Claude Code for the input that a synthetic crackme accepts, with and without the reverse-engineering MCP server [rea](https://github.com/morluto/rea). rea changed nothing on small crackmes and fell behind on larger ones, and most failures were a check that was found but could not be inverted without computing. Both writeups named the next step: questions whose answer is an analysis, on software closer to the real thing. This study asks where a described function or table lives in real open-source programs, compiled here without symbols, with the answers known in advance and the analysis fixed before the first run.
 
-**Short answer:** no difference to measure. On four programs the model had never seen, the agent located the asked function or table in 71 of 72 runs with command-line tools alone and in 68 of 72 with rea (exact McNemar, p = 0.375). Both conditions are at the ceiling, so only a large effect could have shown, and none did. rea again cost more than twice as much, and all 144 of its Evidence citations authenticated (142 as first published; see the correction).
+**Short answer:** no difference to measure. On four programs the model is unlikely to have seen, the agent located the asked function or table in 71 of 72 runs with command-line tools alone and in 68 of 72 with rea (exact McNemar, p = 0.375). Both conditions are at the ceiling, so only a large effect could have shown, and none did. rea again cost more than twice as much, and all 144 of its Evidence citations authenticated (142 as first published; see the correction).
 
 ## Design
 
@@ -16,7 +16,7 @@ Everything in this section was fixed in the [preregistration](../../bench/prereg
   - B: the same plus rea 6.4.0 over MCP, with Ghidra 12.1.4.
 
   Both could keep scratch files in their own folder and read the files where Claude Code saves a tool result too large to return inline; in study 2 those reads were denied.
-- **Programs.** Four open-source C programs whose repositories were created after the model's training data, so it cannot know their code: SGIEmu (an SGI Indy emulator with a MIPS interpreter, a MIPS to x86-64 translator and a Win32 front end), c5xtools (the assembler of a TMS320C5x DSP toolchain), moppe-emu (an emulator of old Nokia radios) and flint (a scripting language with a bytecode virtual machine). Their source archives are pinned by SHA-256 in [`sources.json`](../../sources.json) and built reproducibly with llvm-mingw for x64 at `-O2`, static, one section per function and per data object, without identical-code folding, then stripped ([ADR 0024](../../docs/adr/0024-real-software-tasks.md)). The targets take 48 to 329 KB. The target keeps every non-debug byte of the full build, so the full build's linker map gives the ground truth.
+- **Programs.** Four open-source C programs whose repositories were created after the model's training data, so it is unlikely to know their code: SGIEmu (an SGI Indy emulator with a MIPS interpreter, a MIPS to x86-64 translator and a Win32 front end), c5xtools (the assembler of a TMS320C5x DSP toolchain), moppe-emu (an emulator of old Nokia radios) and flint (a scripting language with a bytecode virtual machine). Their source archives are pinned by SHA-256 in [`sources.json`](../../sources.json) and built reproducibly with llvm-mingw for x64 at `-O2`, static, one section per function and per data object, without identical-code folding, then stripped ([ADR 0024](../../docs/adr/0024-real-software-tasks.md)). The targets take 48 to 329 KB. The target keeps every non-debug byte of the full build, so the full build's linker map gives the ground truth.
 - **Tasks.** 24, six per program, one question per run, answered with the virtual address where a function or table starts:
   - `string` (one per program): the only function that references a given string. It is a control and stays out of the hypothesis test;
   - `behaviour` (three, four in c5xtools): a function described by its purpose, with no direct string reference and an address that is never taken;
@@ -71,7 +71,7 @@ No program drives the result: moppe-emu holds two of the four pairs where only A
 
 **What the citations prove.** RQ3 asked whether the answered address appears in the Evidence that `answer_address` cites. It does in 38 of the 72 runs of B, 37 of them correct. In the rest, the cited Evidence supports the reasoning, such as the function's code or a cross-reference, but does not state the address itself. Reading the saved files, after the correction below, left this number unchanged.
 
-The 144 runs took 149 minutes of machine time (47 in A, 102 in B) and 30.02 USD of equivalent cost, on a subscription.
+The 144 runs took 149 minutes of machine time (47 in A, 102 in B) and 30.02 USD of equivalent cost.
 
 ## The safety classifier
 
@@ -88,7 +88,7 @@ The closest published task is Binary Function Search in the [ZGCM-1 technical re
 ## What it means
 
 - Across three studies, there is no sign that rea raises how many tasks Claude Code solves with this model: none on small crackmes, a non-significant gap against it on larger ones, and none here, where both conditions are at the ceiling. It costs more each time: about twice as much in studies 1 and 2, and 2.3 times the median cost here.
-- Finding a described function in a small stripped program is easy for this agent with `llvm-objdump` and `grep`, even in code it has never seen: 71 of 72, every one at the exact start. A benchmark that can tell the conditions apart needs harder questions or larger programs.
+- Finding a described function in a small stripped program is easy for this agent with `llvm-objdump` and `grep`, even in code it is unlikely to have seen: 71 of 72, every one at the exact start. A benchmark that can tell the conditions apart needs harder questions or larger programs.
 - With rea, three of the four misses were one step off in the call graph: the agent reached the right neighbourhood and then answered a caller. Four misses are too few to say why.
 - rea's Evidence keeps checking out (all 144 here, two of them from a rea result saved to a file), but a citation often supports the reasoning without stating the answer: in only 38 of 72 runs did the cited Evidence contain the answered address.
 - The safety classifier stops of studies 1 and 2 went with crackme tasks, not with reverse engineering itself.
@@ -136,12 +136,12 @@ These measures were not preregistered. They are exploratory and come from the sa
 ## Limitations
 
 - The calibration target was not met: A answered 99 %, so most pairs agree and only a large effect could show.
-- Four small C programs, 48 to 329 KB, built with llvm-mingw, not MSVC. New projects are small and recent, and much of their code looks written with AI assistance, so it may be more conventional than older software.
+- Four small C programs, 48 to 329 KB, built with llvm-mingw, not MSVC. New projects are small and recent, so their code may be more conventional than that of older software.
 - Four programs are four clusters: tasks within a program share one binary.
 - The author wrote the questions; the seed chose the targets, but the wording of a purpose can make a task easier or harder.
 - One agent and one model; nothing here speaks for other agents yet.
 - Neither condition could run an interpreter, by design.
-- The cost is Claude Code's equivalent cost, not money spent: the runs used a subscription.
+- The cost is Claude Code's own estimate at list prices, not money spent.
 - rea 6.4.0, the version of studies 1 and 2, frozen for comparability.
 - Until the correction above, the grader authenticated only Evidence returned inline and did not read the files where Claude Code saves large results, which this study allowed for the first time.
 - The review heuristic flagged 28 runs (19 in A, 9 in B) for attempts to run Python or paths outside the run folder. The permission policy denied every interpreter call. The commands that ran were false positives, such as a `grep` for the word `python` among the program's strings, and the outside paths were either denied or `sed` and `awk` patterns read as drive letters. No run was excluded.

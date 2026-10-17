@@ -57,7 +57,7 @@ A va por delante en todas las familias.
 
 **Cómo se usó rea.** El agente usó rea en todas las ejecuciones de B y siempre empezó con `open_binary`; cerró la sesión en 22 de 24, tras una mediana de 17 llamadas a rea. Citó 46 registros de evidencia: 45 se volvieron a autenticar y trataban del objetivo, y un `evidence_id` fue inventado, un identificador recortado con `_unverified` añadido al final. rea rechazó 14 llamadas por entradas no válidas en 10 ejecuciones, otra vez sobre todo argumentos con un nombre natural pero equivocado, como en el estudio 1; [morluto/rea#2148](https://github.com/morluto/rea/pull/2148) propone aceptar esas formas.
 
-Las 48 ejecuciones llevaron 236 minutos de máquina (77 en A y 159 en B) y 39,76 USD de coste equivalente, con una suscripción; la ejecución que llegó al límite de tiempo no informa de su coste.
+Las 48 ejecuciones llevaron 236 minutos de máquina (77 en A y 159 en B) y 39,76 USD de coste equivalente; la ejecución que llegó al límite de tiempo no informa de su coste.
 
 ## El clasificador de seguridad
 
@@ -94,7 +94,7 @@ El equipo que ejecutaba el estudio se reinició dos veces. Cada vez cortó una e
 - Un solo agente y un solo modelo; nada de esto habla todavía por otros agentes.
 - 24 pares solo detectan efectos grandes; este resultado no es significativo al nivel prerregistrado.
 - Ninguna de las dos condiciones podía ejecutar un intérprete, a propósito; eso elimina la vía de fuerza bruta que necesitaban la mayoría de los fallos.
-- El coste es el coste equivalente de Claude Code, no dinero gastado: las ejecuciones usaron una suscripción.
+- El coste es la estimación del propio Claude Code a precios de lista, no dinero gastado.
 - rea 6.4.0, la versión del estudio 1, congelada para poder comparar.
 - La heurística de revisión marcó intentos de usar Python o de escribir fuera de la carpeta de la ejecución en 39 ejecuciones (19 en A y 20 en B). La política de permisos los denegó todos y ninguno llegó a ejecutarse; no se excluyó ninguna ejecución.
 - Añadido el 16 de octubre de 2026: las ejecuciones se lanzaron desde la app de escritorio de Claude, cuyo entorno fija dos ajustes de Claude Code: `DISABLE_MICROCOMPACT=1`, que desactiva la limpieza de los resultados viejos de herramientas del contexto, y `API_TIMEOUT_MS=900000`. El arnés no los filtraba, así que con toda probabilidad llegaron a todas las ejecuciones. Se aplicaron a todas las condiciones por igual, así que ninguna comparación cambia, pero las cifras absolutas de tokens y de coste pueden ser más altas que con los valores por defecto de Claude Code. Desde el estudio 5 el arnés los descarta ([ADR 0018](../../docs/adr/0018-benchmark-isolation.md)).

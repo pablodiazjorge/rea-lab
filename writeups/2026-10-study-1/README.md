@@ -46,7 +46,7 @@ Every failure is in one family, `table`, whose characters come from a switch ove
 
 **How rea was used.** In B and C, the agent used rea in every run and always started with `open_binary`; it closed the session in 38 of 40 runs. It cited 80 pieces of Evidence, and all 80 re-authenticated and were about the target: not a single invented `evidence_id`. On the other side, rea rejected 22 calls for invalid input (19 in B, 3 in C), mostly arguments with a natural but wrong name: `address` where `procedure_pseudo_code` expects `procedure` (13 calls), and `query` where `search_strings` expects `pattern` (4). The skill offered in C was never loaded.
 
-The 70 runs took 58 minutes of machine time and 15.52 USD of equivalent cost, on a subscription.
+The 70 runs took 58 minutes of machine time and 15.52 USD of equivalent cost.
 
 ## The safety classifier
 
@@ -70,7 +70,7 @@ Four pilots on the public challenges (35 runs, not part of the study) shaped the
 - Ten small C programs built with llvm-mingw, far simpler than real software, and not MSVC.
 - One agent and one model; nothing here speaks for other agents yet.
 - 30 pairs detect only large effects.
-- The cost is Claude Code's equivalent cost, not money spent: the runs used a subscription.
+- The cost is Claude Code's own estimate at list prices, not money spent.
 - rea 6.4.0, frozen before 6.5.0 was published.
 - The review heuristic that flags commands trying to run a program caught 23 attempts to use Python or to write outside the run folder. All were denied by the permission policy and none ran; no run was excluded.
 - Added on 16 October 2026: the runs were launched from the Claude desktop app, whose environment sets two Claude Code switches, `DISABLE_MICROCOMPACT=1`, which turns off the clearing of old tool results from the context, and `API_TIMEOUT_MS=900000`. The harness did not filter them, so they very likely reached every run. They applied to every condition alike, so no comparison changes, but absolute token counts and costs may be higher than with Claude Code's defaults. From study 5 the harness drops them ([ADR 0018](../../docs/adr/0018-benchmark-isolation.md)).

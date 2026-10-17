@@ -71,4 +71,4 @@ After a grader fix, `node bench/regrade.ts --study <name>` grades a study again 
 
 - The challenges are small C programs built with llvm-mingw, not MSVC, and far simpler than real software.
 - One agent (Claude Code) and one model per study, so results say nothing yet about other agents.
-- `total_cost_usd` is an equivalent cost, not money spent on a subscription.
+- `total_cost_usd` is Claude Code's equivalent cost at list prices, not money spent.

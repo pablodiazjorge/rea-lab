@@ -46,7 +46,7 @@ Todos los fallos están en una sola familia, `table`, cuyos caracteres salen de 
 
 **Cómo se usó rea.** En B y C, el agente usó rea en todas las ejecuciones y siempre empezó con `open_binary`; cerró la sesión en 38 de 40. Citó 80 registros de evidencia, y los 80 se volvieron a autenticar y trataban del objetivo: ni un solo `evidence_id` inventado. En cambio, rea rechazó 22 llamadas por entradas no válidas (19 en B y 3 en C), sobre todo argumentos con un nombre natural pero equivocado: `address` donde `procedure_pseudo_code` espera `procedure` (13 llamadas) y `query` donde `search_strings` espera `pattern` (4). La skill que se ofrecía en C no se cargó nunca.
 
-Las 70 ejecuciones llevaron 58 minutos de máquina y 15,52 USD de coste equivalente, con una suscripción.
+Las 70 ejecuciones llevaron 58 minutos de máquina y 15,52 USD de coste equivalente.
 
 ## El clasificador de seguridad
 
@@ -70,7 +70,7 @@ Cuatro pilotos con los retos públicos (35 ejecuciones, que no forman parte del 
 - Diez programas pequeños en C compilados con llvm-mingw, mucho más sencillos que el software real, y no con MSVC.
 - Un solo agente y un solo modelo; nada de esto habla todavía por otros agentes.
 - 30 pares solo detectan efectos grandes.
-- El coste es el coste equivalente de Claude Code, no dinero gastado: las ejecuciones usaron una suscripción.
+- El coste es la estimación del propio Claude Code a precios de lista, no dinero gastado.
 - rea 6.4.0, congelado antes de que se publicara la 6.5.0.
 - La heurística de revisión que marca las órdenes que intentan ejecutar un programa detectó 23 intentos de usar Python o de escribir fuera de la carpeta de la ejecución. La política de permisos los denegó todos y ninguno llegó a ejecutarse; no se excluyó ninguna ejecución.
 - Añadido el 16 de octubre de 2026: las ejecuciones se lanzaron desde la app de escritorio de Claude, cuyo entorno fija dos ajustes de Claude Code: `DISABLE_MICROCOMPACT=1`, que desactiva la limpieza de los resultados viejos de herramientas del contexto, y `API_TIMEOUT_MS=900000`. El arnés no los filtraba, así que con toda probabilidad llegaron a todas las ejecuciones. Se aplicaron a todas las condiciones por igual, así que ninguna comparación cambia, pero las cifras absolutas de tokens y de coste pueden ser más altas que con los valores por defecto de Claude Code. Desde el estudio 5 el arnés los descarta ([ADR 0018](../../docs/adr/0018-benchmark-isolation.md)).

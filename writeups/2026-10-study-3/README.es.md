@@ -4,7 +4,7 @@
 
 El [estudio 1](../2026-10-study-1/README.es.md) y el [estudio 2](../2026-10-study-2/README.es.md) le pedían a Claude Code la entrada que acepta un crackme sintético, con y sin el servidor MCP de ingeniería inversa [rea](https://github.com/morluto/rea). rea no cambió nada con crackmes pequeños y se quedó atrás con los grandes, y la mayoría de los fallos fueron una comprobación encontrada que no se podía invertir sin calcular. Los dos writeups dejaron escrito el siguiente paso: preguntas cuya respuesta sea un análisis, sobre software más parecido al real. Este estudio pregunta dónde está una función o una tabla descrita en programas libres reales, compilados aquí sin símbolos, con las respuestas conocidas de antemano y el análisis fijado antes de la primera ejecución.
 
-**Respuesta corta:** no hay diferencia que medir. Con cuatro programas que el modelo no había visto nunca, el agente localizó la función o la tabla pedida en 71 de 72 ejecuciones solo con herramientas de línea de órdenes y en 68 de 72 con rea (McNemar exacto, p = 0,375). Las dos condiciones están en el techo, así que solo se habría visto un efecto grande, y no lo hubo. rea volvió a costar más del doble, y sus 144 citas de evidencia se autenticaron (142 en la primera publicación; véase la corrección).
+**Respuesta corta:** no hay diferencia que medir. Con cuatro programas que el modelo probablemente no ha visto, el agente localizó la función o la tabla pedida en 71 de 72 ejecuciones solo con herramientas de línea de órdenes y en 68 de 72 con rea (McNemar exacto, p = 0,375). Las dos condiciones están en el techo, así que solo se habría visto un efecto grande, y no lo hubo. rea volvió a costar más del doble, y sus 144 citas de evidencia se autenticaron (142 en la primera publicación; véase la corrección).
 
 ## Diseño
 
@@ -16,7 +16,7 @@ Todo lo de esta sección quedó fijado en el [prerregistro](../../bench/preregis
   - B: lo mismo más rea 6.4.0 por MCP, con Ghidra 12.1.4.
 
   Las dos podían guardar archivos de trabajo en su propia carpeta y leer los archivos donde Claude Code guarda el resultado de una herramienta demasiado grande para devolverlo directamente; en el estudio 2 esas lecturas estaban denegadas.
-- **Programas.** Cuatro programas libres en C cuyos repositorios se crearon después de los datos de entrenamiento del modelo, así que no puede conocer su código: SGIEmu (un emulador de SGI Indy con un intérprete de MIPS, un traductor de MIPS a x86-64 y una interfaz Win32), c5xtools (el ensamblador de una cadena de herramientas para el DSP TMS320C5x), moppe-emu (un emulador de radios antiguas de Nokia) y flint (un lenguaje de script con una máquina virtual de código de bytes). Sus archivos de código están fijados por SHA-256 en [`sources.json`](../../sources.json) y se compilan de forma reproducible con llvm-mingw para x64 con `-O2`, estáticos, una sección por función y por dato, sin plegar código idéntico, y después sin símbolos ([ADR 0024](../../docs/adr/0024-real-software-tasks.md)). Los objetivos ocupan de 48 a 329 KB. El objetivo conserva todos los bytes del build completo que no son de depuración, así que el mapa del enlazador del build completo da la verdad de referencia.
+- **Programas.** Cuatro programas libres en C cuyos repositorios se crearon después de los datos de entrenamiento del modelo, así que es poco probable que conozca su código: SGIEmu (un emulador de SGI Indy con un intérprete de MIPS, un traductor de MIPS a x86-64 y una interfaz Win32), c5xtools (el ensamblador de una cadena de herramientas para el DSP TMS320C5x), moppe-emu (un emulador de radios antiguas de Nokia) y flint (un lenguaje de script con una máquina virtual de código de bytes). Sus archivos de código están fijados por SHA-256 en [`sources.json`](../../sources.json) y se compilan de forma reproducible con llvm-mingw para x64 con `-O2`, estáticos, una sección por función y por dato, sin plegar código idéntico, y después sin símbolos ([ADR 0024](../../docs/adr/0024-real-software-tasks.md)). Los objetivos ocupan de 48 a 329 KB. El objetivo conserva todos los bytes del build completo que no son de depuración, así que el mapa del enlazador del build completo da la verdad de referencia.
 - **Tareas.** 24, seis por programa, una pregunta por ejecución, que se responde con la dirección virtual donde empieza una función o una tabla:
   - `string` (una por programa): la única función que hace referencia a una cadena dada. Es de control y queda fuera de la prueba de hipótesis;
   - `behaviour` (tres, cuatro en c5xtools): una función descrita por su propósito, sin referencias directas a cadenas y cuya dirección nunca se toma;
@@ -71,7 +71,7 @@ Ningún programa decide el resultado: moppe-emu reúne dos de los cuatro pares e
 
 **Qué demuestran las citas.** La RQ3 preguntaba si la dirección respondida aparece en la evidencia que cita `answer_address`. Aparece en 38 de las 72 ejecuciones de B, 37 de ellas correctas. En el resto, la evidencia citada respalda el razonamiento, como el código de la función o una referencia cruzada, pero no recoge la dirección. Leer los archivos guardados, tras la corrección de más abajo, no cambió esta cifra.
 
-Las 144 ejecuciones llevaron 149 minutos de máquina (47 en A y 102 en B) y 30,02 USD de coste equivalente, con una suscripción.
+Las 144 ejecuciones llevaron 149 minutos de máquina (47 en A y 102 en B) y 30,02 USD de coste equivalente.
 
 ## El clasificador de seguridad
 
@@ -88,7 +88,7 @@ La tarea publicada más cercana es Binary Function Search, del [informe técnico
 ## Qué significa
 
 - Entre los tres estudios, no hay ninguna señal de que rea aumente cuántas tareas resuelve Claude Code con este modelo: ninguna con crackmes pequeños, una diferencia no significativa en contra con los grandes y ninguna aquí, donde las dos condiciones están en el techo. Cada vez cuesta más: alrededor del doble en los estudios 1 y 2, y 2,3 veces la mediana de coste aquí.
-- Encontrar una función descrita en un programa pequeño sin símbolos es fácil para este agente con `llvm-objdump` y `grep`, incluso en código que no ha visto nunca: 71 de 72, todas en el inicio exacto. Un banco de pruebas que distinga las condiciones necesita preguntas más difíciles o programas más grandes.
+- Encontrar una función descrita en un programa pequeño sin símbolos es fácil para este agente con `llvm-objdump` y `grep`, incluso en código que es poco probable que haya visto: 71 de 72, todas en el inicio exacto. Un banco de pruebas que distinga las condiciones necesita preguntas más difíciles o programas más grandes.
 - Con rea, tres de los cuatro fallos se quedaron a un paso en el grafo de llamadas: el agente llegó a la zona correcta y después respondió un llamador. Cuatro fallos son muy pocos para saber por qué.
 - La evidencia de rea sigue comprobándose (las 144 aquí, dos de ellas de un resultado de rea guardado en un archivo), pero a menudo una cita respalda el razonamiento sin recoger la respuesta: solo en 38 de 72 ejecuciones la evidencia citada contenía la dirección respondida.
 - Las paradas del clasificador de seguridad de los estudios 1 y 2 iban con las tareas de crackmes, no con la ingeniería inversa en sí.
@@ -136,12 +136,12 @@ Estas medidas no estaban prerregistradas. Son exploratorias y salen de las trans
 ## Limitaciones
 
 - No se alcanzó el objetivo de calibración: A acertó el 99 %, así que la mayoría de los pares coinciden y solo se podría ver un efecto grande.
-- Cuatro programas pequeños en C, de 48 a 329 KB, compilados con llvm-mingw, no con MSVC. Los proyectos nuevos son pequeños y recientes, y buena parte de su código parece escrito con ayuda de IA, así que puede ser más convencional que el software más antiguo.
+- Cuatro programas pequeños en C, de 48 a 329 KB, compilados con llvm-mingw, no con MSVC. Los proyectos nuevos son pequeños y recientes, así que su código puede ser más convencional que el del software más antiguo.
 - Cuatro programas son cuatro grupos: las tareas de un mismo programa comparten binario.
 - El autor redactó las preguntas; la semilla eligió los objetivos, pero la forma de describir un propósito puede hacer una tarea más fácil o más difícil.
 - Un solo agente y un solo modelo; nada de esto habla todavía por otros agentes.
 - Ninguna de las dos condiciones podía ejecutar un intérprete, a propósito.
-- El coste es el coste equivalente de Claude Code, no dinero gastado: las ejecuciones usaron una suscripción.
+- El coste es la estimación del propio Claude Code a precios de lista, no dinero gastado.
 - rea 6.4.0, la versión de los estudios 1 y 2, congelada para poder comparar.
 - Hasta la corrección de más arriba, el calificador solo autenticaba la evidencia devuelta directamente y no leía los archivos donde Claude Code guarda los resultados grandes, que este estudio permitió por primera vez.
 - La heurística de revisión marcó 28 ejecuciones (19 en A y 9 en B) por intentos de ejecutar Python o por rutas fuera de la carpeta de la ejecución. La política de permisos denegó todas las llamadas a intérpretes. Los comandos que sí se ejecutaron eran falsos positivos, como un `grep` de la palabra `python` entre las cadenas del programa, y las rutas de fuera o estaban denegadas o eran patrones de `sed` y `awk` leídos como unidades de disco. No se excluyó ninguna ejecución.

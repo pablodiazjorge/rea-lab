@@ -58,7 +58,7 @@ Fewer whole-inventory listings and fewer oversized results did not save money, b
 
 **Flagged runs.** 16 runs were flagged for review and none was excluded: 8 tried Python (to scan the binary for constants or parse a saved result) and were denied; 4 matched the word "python" inside a `grep` pattern over `llvm-strings` output, an allowed command; and 4 tripped the path check, two with a denied "parent folder" access, one with the run's own folder and one with `awk` text read as a path. No run reached the network, the host or the ground truth, which this time lived outside the benchmark's folder tree.
 
-**Cost and time.** The 180 runs took 231 minutes of machine time and 50.34 USD of equivalent cost on the author's subscription (16.80 in B, 15.29 in C1, 18.25 in C2), against the about 70 USD the pilot predicted. No response was stopped by a safety classifier and no run timed out.
+**Cost and time.** The 180 runs took 231 minutes of machine time and 50.34 USD of equivalent cost (16.80 in B, 15.29 in C1, 18.25 in C2), against the about 70 USD the pilot predicted. No response was stopped by a safety classifier and no run timed out.
 
 ## What the development rounds and the pilot showed
 
@@ -82,7 +82,7 @@ None in how the study ran: the preregistered command, from `ade504a`, with no in
 - 30 tasks in four small C programs, with 2 repetitions: a cost change of 20 % or more was detectable, one of 10 % mostly not. The programs are clusters, and the author wrote the questions.
 - The improved skill is one revision. Another revision could do better; this one was frozen after three rounds, as the plan allowed.
 - The injected prompt names the run's own references folder, so its text differs between runs and each run writes the skill into the prompt cache instead of reusing a shared prefix. That raises C1's and C2's absolute cost against B (the first request writes about 5,400 to 6,000 more tokens), but it applies to both skills alike, and the sensitivity analysis, which removes the first request's writes, gives the same H1.
-- Cost is Claude Code's equivalent cost at list prices on a subscription, not money spent.
+- Cost is Claude Code's equivalent cost at list prices, not money spent.
 
 ## Reproduce it
 

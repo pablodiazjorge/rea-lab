@@ -71,4 +71,4 @@ Tras corregir un calificador, `node bench/regrade.ts --study <nombre>` vuelve a 
 
 - Los retos son programas pequeños en C compilados con llvm-mingw, no con MSVC, y mucho más simples que el software real.
 - Un solo agente (Claude Code) y un solo modelo por estudio, así que los resultados todavía no dicen nada de otros agentes.
-- `total_cost_usd` es un coste equivalente, no dinero gastado en una suscripción.
+- `total_cost_usd` es el coste equivalente de Claude Code a precios de lista, no dinero gastado.

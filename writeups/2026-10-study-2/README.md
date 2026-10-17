@@ -57,7 +57,7 @@ A is ahead in every family.
 
 **How rea was used.** The agent used rea in every run of B and always started with `open_binary`; it closed the session in 22 of 24 runs, after a median of 17 rea calls. It cited 46 pieces of Evidence: 45 re-authenticated and were about the target, and one `evidence_id` was invented, a shortened identifier with `_unverified` appended. rea rejected 14 calls for invalid input in 10 runs, again mostly arguments with a natural but wrong name, as in study 1; [morluto/rea#2148](https://github.com/morluto/rea/pull/2148) proposes accepting those spellings.
 
-The 48 runs took 236 minutes of machine time (77 in A, 159 in B) and 39.76 USD of equivalent cost, on a subscription; the run that hit the time limit reports no cost.
+The 48 runs took 236 minutes of machine time (77 in A, 159 in B) and 39.76 USD of equivalent cost; the run that hit the time limit reports no cost.
 
 ## The safety classifier
 
@@ -94,7 +94,7 @@ The machine running the study restarted twice. Each time it cut one run before i
 - One agent and one model; nothing here speaks for other agents yet.
 - 24 pairs detect only large effects; this result is not significant at the preregistered level.
 - Neither condition could run an interpreter, by design; that removes the brute-force route that most failures needed.
-- The cost is Claude Code's equivalent cost, not money spent: the runs used a subscription.
+- The cost is Claude Code's own estimate at list prices, not money spent.
 - rea 6.4.0, the version of study 1, frozen for comparability.
 - The review heuristic flagged attempts to use Python or to write outside the run folder in 39 runs (19 in A, 20 in B). The permission policy denied all of them and none ran; no run was excluded.
 - Added on 16 October 2026: the runs were launched from the Claude desktop app, whose environment sets two Claude Code switches, `DISABLE_MICROCOMPACT=1`, which turns off the clearing of old tool results from the context, and `API_TIMEOUT_MS=900000`. The harness did not filter them, so they very likely reached every run. They applied to every condition alike, so no comparison changes, but absolute token counts and costs may be higher than with Claude Code's defaults. From study 5 the harness drops them ([ADR 0018](../../docs/adr/0018-benchmark-isolation.md)).

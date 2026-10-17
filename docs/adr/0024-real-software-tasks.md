@@ -10,4 +10,4 @@ Each run asks one question, and the answer is a virtual address, which depends o
 
 The programs must be newer than the model's training data: three pilots on zlib, Lua and md4c showed that the model locates functions of well-known projects from memory, even from a description of purpose, so command-line tools alone answered almost everything. The sources come from official release archives or, when a project has none, from the archive of a pinned commit, and an archive that contains executables is not used. A family with fewer candidates than tasks in a program gives the missing ones to `behaviour`.
 
-Known limitations: the mingw ABI and runtime, not MSVC; new projects are small and recent, and much of their code looks written with AI assistance, so it may be more conventional than older software.
+Known limitations: the mingw ABI and runtime, not MSVC; new projects are small and recent, so their code may be more conventional than that of older software.

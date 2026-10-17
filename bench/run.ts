@@ -261,7 +261,7 @@ export function planRuns(
 /**
  * Environment for the child: inherited variables minus anything that could leak configuration in, plus the
  * provider's credential. A DeepSeek run gets its endpoint, key and model and never the Anthropic token, so it
- * cannot fall back to the Anthropic subscription.
+ * cannot fall back to Anthropic's credentials.
  */
 function childEnvironment(configDir: string, token: string, provider: Provider = 'anthropic', model = ''): NodeJS.ProcessEnv {
   // Claude Code also reads tuning switches without a CLAUDE prefix. Until study 4 the desktop app that launched

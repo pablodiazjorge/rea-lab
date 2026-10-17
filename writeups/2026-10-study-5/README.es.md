@@ -58,7 +58,7 @@ Menos listados del inventario completo y menos resultados gigantes no ahorraron 
 
 **Ejecuciones marcadas.** Se marcaron 16 ejecuciones para revisarlas y no se excluyó ninguna: 8 intentaron usar Python (para buscar constantes en el binario o leer un resultado guardado) y se les denegó; 4 contenían la palabra «python» dentro de un patrón de `grep` sobre la salida de `llvm-strings`, una orden permitida; y 4 saltaron el control de rutas, dos con un acceso a la «carpeta superior» denegado, una con la propia carpeta de la ejecución y otra con texto de `awk` leído como una ruta. Ninguna ejecución llegó a la red, al equipo ni a la verdad de referencia, que esta vez estaba fuera del árbol de carpetas del banco.
 
-**Coste y tiempo.** Las 180 ejecuciones tardaron 231 minutos de máquina y costaron 50,34 USD de coste equivalente en la suscripción del autor (16,80 en B, 15,29 en C1 y 18,25 en C2), frente a los unos 70 USD que preveía el piloto. Ningún clasificador de seguridad cortó una respuesta y ninguna ejecución agotó el tiempo.
+**Coste y tiempo.** Las 180 ejecuciones tardaron 231 minutos de máquina y costaron 50,34 USD de coste equivalente (16,80 en B, 15,29 en C1 y 18,25 en C2), frente a los unos 70 USD que preveía el piloto. Ningún clasificador de seguridad cortó una respuesta y ninguna ejecución agotó el tiempo.
 
 ## Lo que ya mostraron las rondas de ajuste y el piloto
 
@@ -82,7 +82,7 @@ Ninguna en cómo se ejecutó el estudio: la orden prerregistrada, desde `ade504a
 - 30 tareas en cuatro programas pequeños de C, con 2 repeticiones: se podía detectar un cambio de coste del 20 % o más, y uno del 10 % casi nunca. Los programas son grupos, y el autor redactó las preguntas.
 - La skill mejorada es una sola revisión. Otra podría salir mejor; esta se congeló tras tres rondas, como permitía el plan.
 - El prompt inyectado nombra la carpeta de referencias de la propia ejecución, así que su texto cambia de una ejecución a otra y cada una escribe la skill en la caché del prompt en lugar de reutilizar un prefijo común. Eso sube el coste absoluto de C1 y C2 frente a B (la primera petición escribe unos 5.400 a 6.000 tokens más), pero afecta a las dos skills por igual, y el análisis de sensibilidad, que quita las escrituras de la primera petición, da la misma H1.
-- El coste es el coste equivalente de Claude Code a precios de lista en una suscripción, no dinero gastado.
+- El coste es el coste equivalente de Claude Code a precios de lista, no dinero gastado.
 
 ## Reproducirlo
 
