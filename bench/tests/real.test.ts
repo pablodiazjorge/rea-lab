@@ -209,6 +209,17 @@ test('the target must keep the full build bytes and give nothing away', () => {
   assert.deepEqual(checkTargetImage(leaky, ['someone']), ['a local user path appears in the image', 'a forbidden local value appears in the image'])
 })
 
+test('draw quotas apply to every program, and one program can override a family', async () => {
+  const { parseQuotas } = await import('../../challenges/real-tasks.mjs')
+  assert.deepEqual(parseQuotas('behaviour=6,chain=2,c5xtools:chain=1,moppe-emu:chain=1'), {
+    quotas: { behaviour: 6, chain: 2 },
+    overrides: { c5xtools: { chain: 1 }, 'moppe-emu': { chain: 1 } },
+  })
+  assert.throws(() => parseQuotas('behaviour=6,c5xtools:data=1'), /overrides a family without a quota/)
+  assert.throws(() => parseQuotas('behaviour=0'), /bad quota/)
+  assert.throws(() => parseQuotas('caller=1'), /bad quota/)
+})
+
 test('task files are checked against the ground truth and resolved into address ranges', async () => {
   const { QUOTAS, resolveTasks, verifyTasks } = await import('../../challenges/real-tasks.mjs')
   const truth = { ...scenario(), image_base: '0x140000000' }

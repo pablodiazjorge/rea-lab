@@ -7,7 +7,7 @@
 //
 // Usage:
 //   node challenges/real-tasks.mjs draw --role study|pilot --seed <n> --out <file> [--build build/real]
-//       [--programs lua,md4c] [--quotas behaviour=1,chain=1,data=1] [--exclude <task file>]... [--id-prefix q]
+//       [--programs lua,md4c] [--quotas behaviour=1,chain=1,data=1[,<program>:<family>=n]] [--exclude <task file>]... [--id-prefix q]
 //       a pilot on study programs: other programs, other quotas, and no target or described function of the excluded files
 //       (--exclude repeats: study 5 draws new targets on study 3's programs, excluding study 3's and pilot 4's)
 //   node challenges/real-tasks.mjs replace <file> <task id> --reason "<why>"   take the next candidate in the seeded order
@@ -85,6 +85,26 @@ export function programQuotas(quotas, candidates) {
   return own
 }
 
+/**
+ * Quotas from `--quotas`: `family=n` for every program and `program:family=n` to override one program, as in
+ * `behaviour=6,chain=2,c5xtools:chain=1` (study 5 asks for fewer chain tasks in its two smaller programs).
+ */
+export function parseQuotas(text) {
+  const quotas = {}
+  const overrides = {}
+  for (const pair of text.split(',').filter(Boolean)) {
+    const [key, value] = pair.split('=')
+    const count = Number.parseInt(value, 10)
+    const [program, family] = key.includes(':') ? key.split(':') : [null, key]
+    if (!(family in QUOTAS) || !(count >= 1)) throw new Error(`bad quota ${pair}`)
+    if (program === null) quotas[family] = count
+    else (overrides[program] ??= {})[family] = count
+  }
+  for (const [program, own] of Object.entries(overrides))
+    for (const family of Object.keys(own)) if (!(family in quotas)) throw new Error(`${program}:${family} overrides a family without a quota`)
+  return { quotas, overrides }
+}
+
 /** The function or table a task's answer points at. */
 const answerOf = (target) => target.object ?? target.function
 
@@ -112,10 +132,8 @@ function draw() {
   const only = flagValue('--programs')?.split(',').filter(Boolean)
   const programs = manifest.programs.filter((program) => (only ? only.includes(program.id) : program.role === role))
   if (programs.length === 0) throw new Error(`no ${only ? only.join(', ') : role} programs in ${buildRoot}/manifest.json`)
-  const quotas = flagValue('--quotas')
-    ? Object.fromEntries(flagValue('--quotas').split(',').map((pair) => [pair.split('=')[0], Number.parseInt(pair.split('=')[1], 10)]))
-    : QUOTAS
-  for (const family of Object.keys(quotas)) if (!(family in QUOTAS) || !(quotas[family] >= 1)) throw new Error(`bad quota for ${family}`)
+  const { quotas, overrides } = flagValue('--quotas') ? parseQuotas(flagValue('--quotas')) : { quotas: QUOTAS, overrides: {} }
+  for (const program of Object.keys(overrides)) if (!programs.some((candidate) => candidate.id === program)) throw new Error(`a quota names ${program}, which is not drawn`)
   // Targets and described functions of another task file (the study's) never appear here.
   const excluded = flagValues('--exclude').flatMap((file) => readJson(file).tasks)
   const tasks = []
@@ -126,7 +144,7 @@ function draw() {
     reserves[program.id] = {}
     // A function or table answers at most one task per program: a repeated answer adds a run, not a sample.
     const used = new Set(excluded.filter((task) => task.program === program.id).flatMap((task) => [answerOf(task.target), task.target.callee].filter(Boolean)))
-    const own = programQuotas(quotas, truth.candidates)
+    const own = programQuotas({ ...quotas, ...overrides[program.id] }, truth.candidates)
     programQuotasOut[program.id] = own
     for (const family of Object.keys(own)) {
       if (own[family] === 0) continue
