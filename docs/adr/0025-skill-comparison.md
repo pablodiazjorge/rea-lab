@@ -1,6 +1,6 @@
 # Skill comparison: the skill's content, injected
 
-Status: proposed (study 5)
+Status: accepted (study 5)
 
 Study 5 compares rea's own skill with an improved version, both with Claude Code and `claude-sonnet-5-5`, on real-software tasks ([ADR 0024](0024-real-software-tasks.md)). In study 1 the skill was copied into the run's configuration folder, as `rea setup` does, and the agent never loaded it in any of the 10 runs that offered it, so its content has never been measured. Study 5 therefore measures the content, not whether the client decides to load it: the body of `SKILL.md` goes into the system prompt with Claude Code's `--append-system-prompt-file`, after one fixed sentence that says what it is and is the same for every skill. Its `references/` files are copied into the run's configuration folder and are readable, so the agent opens them on demand as it would with an installed skill. The writeup states this scope.
 
