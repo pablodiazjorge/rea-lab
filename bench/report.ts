@@ -13,6 +13,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { warmPrefixCost } from './prices.ts'
 import { hodgesLehmann, hodgesLehmannInterval, holm, mcnemarExact, median, wilcoxonSignedRankExact, wilson } from './stats.ts'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -40,6 +41,8 @@ export type RunRecord = {
   num_turns: number | null
   equivalent_cost_usd: number | null
   usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number } | null
+  /** Study 5 only (ADR 0025): usage of the main agent's first request. */
+  first_request_usage?: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number } | null
   solved: boolean
   refused: boolean
   safetyStops?: number
@@ -278,11 +281,12 @@ export function buildReport(records: RunRecord[], options: ReportOptions = {}) {
 }
 
 /** Mean cost of each task in one condition, over its repetitions. */
-function taskCosts(records: RunRecord[], condition: string): Map<string, number> {
+function taskCosts(records: RunRecord[], condition: string, costOf: (record: RunRecord) => number | null = (record) => record.equivalent_cost_usd): Map<string, number> {
   const byTask = new Map<string, number[]>()
   for (const record of records) {
-    if (record.condition !== condition || record.equivalent_cost_usd === null) continue
-    byTask.set(record.challenge, [...(byTask.get(record.challenge) ?? []), record.equivalent_cost_usd])
+    const cost = record.condition === condition ? costOf(record) : null
+    if (cost === null) continue
+    byTask.set(record.challenge, [...(byTask.get(record.challenge) ?? []), cost])
   }
   return new Map([...byTask].map(([task, costs]) => [task, costs.reduce((sum, cost) => sum + cost, 0) / costs.length]))
 }
@@ -296,13 +300,14 @@ function taskCosts(records: RunRecord[], condition: string): Map<string, number>
  */
 function skillSections(records: RunRecord[], byCondition: Record<string, RunRecord[]>, reaConditions: readonly string[]): string[] {
   const usd = (value: number) => (Number.isNaN(value) ? 'n/a' : `${value.toFixed(4)} USD`)
-  const costs = SKILL_PAIRS.map(([first, second]) => {
-    const firsts = taskCosts(records, first)
-    const seconds = taskCosts(records, second)
+  const pairedCosts = (costOf?: (record: RunRecord) => number | null) => SKILL_PAIRS.map(([first, second]) => {
+    const firsts = taskCosts(records, first, costOf)
+    const seconds = taskCosts(records, second, costOf)
     const tasks = [...firsts.keys()].filter((task) => seconds.has(task) && firsts.get(task)! > 0 && seconds.get(task)! > 0).sort()
     const logRatios = tasks.map((task) => Math.log(seconds.get(task)! / firsts.get(task)!))
     return { first, second, tasks, firsts, seconds, logRatios, interval: hodgesLehmannInterval(logRatios), ...wilcoxonSignedRankExact(logRatios) }
   })
+  const costs = pairedCosts()
   const citations = SKILL_PAIRS.map(([first, second]) => compare(records, first, second, (record) => record.address?.inCitedEvidence === true))
   // Holm within each hypothesis: index 0 is H1 (C1 vs C2), index 1 is H2 (B vs C1).
   const adjusted = [0, 1].map((index) => holm([costs[index].pValue, citations[index].pValue]))
@@ -321,10 +326,17 @@ function skillSections(records: RunRecord[], byCondition: Record<string, RunReco
     '| Pair | Tasks | Median of first | Median of second | Ratio (Hodges-Lehmann) | 95 % interval | W+ | p-value | Holm-adjusted |',
     '|---|---|---|---|---|---|---|---|---|',
   ]
-  costs.forEach((test, index) => {
+  const costRow = (test: (typeof costs)[number], adjustedText: string) => {
     const interval = test.interval ? `${ratio(test.interval.low)} to ${ratio(test.interval.high)}` : 'n/a'
-    lines.push(`| ${test.first} vs ${test.second} | ${test.tasks.length} | ${usd(median(test.tasks.map((task) => test.firsts.get(task)!)))} | ${usd(median(test.tasks.map((task) => test.seconds.get(task)!)))} | ${ratio(hodgesLehmann(test.logRatios))} | ${interval} | ${test.wPlus} | ${test.pValue.toFixed(4)} | ${holmText(index, 0)} |`)
-  })
+    return `| ${test.first} vs ${test.second} | ${test.tasks.length} | ${usd(median(test.tasks.map((task) => test.firsts.get(task)!)))} | ${usd(median(test.tasks.map((task) => test.seconds.get(task)!)))} | ${ratio(hodgesLehmann(test.logRatios))} | ${interval} | ${test.wPlus} | ${test.pValue.toFixed(4)} | ${adjustedText} |`
+  }
+  costs.forEach((test, index) => lines.push(costRow(test, holmText(index, 0))))
+  if (records.some((record) => record.first_request_usage)) {
+    lines.push('', '#### Sensitivity: the first request\'s cache writes priced as cache reads', '')
+    lines.push('Runs of one condition share a cached prompt prefix, so which run writes it depends on the run order. Here every run\'s first-request cache writes are priced as cache reads, as if the prefix were already cached; the result is descriptive.', '')
+    lines.push('| Pair | Tasks | Median of first | Median of second | Ratio (Hodges-Lehmann) | 95 % interval | W+ | p-value | Holm-adjusted |', '|---|---|---|---|---|---|---|---|---|')
+    pairedCosts((record) => warmPrefixCost(record.model, record.equivalent_cost_usd, record.first_request_usage)).forEach((test) => lines.push(costRow(test, 'n/a')))
+  }
   lines.push('', '### Answered address in the cited Evidence, paired by task and repetition', '')
   lines.push('The outcome is that the Evidence cited for answer_address states the answered address. Only Evidence whose normalized result carries the address can state it, so the outcome also reflects which tool the agent cites.', '')
   lines.push('| Pair | Pairs | Only first | Only second | p-value | Holm-adjusted |', '|---|---|---|---|---|---|')

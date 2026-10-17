@@ -61,6 +61,8 @@ export type ClaudeRun = {
    * with refused_message_id, and their total as safety_stops in the result; the larger of the two is kept.
    */
   safetyStops: number
+  /** Usage of the main agent's first API request, whose cache writes depend on the order of the runs (ADR 0025). */
+  firstRequestUsage: Usage | null
 }
 
 type Json = Record<string, unknown>
@@ -109,6 +111,7 @@ export function parseStreamJson(lines: Iterable<string>): ClaudeRun {
     syntheticMessages: 0,
     refusals: 0,
     safetyStops: 0,
+    firstRequestUsage: null,
   }
   const callsById = new Map<string, ToolCall>()
   let lastMessageId: string | null = null
@@ -152,6 +155,7 @@ export function parseStreamJson(lines: Iterable<string>): ClaudeRun {
       const messageId = stringOrNull(message.id)
       if (messageId === null || messageId !== lastMessageId) run.assistantTurns++
       lastMessageId = messageId
+      if (run.firstRequestUsage === null) run.firstRequestUsage = usageOf(message.usage)
       if (message.stop_reason === 'refusal') run.refusals++
       const content = Array.isArray(message.content) ? message.content.filter(isObject) : []
       const texts = content.filter((block) => block.type === 'text' && typeof block.text === 'string').map((block) => block.text as string)

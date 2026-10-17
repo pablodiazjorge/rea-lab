@@ -430,6 +430,8 @@ async function executeRun(run: PlannedRun, set: ChallengeSet, options: Options, 
       : transcript.result?.totalCostUsd ?? null,
     ...(options.provider === 'deepseek' ? { client_reported_cost_usd: transcript.result?.totalCostUsd ?? null, started_at: new Date(started).toISOString() } : {}),
     usage: transcript.result?.usage ?? null,
+    // The first request's cache writes depend on the run order; the skill comparison prices them apart (ADR 0025).
+    ...(options.conditions.some((id) => CONDITIONS[id].injectedSkill !== undefined) ? { first_request_usage: transcript.firstRequestUsage } : {}),
     mcp_servers: transcript.mcpServers,
     ...grade,
   }

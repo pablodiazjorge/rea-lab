@@ -161,6 +161,8 @@ test('a real-software batch runs each task on its program target and records the
   assert.equal(record.solved, true)
   assert.deepEqual(record.address, { parsed: true, form: 'va', inside: true, exactStart: true, inCitedEvidence: null })
   assert.equal(record.sourceNameCorrect, true)
+  // Studies without an injected skill keep the record shape of studies 3 and 4.
+  assert.equal('first_request_usage' in record, false)
   const study = JSON.parse(readFileSync(join(studyDir, 'study.json'), 'utf8'))
   assert.match(study.set_sha256, /^[0-9a-f]{64}$/)
   const diagnostics = readFileSync(join(studyDir, record.key, 'events.jsonl'), 'utf8').split('\n').filter(Boolean).map((line) => JSON.parse(line)).find((event) => event.subtype === 'fake_diagnostics')
@@ -224,6 +226,8 @@ test('C1 and C2 inject the official and the improved skill into the system promp
     assert.equal(record.isolation.ok, true, record.isolation.problems.join(', '))
     assert.equal(record.isolation.skillOffered, false)
   }
+  // A skill study records the first request's usage in every condition, B included, for the cost sensitivity.
+  for (const record of records) assert.deepEqual(record.first_request_usage, { input_tokens: 3, output_tokens: 20, cache_creation_input_tokens: 80, cache_read_input_tokens: 0 })
 
   // The study locks both skills by digest, and they differ.
   const study = JSON.parse(readFileSync(join(studyDir, 'study.json'), 'utf8'))

@@ -193,4 +193,15 @@ test('a study 5 report pairs the cost per task with an exact Wilcoxon test and a
   assert.match(markdown, /## Tokens and calls per run by condition \(medians\)[\s\S]*\| Condition \| Runs \| Cost \| Turns \| Input \| Cache writes \| Cache reads \| Output \|[^\n]*\n\|---[^\n]*\n\| B \| 12 \|/)
   // The McNemar table on correctness uses the study 5 pairs too.
   assert.match(markdown, /\| C1 vs C2 \| 12 \| 0 \| 0 \| 1\.0000 \|/)
+  // Without first-request usage there is no sensitivity table.
+  assert.doesNotMatch(markdown, /#### Sensitivity/)
+
+  // C1 pays for writing a prefix of 10,000 tokens on every run, C2 for none: priced as reads, C1's cost drops by
+  // 0.039 USD per run, so its ratio over B falls further and C2's advantage over C1 shrinks.
+  const first = (writes: number) => ({ input_tokens: 0, output_tokens: 0, cache_creation_input_tokens: writes, cache_read_input_tokens: 0 })
+  const withFirst = records.map((item) => ({ ...item, model: 'claude-sonnet-5-5', first_request_usage: first(item.condition === 'C1' ? 10_000 : 0) }))
+  const sensitivity = buildReport(withFirst).markdown.split('#### Sensitivity')[1]
+  assert.ok(sensitivity, 'the sensitivity table is present')
+  assert.match(sensitivity, /\| C1 vs C2 \| 6 \| 0\.1360 USD \| 0\.1250 USD \| 0\.9\d\d \|[^\n]*\| n\/a \|/)
+  assert.match(sensitivity, /\| B vs C1 \| 6 \| 0\.2250 USD \| 0\.1360 USD \| 0\.6\d\d \|[^\n]*\| n\/a \|/)
 })

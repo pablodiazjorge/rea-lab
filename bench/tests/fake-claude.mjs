@@ -52,7 +52,7 @@ if (process.env.FAKE_CLAUDE_MODE === 'auth-error') {
   process.exit(1)
 }
 
-emit({ type: 'assistant', parent_tool_use_id: null, message: { id: 'm1', content: [{ type: 'tool_use', id: 't1', name: 'Bash', input: { command: 'llvm-strings target.exe' } }] } })
+emit({ type: 'assistant', parent_tool_use_id: null, message: { id: 'm1', usage: { input_tokens: 3, output_tokens: 20, cache_creation_input_tokens: 80, cache_read_input_tokens: 0 }, content: [{ type: 'tool_use', id: 't1', name: 'Bash', input: { command: 'llvm-strings target.exe' } }] } })
 emit({ type: 'user', parent_tool_use_id: null, message: { role: 'user', content: [{ type: 'tool_result', tool_use_id: 't1', content: 'ACCESS GRANTED', is_error: false }] } })
 // FAKE_CLAUDE_CLAIMS replaces the crackme claims, for example with a real-software task's answer.
 const answer = JSON.stringify({
