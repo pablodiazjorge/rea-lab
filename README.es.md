@@ -20,9 +20,9 @@
 
 [rea](https://github.com/morluto/rea) da a los agentes de programación (Claude Code, Codex, Cursor y otros) herramientas MCP para hacer ingeniería inversa, desde el comportamiento de una aplicación hasta sus binarios nativos. En Windows destacan tres huecos:
 
-1. Su proveedor de Ghidra es experimental y apenas se ha verificado en equipos reales.
-2. Nadie ha medido qué le aporta a un agente con binarios nativos de Windows.
-3. Su evidencia vive solo en memoria, así que no se puede ver qué va encontrando el agente.
+1. Su proveedor de Ghidra es experimental en Windows, como indica la propia documentación de rea.
+2. No he encontrado ninguna medición publicada de lo que le aporta a un agente con binarios nativos de Windows.
+3. Su registro de evidencia vive en memoria durante la sesión salvo que el agente lo exporte, así que no se puede ver qué va encontrando el agente mientras trabaja.
 
 Este laboratorio trabaja en esos tres huecos: aporta verificación de Windows al proyecto original, construye un banco de pruebas reproducible con respuestas conocidas y publica un mod de Claude Code que muestra en directo la evidencia del agente.
 
@@ -43,13 +43,15 @@ No hay fechas: cada fase se cierra cuando cumple sus criterios de salida.
 
 ## Estado
 
+Todos los estudios usaron rea 6.4.0, Claude Code 2.1.296 y los modelos que se indican en cada uno; versiones posteriores pueden comportarse de otra forma.
+
 - rea 6.4.0 con Ghidra 12.1.4 en Windows 11 26H2 (x64, NTFS, usuario sin elevar): `rea doctor --provider ghidra` pasa todas las comprobaciones, incluida la autoprueba nativa que falla en otros equipos ([morluto/rea#1701](https://github.com/morluto/rea/issues/1701)).
 - Primera sesión real: `WinHelloCPP.exe`, un ejercicio que trae Ghidra, analizado en unos 25 s (6 segmentos, 388 funciones y 254 cadenas), sin procesos ni archivos temporales sueltos.
 - Ocho contribuciones fusionadas en el proyecto original: [morluto/rea#1863](https://github.com/morluto/rea/pull/1863) arregla las pruebas reales de Ghidra en Windows; [morluto/rea#1926](https://github.com/morluto/rea/pull/1926) y [morluto/rea#1936](https://github.com/morluto/rea/pull/1936) hacen que las pruebas de los clientes Claude Code y Gemini CLI funcionen en Windows nativo; [morluto/rea#2312](https://github.com/morluto/rea/pull/2312) corrige tres suites de frontera del servidor MCP que fallaban en Windows nativo; [morluto/rea#2497](https://github.com/morluto/rea/pull/2497) documenta lo que cubre el parser de NativeAOT de rea en un Windows real; [morluto/rea#3226](https://github.com/morluto/rea/pull/3226) corrige cómo decodifica rea un texto CBOR vacío en los metadatos de Solidity; [morluto/rea#3159](https://github.com/morluto/rea/pull/3159) admite capturas HAR con números válidos que la evidencia no puede publicar con exactitud, y [morluto/rea#3266](https://github.com/morluto/rea/pull/3266) arregla cuatro tests que convertían URL de archivo en rutas rotas en Windows. Los cambios de otras dos, [morluto/rea#2824](https://github.com/morluto/rea/pull/2824) y [morluto/rea#2911](https://github.com/morluto/rea/pull/2911), entraron en la rama principal de rea dentro de un commit del mantenedor.
 - [Estudio 1](writeups/2026-10-study-1/README.es.md), prerregistrado: con diez crackmes pequeños de Windows, rea no cambió cuántos resolvió Claude Code (28 de 30 con y sin rea), hizo cada ejecución el doble de lenta y de cara, y toda la evidencia de rea que citó el agente se volvió a autenticar.
 - [Estudio 2](writeups/2026-10-study-2/README.es.md), prerregistrado: con ocho binarios más grandes, en los que la comprobación real se esconde entre decenas de señuelos, Claude Code resolvió 11 de 24 ejecuciones sin rea y 4 de 24 con rea (McNemar exacto, p = 0,092, no significativo), otra vez con el doble de tiempo y de coste; 45 de los 46 registros de evidencia citados se volvieron a autenticar.
 - [Estudio 3](writeups/2026-10-study-3/README.es.md), prerregistrado: con cuatro programas libres reales publicados después de los datos de entrenamiento del modelo, Claude Code localizó la función o la tabla descrita en 71 de 72 ejecuciones sin rea y en 68 de 72 con rea (McNemar exacto, p = 0,375, no significativo), así que las dos condiciones están en el techo; rea volvió a costar más del doble, y los 144 registros de evidencia citados se autenticaron tras una corrección del calificador (142 en la primera publicación).
-- [Estudio 4](writeups/2026-10-study-4/README.es.md), prerregistrado: las mismas tareas con una segunda familia de modelos, `deepseek-flash` de DeepSeek servido a Claude Code por la API de DeepSeek; localizó la función o la tabla en 20 de 20 ejecuciones sin rea y en 19 de 20 con rea (McNemar exacto, p = 1), el mismo techo, por 2,05 USD en total; el modelo intentó salir a la red o al equipo en 13 ejecuciones, y se denegaron todos los intentos.
+- [Estudio 4](writeups/2026-10-study-4/README.es.md), prerregistrado: las mismas tareas con una segunda familia de modelos, `deepseek-flash` de DeepSeek servido a Claude Code por la API de DeepSeek; localizó la función o la tabla en 20 de 20 ejecuciones sin rea y en 19 de 20 con rea (McNemar exacto, p = 1), el mismo techo, por 2,05 USD en total; el modelo intentó usar la red o listar carpetas del banco de pruebas fuera de su ejecución en 13 ejecuciones, y la política de permisos denegó todos los intentos.
 - [Estudio 5](writeups/2026-10-study-5/README.es.md), prerregistrado: la skill de rea y una versión mejorada, inyectadas en el prompt del sistema de Claude Code, en 30 tareas nuevas sobre los mismos programas; la skill mejorada encareció las ejecuciones un 14 % frente a la oficial (cociente de Hodges-Lehmann 1,14, Wilcoxon exacto p = 0,012), y la oficial no cambió nada medible frente a no tener skill; ni los aciertos ni las citas variaron. Se descartó la PR prevista a la skill de rea.
 - Un debate de diseño en rea, apoyado en el banco: en 339 ejecuciones de los cinco estudios ningún agente conservó su evidencia, así que el calificador tuvo que reconstruir cada registro a partir de la transcripción del cliente; [morluto/rea#4809](https://github.com/morluto/rea/issues/4809) propone un registro opcional del ledger de evidencia que rea escriba según se añaden los registros.
 - [rea-casebook](https://github.com/pablodiazjorge/rea-casebook) 1.0.4, un mod de Claude Code que lleva en directo el expediente de la evidencia que rea entrega al agente: la espera del arranque en frío de Ghidra, las preguntas abiertas, los hallazgos que tienen que citar `evidence_id` reales, un diario por sesión y exportaciones a Markdown o a artifact.
@@ -89,15 +91,22 @@ Después, abre Claude Code en esta carpeta y aprueba el servidor `rea` de `.mcp.
 
 ## Objetivos y marco legal
 
-Solo binarios compilados aquí, los ejercicios que trae Ghidra, y crackmes o retos de CTF ya cerrados cuyas normas permitan publicar soluciones. Los binarios de terceros se analizan en estático y nunca se ejecutan en el equipo; lo dinámico se hace dentro de Windows Sandbox y sin red. Quedan fuera el software comercial, los juegos en línea, el DRM y cualquier cosa relacionada con el empleador del autor. Detalles y base legal en el [ADR 0010](docs/adr/0010-target-policy.md).
+Solo binarios compilados aquí, los ejercicios que trae Ghidra, y crackmes o retos de CTF ya cerrados cuyo autor o cuyas normas permitan analizarlos y publicar soluciones. Los binarios de terceros se analizan en estático y nunca se ejecutan en el equipo; lo dinámico se hace dentro de Windows Sandbox y sin red. Quedan fuera el software comercial, los juegos en línea, el DRM y cualquier cosa relacionada con mi empleador. La base legal es la licencia de cada objetivo o el permiso de su titular, no las excepciones de descompilación de la ley de propiedad intelectual: detalles en el [ADR 0010](docs/adr/0010-target-policy.md).
 
 ## Decisiones
 
 Cada decisión difícil de revertir tiene un registro breve en [docs/adr](docs/adr/README.md): estructura de repositorios, política de idiomas, el lanzador MCP portátil, versiones fijadas, política de objetivos, aislamiento del banco de pruebas y cómo contribuye el laboratorio a rea.
 
+## Aviso
+
+- rea-lab es un proyecto personal e independiente, hecho con mi propio equipo y sin relación con mi trabajo: no usa datos, código ni recursos de la empresa en la que trabajo, ni nació de un encargo suyo. Las opiniones que contiene son solo mías.
+- No tiene relación con morluto, el proyecto rea, Anthropic, DeepSeek, la NSA, Microsoft, GitHub ni ninguna otra empresa o proyecto que se nombre aquí, ni cuenta con su patrocinio o aval; sus nombres solo identifican sus productos.
+- Es investigación: mide cómo usan los agentes de IA las herramientas de ingeniería inversa sobre objetivos cuya licencia lo permite. No contiene medios para suprimir o eludir protecciones anticopia, comprobaciones de licencia, DRM u ofuscación de software de terceros, ni exploits ni malware. No uses sus herramientas o métodos con software que no tengas derecho a analizar.
+- Los resultados describen las versiones, las tareas y la configuración fijadas en cada estudio; no son una valoración general de ningún producto. El código, los textos y los resultados se ofrecen tal cual, sin garantía de ningún tipo.
+
 ## Licencia
 
-El código se publica con la [licencia MIT](LICENSE). Los textos (README, guías, ADR y writeups) y los resultados del banco de pruebas, con [CC BY 4.0](LICENSE-CC-BY-4.0).
+El código, los archivos JSON de tareas, los manifiestos y la configuración se publican con la [licencia MIT](LICENSE). Los textos (README, guías, ADR, writeups, prerregistros y `AGENTS.md`) y los resultados del banco de pruebas, con [CC BY 4.0](LICENSE-CC-BY-4.0). El material de terceros conserva su licencia: los archivos de evidencia y los fragmentos descompilados de los ejercicios de Ghidra siguen bajo la [licencia Apache 2.0](LICENSE-Apache-2.0), y la copia de la skill de rea en `bench/skills/` mantiene su propia licencia MIT.
 
 ## Agradecimientos
 

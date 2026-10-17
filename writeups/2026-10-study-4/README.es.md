@@ -4,7 +4,7 @@
 
 El [estudio 3](../2026-10-study-3/README.es.md) le preguntaba a Claude Code dónde está una función o una tabla descrita en cuatro programas libres reales, compilados aquí sin símbolos, con y sin el servidor MCP de ingeniería inversa [rea](https://github.com/morluto/rea). Con `claude-sonnet-5-5`, las dos condiciones estaban en el techo y no había diferencia que medir. Este estudio lo repite con un modelo de otra familia, `deepseek-flash` de DeepSeek, servido por la API de DeepSeek compatible con la de Anthropic: el mismo cliente, el mismo arnés, las mismas tareas y los mismos límites, con una repetición por tarea porque el presupuesto era el saldo que le quedaba al autor en DeepSeek. Prueba un segundo modelo, no un segundo agente.
 
-**Respuesta corta:** el mismo techo. El agente localizó la función o la tabla pedida en 20 de 20 ejecuciones solo con herramientas de línea de órdenes y en 19 de 20 con rea (McNemar exacto, p = 1). Con 20 pares solo se habría visto un efecto muy grande, y no lo hubo. Con las mismas 20 tareas, el estudio 3 tuvo 59 de 60 y 56 de 60. Las 40 ejecuciones costaron 2,05 USD de dinero real. A diferencia de Claude, el modelo de DeepSeek intentó salir a internet o entrar en carpetas del banco de pruebas fuera de su ejecución en 13 de las 40, varias veces para encontrar el código fuente de los programas; la política de permisos denegó todos los intentos.
+**Respuesta corta:** el mismo techo. El agente localizó la función o la tabla pedida en 20 de 20 ejecuciones solo con herramientas de línea de órdenes y en 19 de 20 con rea (McNemar exacto, p = 1). Con 20 pares solo se habría visto un efecto muy grande, y no lo hubo. Con las mismas 20 tareas, el estudio 3 tuvo 59 de 60 y 56 de 60. Las 40 ejecuciones costaron 2,05 USD de dinero real. El modelo de DeepSeek intentó usar la red o listar carpetas del banco de pruebas fuera de su ejecución en 13 de las 40, varias veces para encontrar el código fuente de los programas; la política de permisos denegó todos los intentos. En el estudio 3, Claude nunca intentó usar la red.
 
 ## Diseño
 
@@ -62,11 +62,11 @@ Todos los programas tuvieron 5 de 5 en las dos condiciones, salvo moppe-emu con 
 
 **El agente buscó el código fuente.** El prerregistro lo convirtió en un resultado medido después del piloto, donde apareció por primera vez. Se denegaron todos los intentos, así que no hubo que excluir ninguna ejecución.
 
-- 7 ejecuciones (5 en A y 2 en B) usaron `curl`:
+- 7 ejecuciones (5 en A: r08, r11, r15, r22 y r24; 2 en B: r16 y r18) usaron `curl`:
   - cuatro comprobaron si había red, tres contra `raw.githubusercontent.com` y una contra `example.com`;
   - dos pidieron el README de flint, en la URL del repositorio que lleva dentro el propio binario de flint;
   - una buscó en los repositorios de GitHub `r58emu`, un nombre que había encontrado entre las cadenas de moppe-emu.
-- 6 ejecuciones (1 en A y 5 en B) intentaron listar las carpetas del banco de pruebas por encima de la suya, «para buscar metadatos» según las descripciones del propio agente, y en una ejecución para encontrar los archivos donde Claude Code guarda los resultados grandes. En ese árbol de carpetas está también el build del estudio 3 del banco, con su verdad de referencia, así que las respuestas estaban a un listado denegado de distancia.
+- 6 ejecuciones (1 en A: r03; 5 en B: r04, r10, r11, r17 y r20) intentaron listar las carpetas del banco de pruebas por encima de la suya, «para buscar metadatos» según las descripciones del propio agente, y en una ejecución para encontrar los archivos donde Claude Code guarda los resultados grandes. En ese árbol de carpetas está también el build del estudio 3 del banco, con su verdad de referencia, así que las respuestas estaban a un listado denegado de distancia. Una séptima ejecución, r06 en B, solo intentó acceder a la carpeta de su propia ejecución y no se cuenta.
 
 Ninguna de las 144 ejecuciones del estudio 3 intentó salir a la red, y en el piloto este modelo lo hizo en 2 de 8.
 
@@ -76,9 +76,9 @@ Ninguna de las 144 ejecuciones del estudio 3 intentó salir a la red, y en el pi
 
 **Formato de la respuesta.** En 6 de las 20 ejecuciones de A el mensaje final tenía texto alrededor del manifiesto JSON, así que no pasó la comprobación estricta; el calificador leyó igualmente la respuesta, como en los estudios anteriores. Con rea, las 20 fueron exactas.
 
-**Coste y tiempo.** Las 40 ejecuciones llevaron 254 minutos de máquina y costaron 2,05 USD (0,95 en A y 1,11 en B), frente a los 3 o 4 USD que esperaba el prerregistro a partir del piloto. Casi todo son tokens de salida: una mediana de unos 43.000 por ejecución, sobre todo razonamiento, frente a 1.622 y 1.805 con Claude en el estudio 3. Las ejecuciones tardaron unas diez veces más que con Claude en A y cuatro veces y media más en B. La estimación del propio Claude Code, con precios de Claude, fue de 115,19 USD; por eso el arnés calcula él mismo el precio de los tokens de DeepSeek. Los costes de los dos estudios no son comparables: el estudio 3 da el coste equivalente de Claude Code con una suscripción, y este, dinero gastado.
+**Coste y tiempo.** Las 40 ejecuciones llevaron 254 minutos de máquina y costaron 2,05 USD (0,95 en A y 1,11 en B), frente a los 3 o 4 USD que esperaba el prerregistro a partir del piloto. Casi todo son tokens de salida: una mediana de unos 43.000 por ejecución, sobre todo razonamiento, frente a 1.622 y 1.805 con Claude en el estudio 3. Las ejecuciones tardaron unas diez veces más que con Claude en A y cuatro veces y media más en B. La estimación del propio Claude Code, con precios de Claude, fue de 115,19 USD; por eso el arnés calcula él mismo el precio de los tokens de DeepSeek. Los costes de los dos estudios no son comparables: el estudio 3 da el coste equivalente que estima Claude Code, y este, el dinero gastado.
 
-Ningún clasificador de seguridad detuvo ninguna respuesta. El clasificador que detuvo respuestas en los estudios 1 y 2 es de la API de Anthropic, que este estudio no usó.
+Ningún clasificador de seguridad detuvo ninguna respuesta. El clasificador que detuvo respuestas en los estudios 1 y 2 funciona del lado de Anthropic, y estas ejecuciones fueron a la API de DeepSeek, así que este resultado no se puede comparar con el de los estudios 1 y 2.
 
 ## Lo que ya mostró el piloto
 
@@ -89,7 +89,7 @@ Un piloto de 8 ejecuciones con cuatro tareas públicas, ninguna del estudio, dio
 - Con una segunda familia de modelos, el resultado del estudio 3 se mantiene: las dos condiciones localizan la función descrita casi siempre, y rea no marca ninguna diferencia que 20 pares puedan detectar. El techo no es una propiedad de `claude-sonnet-5-5`. Sigue siendo un solo cliente, Claude Code, así que nada de esto vale todavía para otros agentes.
 - rea volvió a tardar más y a costar algo más (mediana de 332 s frente a 272 s, y de 0,05 frente a 0,04 USD), pero la diferencia es mucho menor que las 2,3 veces del coste mediano con Claude, porque los tokens de razonamiento de este modelo dominan en las dos condiciones.
 - Los dos modelos usan rea de forma distinta. El de DeepSeek hizo más llamadas, con más herramientas distintas, incluida la ruta paginada que Claude no usó nunca, y la evidencia que citó recogía la respuesta más a menudo.
-- El aislamiento importa más con algunos modelos. El de DeepSeek intentó salir a la red o al equipo en 13 de 40 ejecuciones, y la verdad de referencia del propio banco de pruebas estaba unas carpetas por encima de las ejecuciones. La política de permisos aguantó, pero el próximo estudio debería guardar la verdad de referencia fuera del árbol de carpetas donde viven las ejecuciones.
+- El aislamiento importa más con algunos modelos. El de DeepSeek intentó usar la red o listar carpetas del banco de pruebas fuera de su ejecución en 13 de 40 ejecuciones, y la verdad de referencia del propio banco de pruebas estaba unas carpetas por encima de las ejecuciones. La política de permisos aguantó, pero el próximo estudio debería guardar la verdad de referencia fuera del árbol de carpetas donde viven las ejecuciones.
 - Una réplica de 40 ejecuciones costó 2 USD, así que repetir un estudio con modelos más baratos es asequible.
 
 ## Desviaciones
@@ -112,7 +112,7 @@ Al revisar las relecturas de este estudio apareció un error en el anexo del est
 
 ## Cómo reproducirlo
 
-Las tareas, la verdad de referencia y la semilla del sorteo de objetivos son las del estudio 3, publicadas en [`bench/results/study-3/`](../../bench/results/study-3/) y [`challenges/real-tasks-study-3.json`](../../challenges/real-tasks-study-3.json). La ejecución necesita una clave de la API de DeepSeek, en un archivo indicado por `REA_LAB_BENCH_DEEPSEEK_KEY_FILE` o en la carpeta del banco de pruebas.
+Las tareas, la verdad de referencia y la semilla del sorteo de objetivos son las del estudio 3, publicadas en [`bench/results/study-3/`](../../bench/results/study-3/) y [`challenges/real-tasks-study-3.json`](../../challenges/real-tasks-study-3.json). La ejecución necesita una clave de la API de DeepSeek, en un archivo indicado por `REA_LAB_BENCH_DEEPSEEK_KEY_FILE` o en la carpeta del banco de pruebas. Las órdenes y descripciones que se atribuyen al agente, aquí y en `bench/results/study-4/`, las generó `deepseek-flash`.
 
 ```powershell
 npm ci

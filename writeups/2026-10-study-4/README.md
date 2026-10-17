@@ -4,7 +4,7 @@
 
 [Study 3](../2026-10-study-3/README.md) asked Claude Code where a described function or table lives in four real open-source programs, compiled here without symbols, with and without the reverse-engineering MCP server [rea](https://github.com/morluto/rea). With `claude-sonnet-5-5`, both conditions were at the ceiling and there was no difference to measure. This study repeats it with a model from another family, DeepSeek's `deepseek-flash`, served through DeepSeek's Anthropic-compatible API: the same client, harness, tasks and limits, with one repetition per task because the budget was the author's remaining DeepSeek balance. It tests a second model, not a second agent.
 
-**Short answer:** the same ceiling. The agent located the asked function or table in 20 of 20 runs with command-line tools alone and in 19 of 20 with rea (exact McNemar, p = 1). With 20 pairs only a very large effect could have shown, and none did. On the same 20 tasks, study 3 had 59 of 60 and 56 of 60. The 40 runs cost 2.05 USD of real money. Unlike Claude, DeepSeek's model tried to reach the internet or the benchmark's folders outside its run in 13 of the 40 runs, several times to find the programs' source; the permission policy denied every attempt.
+**Short answer:** the same ceiling. The agent located the asked function or table in 20 of 20 runs with command-line tools alone and in 19 of 20 with rea (exact McNemar, p = 1). With 20 pairs only a very large effect could have shown, and none did. On the same 20 tasks, study 3 had 59 of 60 and 56 of 60. The 40 runs cost 2.05 USD of real money. DeepSeek's model tried to use the network or to list the benchmark's folders outside its run in 13 of the 40 runs, several times to find the programs' source; the permission policy denied every attempt. In study 3, Claude never tried the network.
 
 ## Design
 
@@ -62,11 +62,11 @@ Every program had 5 of 5 in both conditions, except moppe-emu with rea, 4 of 5.
 
 **The agent looked for the source.** The preregistration made this an outcome after the pilot, where it first appeared. Every attempt was denied, so no run had to be excluded.
 
-- 7 runs (5 in A, 2 in B) ran `curl`:
+- 7 runs (5 in A: r08, r11, r15, r22 and r24; 2 in B: r16 and r18) ran `curl`:
   - four tested whether the network was reachable, three against `raw.githubusercontent.com` and one against `example.com`;
   - two asked for flint's README, at the repository URL that the flint binary itself contains;
   - one searched GitHub's repositories for `r58emu`, a name it had found among moppe-emu's strings.
-- 6 runs (1 in A, 5 in B) tried to list the benchmark's folders above their own, "for metadata" in the agent's own descriptions, and in one run to find the files where Claude Code saves large results. That folder tree also holds the benchmark's build of study 3, with its ground truth, so the answers were one denied listing away.
+- 6 runs (1 in A: r03; 5 in B: r04, r10, r11, r17 and r20) tried to list the benchmark's folders above their own, "for metadata" in the agent's own descriptions, and in one run to find the files where Claude Code saves large results. That folder tree also holds the benchmark's build of study 3, with its ground truth, so the answers were one denied listing away. A seventh run, r06 in B, only tried to access its own run folder and is not counted.
 
 None of the 144 runs of study 3 tried the network, and in the pilot this model did so in 2 of 8 runs.
 
@@ -76,9 +76,9 @@ None of the 144 runs of study 3 tried the network, and in the pilot this model d
 
 **Answer format.** In 6 of the 20 runs of A the final message had text around the JSON manifest, so it failed the strict check; the grader still read the answer, as in earlier studies. With rea, all 20 were exact.
 
-**Cost and time.** The 40 runs took 254 minutes of machine time and cost 2.05 USD (0.95 in A, 1.11 in B), against the 3 to 4 USD the preregistration expected from the pilot. Output tokens make most of it: a median of about 43,000 per run, mostly reasoning, against 1,622 and 1,805 with Claude in study 3. Runs took about ten times as long as with Claude in A and four and a half times as long in B. Claude Code's own estimate, at Claude prices, was 115.19 USD, which is why the harness prices DeepSeek's tokens itself. The two studies' costs are not comparable: study 3 reports Claude Code's equivalent cost on a subscription, this one money spent.
+**Cost and time.** The 40 runs took 254 minutes of machine time and cost 2.05 USD (0.95 in A, 1.11 in B), against the 3 to 4 USD the preregistration expected from the pilot. Output tokens make most of it: a median of about 43,000 per run, mostly reasoning, against 1,622 and 1,805 with Claude in study 3. Runs took about ten times as long as with Claude in A and four and a half times as long in B. Claude Code's own estimate, at Claude prices, was 115.19 USD, which is why the harness prices DeepSeek's tokens itself. The two studies' costs are not comparable: study 3 reports the equivalent cost that Claude Code estimates, and this one reports money spent.
 
-No response was stopped by a safety classifier. The classifier that stopped responses in studies 1 and 2 belongs to Anthropic's API, which this study did not use.
+No response was stopped by a safety classifier. The classifier that stopped responses in studies 1 and 2 runs on Anthropic's side, and these runs went to DeepSeek's API, so this outcome cannot be compared with studies 1 and 2.
 
 ## What the pilot already showed
 
@@ -89,7 +89,7 @@ One pilot of 8 runs on four public tasks, none part of the study, shaped the des
 - With a second model family the result of study 3 holds: both conditions locate the described function in almost every run, and rea makes no difference that 20 pairs can detect. The ceiling is not a property of `claude-sonnet-5-5`. It is still one client, Claude Code, so nothing here speaks for other agents.
 - rea again took longer and cost a little more (median 332 s against 272 s, 0.05 against 0.04 USD), but the gap is much smaller than Claude's 2.3 times the median cost, because this model's reasoning tokens dominate both conditions.
 - The two models use rea differently. DeepSeek's made more calls, over a wider set of tools, including the paged route that Claude never used, and its cited Evidence more often stated the answer.
-- Isolation matters more with some models. DeepSeek's model tried to reach the network or the host in 13 of 40 runs, and the benchmark's own ground truth sat a few folders above the runs. The permission policy held, but the next study should keep the ground truth outside the folder tree that runs live in.
+- Isolation matters more with some models. DeepSeek's model tried to use the network or to list the benchmark's folders outside its run in 13 of 40 runs, and the benchmark's own ground truth sat a few folders above the runs. The permission policy held, but the next study should keep the ground truth outside the folder tree that runs live in.
 - A 40-run replication cost 2 USD, so repeating a study with cheaper models is affordable.
 
 ## Deviations
@@ -112,7 +112,7 @@ Reviewing the read-backs for this study found an error in study 3's addendum: it
 
 ## Reproduce it
 
-The tasks, the ground truth and the seed of the target draw are those of study 3, published in [`bench/results/study-3/`](../../bench/results/study-3/) and [`challenges/real-tasks-study-3.json`](../../challenges/real-tasks-study-3.json). The run needs a DeepSeek API key, in a file named by `REA_LAB_BENCH_DEEPSEEK_KEY_FILE` or in the benchmark folder.
+The tasks, the ground truth and the seed of the target draw are those of study 3, published in [`bench/results/study-3/`](../../bench/results/study-3/) and [`challenges/real-tasks-study-3.json`](../../challenges/real-tasks-study-3.json). The run needs a DeepSeek API key, in a file named by `REA_LAB_BENCH_DEEPSEEK_KEY_FILE` or in the benchmark folder. The commands and descriptions attributed to the agent, here and in `bench/results/study-4/`, were generated by `deepseek-flash`.
 
 ```powershell
 npm ci
