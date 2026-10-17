@@ -1,0 +1,1107 @@
+{
+  "set": "real",
+  "role": "study",
+  "version": 3,
+  "seed": 2120649789,
+  "build": {
+    "build_version": 1,
+    "manifest_sha256": "996a69f7b215aca561936617a206000226a4a723d89059b47f62ef895b3789eb"
+  },
+  "quotas": {
+    "behaviour": 6,
+    "chain": 2
+  },
+  "program_quotas": {
+    "sgiemu": {
+      "behaviour": 6,
+      "chain": 2
+    },
+    "c5xtools": {
+      "behaviour": 6,
+      "chain": 1
+    },
+    "moppe-emu": {
+      "behaviour": 6,
+      "chain": 1
+    },
+    "flint": {
+      "behaviour": 6,
+      "chain": 2
+    }
+  },
+  "tasks": [
+    {
+      "id": "r01",
+      "program": "sgiemu",
+      "family": "behaviour",
+      "target": {
+        "function": "lwr"
+      },
+      "question": "In target.exe, find the function that executes, in the MIPS interpreter, the unaligned 32-bit word load that fills the least significant end of a register: it reads the aligned word that contains the address, moves the bytes from the start of that word up to the address into the bottom of the register, keeps the bytes above them in the low 32 bits, and sign-extends the 32-bit result to the full register. Give the address where that function starts."
+    },
+    {
+      "id": "r02",
+      "program": "sgiemu",
+      "family": "behaviour",
+      "target": {
+        "function": "wd_write"
+      },
+      "question": "In target.exe, find the function that handles a byte the emulated system writes to the SCSI controller chip's own register interface: on one port the byte selects one of the chip's internal registers, on the other it is written into the selected register, which starts a controller command when it is the command register and passes one byte of a transfer done without DMA when it is the data register. Give the address where that function starts."
+    },
+    {
+      "id": "r03",
+      "program": "sgiemu",
+      "family": "behaviour",
+      "target": {
+        "function": "wd_read"
+      },
+      "question": "In target.exe, find the function that returns a byte the emulated system reads from the SCSI controller chip's own register interface: one port gives the chip's auxiliary status, the other the selected internal register, where reading the status register clears the pending interrupt and reading the data register takes the next byte of a transfer done without DMA. Give the address where that function starts."
+    },
+    {
+      "id": "r04",
+      "program": "sgiemu",
+      "family": "behaviour",
+      "target": {
+        "function": "emit_exit_chain"
+      },
+      "question": "In target.exe, find the function that emits, in the translator from MIPS code to x86-64 code, the exit of a translated block toward a constant address in a form that can later be patched into a direct jump to the block translated there: the emitted code takes that jump only when the next block still fits in the remaining instruction budget, and otherwise stores the target address and records which exit was taken so that the dispatcher can link it. Give the address where that function starts."
+    },
+    {
+      "id": "r05",
+      "program": "sgiemu",
+      "family": "behaviour",
+      "target": {
+        "function": "lwl"
+      },
+      "question": "In target.exe, find the function that executes, in the MIPS interpreter, the unaligned 32-bit word load that fills the most significant end of a register: it reads the aligned word that contains the address, moves the bytes from the address to the end of that word into the top of the register's low 32 bits, keeps the bytes below them, and sign-extends the 32-bit result to the full register. Give the address where that function starts."
+    },
+    {
+      "id": "r06",
+      "program": "sgiemu",
+      "family": "behaviour",
+      "target": {
+        "function": "tlb_read"
+      },
+      "question": "In target.exe, find the function that executes the MIPS instruction that reads one entry of the emulated processor's translation lookaside buffer: it copies the page mask, the virtual page number with its address-space identifier, and the two physical page entries (with the global bit) of the entry chosen by the index register into the corresponding system coprocessor registers, and flushes the fast address translation cache when the address-space identifier changes. Give the address where that function starts."
+    },
+    {
+      "id": "r07",
+      "program": "sgiemu",
+      "family": "chain",
+      "target": {
+        "function": "indy_init",
+        "callee": "np_init"
+      },
+      "question": "In target.exe, one function sets up the emulated graphics board: it clears its state, allocates the colour frame buffer and the overlay, popup and clipping-ID planes, frees them all and reports failure if any allocation fails, records whether the board is the 24-plane model, and puts the board's registers in their power-on state. Exactly one other function calls it directly. Give the address where that calling function starts."
+    },
+    {
+      "id": "r08",
+      "program": "sgiemu",
+      "family": "chain",
+      "target": {
+        "function": "reg_write",
+        "callee": "vdma_run"
+      },
+      "question": "In target.exe, one function performs a transfer of the memory controller's virtual DMA engine: line by line it moves bytes between main memory and the graphics expansion bus, or fills memory with a pattern, translating each memory address through the engine's own page table and stopping when a page is not valid, and at the end marks the transfer done and its completion interrupt pending. Exactly one other function calls it directly. Give the address where that calling function starts."
+    },
+    {
+      "id": "r09",
+      "program": "c5xtools",
+      "family": "behaviour",
+      "target": {
+        "function": "pp_prim"
+      },
+      "question": "In target.exe, find the function that reads one operand, the highest-precedence level, in the evaluator of the expressions of preprocessor directives such as the conditional and assignment ones: a parenthesised subexpression, a logical negation, a unary sign, a number, or a name whose substitution value it evaluates in turn as an expression, an unknown name counting as zero. Give the address where that function starts."
+    },
+    {
+      "id": "r10",
+      "program": "c5xtools",
+      "family": "behaviour",
+      "target": {
+        "function": "pp_e"
+      },
+      "question": "In target.exe, find the function that handles the lowest-precedence operators, logical and/or as well as bitwise and/or applied to the results of comparisons, in the evaluator of the expressions of preprocessor directives such as the conditional and assignment ones; it is also the level used again for a parenthesised subexpression. Give the address where that function starts."
+    },
+    {
+      "id": "r11",
+      "program": "c5xtools",
+      "family": "behaviour",
+      "target": {
+        "function": "sec_next_arg"
+      },
+      "question": "In target.exe, find the function that, while reading the operands of the directives that reserve uninitialised space in a section, extracts the argument that follows the section or symbol name, that is, the amount of space: the text up to the next comma, with surrounding blanks trimmed, leaving the read position past that comma. Give the address where that function starts."
+    },
+    {
+      "id": "r12",
+      "program": "c5xtools",
+      "family": "behaviour",
+      "target": {
+        "function": "c5xcoff_w_reloc"
+      },
+      "question": "In target.exe, find the function that writes one relocation entry into the COFF object file being produced: the position of the word to patch within its section, the index of the symbol it is relative to, the addend carried in the entry's otherwise reserved field, and the relocation type. Give the address where that function starts."
+    },
+    {
+      "id": "r13",
+      "program": "c5xtools",
+      "family": "behaviour",
+      "target": {
+        "function": "p_and"
+      },
+      "question": "In target.exe, find the function that handles the bitwise AND operator in the evaluator of the expressions written in instruction operands, the evaluator that resolves symbols and labels. Give the address where that function starts."
+    },
+    {
+      "id": "r14",
+      "program": "c5xtools",
+      "family": "behaviour",
+      "target": {
+        "function": "isa_find"
+      },
+      "question": "In target.exe, find the function that looks up an instruction mnemonic, ignoring case, in the built-in table of the processor's instruction set, and returns the matching entry, with its machine-code pattern and the class that decides how its operands are laid out, or nothing when the mnemonic is unknown. Give the address where that function starts."
+    },
+    {
+      "id": "r15",
+      "program": "c5xtools",
+      "family": "chain",
+      "target": {
+        "function": "encode",
+        "callee": "shift_after"
+      },
+      "question": "In target.exe, one function reads the optional shift count that may follow the first operand of an instruction: the first value written after that operand, ignoring indirect-addressing operands and giving up if an auxiliary register comes first, with zero when there is none. Exactly one other function calls it directly. Give the address where that calling function starts."
+    },
+    {
+      "id": "r16",
+      "program": "moppe-emu",
+      "family": "behaviour",
+      "target": {
+        "function": "exec_main"
+      },
+      "question": "In target.exe, find the function that executes one emulated Z80 instruction whose opcode has already been fetched and returns the number of cycles it took. It covers opcodes with no prefix and opcodes behind an index-register prefix, which makes the instruction work on that index register, or on memory addressed through it, instead of the usual register pair. Give the address where that function starts."
+    },
+    {
+      "id": "r17",
+      "program": "moppe-emu",
+      "family": "behaviour",
+      "target": {
+        "function": "pio_write_ctrl"
+      },
+      "question": "In target.exe, find the function that handles a byte written to the control register of one port of the parallel input and output controller: it stores it as the pin directions or the interrupt mask when the previous control byte announced one of them, and otherwise treats it as the interrupt vector or as a mode, interrupt control or interrupt enable command. Give the address where that function starts."
+    },
+    {
+      "id": "r18",
+      "program": "moppe-emu",
+      "family": "behaviour",
+      "target": {
+        "function": "daa"
+      },
+      "question": "In target.exe, find the function that performs the emulated Z80's decimal adjustment of the accumulator, correcting it after a binary-coded decimal addition or subtraction and setting the flags to match. Give the address where that function starts."
+    },
+    {
+      "id": "r19",
+      "program": "moppe-emu",
+      "family": "behaviour",
+      "target": {
+        "function": "sio_read_data"
+      },
+      "question": "In target.exe, find the function that gives the emulated processor the next received character of one channel of the serial controller, taking it out of that channel's small receive queue, and then withdraws or renews the channel's receive interrupt request depending on whether characters remain. Give the address where that function starts."
+    },
+    {
+      "id": "r20",
+      "program": "moppe-emu",
+      "family": "behaviour",
+      "target": {
+        "function": "daisy_reset"
+      },
+      "question": "In target.exe, find the function that, when the radio is reset, only clears the pending and under-service flags of every interrupt source in the priority chain, whatever device each source belongs to. Give the address where that function starts."
+    },
+    {
+      "id": "r21",
+      "program": "moppe-emu",
+      "family": "behaviour",
+      "target": {
+        "function": "r58_display_text"
+      },
+      "question": "In target.exe, find the function that reads back what the control unit's display currently shows into two text buffers supplied by its caller, one for the upper line and one for the lower, and returns the on or off state of the indicator symbols as a set of bits; it handles both supported control units, the one with seven-segment digits and the one with 14-segment cells. Give the address where that function starts."
+    },
+    {
+      "id": "r22",
+      "program": "moppe-emu",
+      "family": "chain",
+      "target": {
+        "function": "r58_init",
+        "callee": "sio_add_irqs"
+      },
+      "question": "In target.exe, one function registers the interrupt sources of the serial controller (receive, transmit and external status for each of its two channels) in the chain of interrupt sources that decides their priority, in the controller's own priority order. Exactly one other function calls it directly. Give the address where that calling function starts."
+    },
+    {
+      "id": "r23",
+      "program": "flint",
+      "family": "behaviour",
+      "target": {
+        "function": "table_define_exported"
+      },
+      "question": "In target.exe, find the function that adds a new binding to a module's global-variable map, marking it as visible to modules that import it and recording whether it is constant, and that refuses, reporting failure, if the name is already bound at all. Give the address where that function starts."
+    },
+    {
+      "id": "r24",
+      "program": "flint",
+      "family": "behaviour",
+      "target": {
+        "function": "vm_free"
+      },
+      "question": "In target.exe, find the function that tears down a whole virtual machine: after first having every remaining heap object released, it discards any pending diagnostic text, the global-variable scopes of every loaded module together with the storage that holds them, and the VM-level maps of interned strings, struct types and loaded modules, but not the memory that holds the machine itself. Give the address where that function starts."
+    },
+    {
+      "id": "r25",
+      "program": "flint",
+      "family": "behaviour",
+      "target": {
+        "function": "table_find_string"
+      },
+      "question": "In target.exe, find the function that searches the virtual machine's pool of interned strings by content, comparing length and characters rather than object identity, and returns the already-interned string object that matches the given text, or nothing, so that the caller can reuse it instead of creating a duplicate; it never adds anything to the pool. Give the address where that function starts."
+    },
+    {
+      "id": "r26",
+      "program": "flint",
+      "family": "behaviour",
+      "target": {
+        "function": "pkg_table"
+      },
+      "question": "In target.exe, find the function that, in the package manager, looks up a section (a named group of settings) of a parsed package configuration file by its name and, when no such section exists, appends a new empty one under a copy of that name. Give the address where that function starts."
+    },
+    {
+      "id": "r27",
+      "program": "flint",
+      "family": "behaviour",
+      "target": {
+        "function": "new_string"
+      },
+      "question": "In target.exe, find the function that creates a fresh string object from a run of characters and a length, copying them and leaving the caller's buffer untouched, without interning the result (it neither looks in nor adds to the pool of unique strings); it is the constructor most built-in library functions use for the text they return. Give the address where that function starts."
+    },
+    {
+      "id": "r28",
+      "program": "flint",
+      "family": "behaviour",
+      "target": {
+        "function": "compress"
+      },
+      "question": "In target.exe, find the function that performs the core step of the program's standard cryptographic digest: it takes one full input block, expands it into a longer schedule of words, runs the fixed series of mixing rounds, and adds the result into the running digest state, without buffering partial input or padding the message. Give the address where that function starts."
+    },
+    {
+      "id": "r29",
+      "program": "flint",
+      "family": "chain",
+      "target": {
+        "function": "free_object",
+        "callee": "chunk_free"
+      },
+      "question": "In target.exe, one function releases the storage of a compiled function's bytecode: its instruction bytes, the line-number and source-position records kept alongside each byte, and its pool of constants, and then resets that record to empty. Exactly one other function calls it directly. Give the address where that calling function starts."
+    },
+    {
+      "id": "r30",
+      "program": "flint",
+      "family": "chain",
+      "target": {
+        "function": "http_request_native",
+        "callee": "set_table_field"
+      },
+      "question": "In target.exe, one function appends a name-value pair to a script-visible dictionary that keeps its keys in insertion order, taking the name as plain zero-terminated text (neither a ready-made string object nor text with a separate length): it measures and interns the name, grows the key and value storage when it is full, and stores the pair at the end without checking whether the name is already present. Exactly one other function calls it directly. Give the address where that calling function starts."
+    }
+  ],
+  "reserves": {
+    "sgiemu": {
+      "behaviour": [
+        {
+          "function": "translate"
+        },
+        {
+          "function": "indy_reset"
+        },
+        {
+          "function": "scsi_dev_data_len"
+        },
+        {
+          "function": "ldr"
+        },
+        {
+          "function": "reg_read"
+        },
+        {
+          "function": "kbc_key"
+        },
+        {
+          "function": "pm_map_ram"
+        },
+        {
+          "function": "st16"
+        },
+        {
+          "function": "read_pixels"
+        },
+        {
+          "function": "clock_to_regs"
+        },
+        {
+          "function": "r4k_cp0_write"
+        },
+        {
+          "function": "pit_poll"
+        },
+        {
+          "function": "pm_read"
+        },
+        {
+          "function": "indy_hpc3_init"
+        },
+        {
+          "function": "rtc_read"
+        },
+        {
+          "function": "special"
+        },
+        {
+          "function": "indy_run"
+        },
+        {
+          "function": "rw_args"
+        },
+        {
+          "function": "emit_call"
+        },
+        {
+          "function": "scsi_dev_close"
+        },
+        {
+          "function": "st_qi"
+        },
+        {
+          "function": "emit_lookup"
+        },
+        {
+          "function": "wd_init"
+        },
+        {
+          "function": "present"
+        },
+        {
+          "function": "r4k_cop1x"
+        },
+        {
+          "function": "pit_reset"
+        },
+        {
+          "function": "r4k_translate"
+        },
+        {
+          "function": "rtc_write"
+        },
+        {
+          "function": "r4k_fast_protect"
+        },
+        {
+          "function": "emit_fmem"
+        },
+        {
+          "function": "kbc_mouse"
+        },
+        {
+          "function": "indy_mc_remap"
+        },
+        {
+          "function": "draw_color"
+        },
+        {
+          "function": "pm_dma_read"
+        },
+        {
+          "function": "r4k_jit_free"
+        },
+        {
+          "function": "r4k_run"
+        },
+        {
+          "function": "ldl"
+        },
+        {
+          "function": "raise_xlate"
+        },
+        {
+          "function": "pm_dma_write"
+        },
+        {
+          "function": "kbc_write"
+        },
+        {
+          "function": "r4k_jit_find"
+        },
+        {
+          "function": "xlate_core"
+        },
+        {
+          "function": "pit_read"
+        },
+        {
+          "function": "madd"
+        },
+        {
+          "function": "fp_after"
+        },
+        {
+          "function": "swr"
+        },
+        {
+          "function": "indy_attach_scsi"
+        },
+        {
+          "function": "r4k_timer_fire"
+        },
+        {
+          "function": "pm_unmap"
+        },
+        {
+          "function": "rex_read"
+        },
+        {
+          "function": "r4k_write_slow"
+        },
+        {
+          "function": "scc_read"
+        },
+        {
+          "function": "cache_free"
+        },
+        {
+          "function": "ee_pins"
+        },
+        {
+          "function": "r4k_cop1"
+        },
+        {
+          "function": "r4k_cop0"
+        },
+        {
+          "function": "vdma_run"
+        },
+        {
+          "function": "r4k_reset"
+        },
+        {
+          "function": "data_phase"
+        },
+        {
+          "function": "emit_store"
+        },
+        {
+          "function": "r4k_set_irq"
+        },
+        {
+          "function": "emit_stubs"
+        },
+        {
+          "function": "gpr_ld"
+        },
+        {
+          "function": "np_write"
+        },
+        {
+          "function": "emit_insn"
+        },
+        {
+          "function": "pm_init"
+        },
+        {
+          "function": "pm_set_code"
+        },
+        {
+          "function": "r4k_fetch_fill"
+        },
+        {
+          "function": "kbc_read"
+        },
+        {
+          "function": "browse"
+        },
+        {
+          "function": "emit_load"
+        },
+        {
+          "function": "gpr_ldsx"
+        },
+        {
+          "function": "pack_rgb"
+        },
+        {
+          "function": "pit_write"
+        },
+        {
+          "function": "r4k_read_slow"
+        },
+        {
+          "function": "np_init"
+        },
+        {
+          "function": "tlb_probe"
+        },
+        {
+          "function": "gpr_alu"
+        },
+        {
+          "function": "dcb_read"
+        },
+        {
+          "function": "np_render"
+        },
+        {
+          "function": "put_pixel"
+        },
+        {
+          "function": "swl"
+        },
+        {
+          "function": "indy_update_irq"
+        },
+        {
+          "function": "to_int"
+        },
+        {
+          "function": "emit_load_lr"
+        },
+        {
+          "function": "ld16"
+        },
+        {
+          "function": "eret"
+        },
+        {
+          "function": "indy_free"
+        },
+        {
+          "function": "emit_helper_call"
+        },
+        {
+          "function": "gpr_st"
+        },
+        {
+          "function": "pm_write"
+        },
+        {
+          "function": "ld8"
+        },
+        {
+          "function": "gpr_reload"
+        },
+        {
+          "function": "r4k_fetch_slow"
+        },
+        {
+          "function": "scc_irq"
+        },
+        {
+          "function": "scc_write"
+        },
+        {
+          "function": "r4k_set_model"
+        },
+        {
+          "function": "tlb_write"
+        },
+        {
+          "function": "load_file"
+        },
+        {
+          "function": "r4k_fast_flush_tlb_entry"
+        },
+        {
+          "function": "emit_fast"
+        }
+      ],
+      "chain": [
+        {
+          "function": "indy_run",
+          "callee": "r4k_run"
+        },
+        {
+          "function": "r4k_cop0",
+          "callee": "r4k_cp0_write"
+        },
+        {
+          "function": "indy_hpc3_read",
+          "callee": "pit_read"
+        },
+        {
+          "function": "translate",
+          "callee": "emit_insn"
+        },
+        {
+          "function": "emit_insn",
+          "callee": "emit_fmem"
+        },
+        {
+          "function": "indy_hpc3_init",
+          "callee": "pit_reset"
+        },
+        {
+          "function": "emit_insn",
+          "callee": "gpr_ldsx"
+        },
+        {
+          "function": "r4k_init",
+          "callee": "r4k_set_model"
+        },
+        {
+          "function": "r4k_run",
+          "callee": "r4k_timer_fire"
+        },
+        {
+          "function": "emit_insn",
+          "callee": "emit_load"
+        },
+        {
+          "function": "r4k_jit_find",
+          "callee": "r4k_fetch_fill"
+        },
+        {
+          "function": "go",
+          "callee": "put_pixel"
+        },
+        {
+          "function": "r4k_cop0",
+          "callee": "eret"
+        },
+        {
+          "function": "indy_hpc3_write",
+          "callee": "kbc_write"
+        },
+        {
+          "function": "indy_hpc3_write",
+          "callee": "pit_write"
+        },
+        {
+          "function": "r4k_cop1",
+          "callee": "to_int"
+        },
+        {
+          "function": "indy_run",
+          "callee": "pit_poll"
+        },
+        {
+          "function": "tlb_write",
+          "callee": "r4k_fast_flush_tlb_entry"
+        },
+        {
+          "function": "r4k_run",
+          "callee": "r4k_fetch_slow"
+        },
+        {
+          "function": "r4k_cop1x",
+          "callee": "madd"
+        },
+        {
+          "function": "r4k_jit_find",
+          "callee": "translate"
+        },
+        {
+          "function": "indy_hpc3_read",
+          "callee": "kbc_read"
+        },
+        {
+          "function": "emit_insn",
+          "callee": "emit_load_lr"
+        },
+        {
+          "function": "indy_hpc3_read",
+          "callee": "rtc_read"
+        },
+        {
+          "function": "np_io_write",
+          "callee": "np_write"
+        },
+        {
+          "function": "r4k_cop0",
+          "callee": "tlb_write"
+        },
+        {
+          "function": "emit_insn",
+          "callee": "emit_store"
+        },
+        {
+          "function": "indy_hpc3_read",
+          "callee": "scc_read"
+        },
+        {
+          "function": "r4k_cop0",
+          "callee": "tlb_probe"
+        },
+        {
+          "function": "indy_mc_remap",
+          "callee": "pm_unmap"
+        },
+        {
+          "function": "r4k_jit_find",
+          "callee": "r4k_fast_protect"
+        },
+        {
+          "function": "indy_update_irq",
+          "callee": "scc_irq"
+        },
+        {
+          "function": "rex_read",
+          "callee": "read_pixels"
+        },
+        {
+          "function": "indy_update_irq",
+          "callee": "r4k_set_irq"
+        },
+        {
+          "function": "present",
+          "callee": "np_render"
+        },
+        {
+          "function": "r4k_run",
+          "callee": "r4k_jit_find"
+        },
+        {
+          "function": "wndproc",
+          "callee": "kbc_key"
+        },
+        {
+          "function": "indy_reset",
+          "callee": "indy_hpc3_init"
+        },
+        {
+          "function": "indy_free",
+          "callee": "scsi_dev_close"
+        },
+        {
+          "function": "indy_hpc3_write",
+          "callee": "scc_write"
+        },
+        {
+          "function": "r4k_jit_find",
+          "callee": "emit_stubs"
+        },
+        {
+          "function": "emit_insn",
+          "callee": "emit_helper_call"
+        },
+        {
+          "function": "go",
+          "callee": "draw_color"
+        }
+      ]
+    },
+    "c5xtools": {
+      "behaviour": [
+        {
+          "function": "emit_sym"
+        },
+        {
+          "function": "apply_sub"
+        },
+        {
+          "function": "split"
+        },
+        {
+          "function": "shift_after"
+        },
+        {
+          "function": "sec_name"
+        },
+        {
+          "function": "emit"
+        },
+        {
+          "function": "value_before_arp"
+        },
+        {
+          "function": "p_or"
+        }
+      ],
+      "chain": []
+    },
+    "moppe-emu": {
+      "behaviour": [
+        {
+          "function": "r58_load_rom"
+        },
+        {
+          "function": "cu53an_out2"
+        },
+        {
+          "function": "alu"
+        },
+        {
+          "function": "sio_add_irqs"
+        },
+        {
+          "function": "pit_write"
+        },
+        {
+          "function": "pit_clock"
+        },
+        {
+          "function": "modem_tick"
+        },
+        {
+          "function": "r58_load_nv"
+        },
+        {
+          "function": "sio_rx_byte"
+        },
+        {
+          "function": "pit_init"
+        },
+        {
+          "function": "cu58af_init"
+        },
+        {
+          "function": "update_lines"
+        },
+        {
+          "function": "cu58af_int"
+        },
+        {
+          "function": "daisy_ack"
+        },
+        {
+          "function": "z80_reset"
+        },
+        {
+          "function": "write_byte"
+        },
+        {
+          "function": "hw_reset"
+        },
+        {
+          "function": "add16"
+        },
+        {
+          "function": "r58_synth_vco_hz"
+        },
+        {
+          "function": "r58_init"
+        },
+        {
+          "function": "advance"
+        },
+        {
+          "function": "sio_write_ctrl"
+        }
+      ],
+      "chain": [
+        {
+          "function": "io_write",
+          "callee": "pit_write"
+        },
+        {
+          "function": "io_write",
+          "callee": "sio_write_ctrl"
+        },
+        {
+          "function": "update_lines",
+          "callee": "cu58af_int"
+        },
+        {
+          "function": "hw_reset",
+          "callee": "z80_reset"
+        }
+      ]
+    },
+    "flint": {
+      "behaviour": [
+        {
+          "function": "new_struct_ctor"
+        },
+        {
+          "function": "new_native"
+        },
+        {
+          "function": "flint_value_to_string"
+        },
+        {
+          "function": "pkg_free_locked"
+        },
+        {
+          "function": "entry_for_write"
+        },
+        {
+          "function": "fl_sha256_final"
+        },
+        {
+          "function": "value_has_type"
+        },
+        {
+          "function": "chunk_free"
+        },
+        {
+          "function": "emit_variable_op"
+        },
+        {
+          "function": "vm_define_native"
+        },
+        {
+          "function": "new_list"
+        },
+        {
+          "function": "pkg_version_parse"
+        },
+        {
+          "function": "table_get_with_fallback"
+        },
+        {
+          "function": "concat_strings"
+        },
+        {
+          "function": "pkg_set"
+        },
+        {
+          "function": "table_define_const"
+        },
+        {
+          "function": "ascii_case_eq"
+        },
+        {
+          "function": "new_closure"
+        },
+        {
+          "function": "sys_set_source_dir_for_file"
+        },
+        {
+          "function": "table_remove_white"
+        },
+        {
+          "function": "pkg_copy_file"
+        },
+        {
+          "function": "new_enum_value"
+        },
+        {
+          "function": "pkg_hash_file"
+        },
+        {
+          "function": "compiler_mark_roots"
+        },
+        {
+          "function": "report_pending"
+        },
+        {
+          "function": "set_table_field"
+        },
+        {
+          "function": "flint_lookup_enum"
+        },
+        {
+          "function": "debug_frame_set"
+        },
+        {
+          "function": "flint_register_enum"
+        },
+        {
+          "function": "take_string"
+        },
+        {
+          "function": "pkg_free_deps"
+        },
+        {
+          "function": "chunk_write"
+        },
+        {
+          "function": "free_object"
+        },
+        {
+          "function": "new_upvalue"
+        },
+        {
+          "function": "new_function"
+        },
+        {
+          "function": "sys_set_args"
+        },
+        {
+          "function": "pkg_free_manifest"
+        },
+        {
+          "function": "sys_make_dirs"
+        }
+      ],
+      "chain": [
+        {
+          "function": "collect_garbage",
+          "callee": "compiler_mark_roots"
+        },
+        {
+          "function": "vm_interpret_function",
+          "callee": "new_struct_ctor"
+        },
+        {
+          "function": "debug_frames_native",
+          "callee": "debug_frame_set"
+        },
+        {
+          "function": "vm_interpret_function",
+          "callee": "new_closure"
+        },
+        {
+          "function": "vm_interpret_function",
+          "callee": "value_has_type"
+        },
+        {
+          "function": "vm_interpret_function",
+          "callee": "concat_strings"
+        },
+        {
+          "function": "vm_interpret_function",
+          "callee": "new_enum_value"
+        },
+        {
+          "function": "vm_interpret_function",
+          "callee": "table_define_const"
+        },
+        {
+          "function": "declaration",
+          "callee": "flint_register_enum"
+        },
+        {
+          "function": "collect_garbage",
+          "callee": "table_remove_white"
+        },
+        {
+          "function": "vm_interpret_function",
+          "callee": "new_upvalue"
+        },
+        {
+          "function": "named_variable",
+          "callee": "emit_variable_op"
+        },
+        {
+          "function": "vm_interpret_function",
+          "callee": "table_get_with_fallback"
+        },
+        {
+          "function": "pkg_install_core",
+          "callee": "pkg_free_locked"
+        },
+        {
+          "function": "pkg_copy_tree",
+          "callee": "pkg_copy_file"
+        },
+        {
+          "function": "vm_interpret_function",
+          "callee": "report_pending"
+        },
+        {
+          "function": "url_parse",
+          "callee": "ascii_case_eq"
+        },
+        {
+          "function": "vm_define_native",
+          "callee": "new_native"
+        },
+        {
+          "function": "pkg_hash_walk",
+          "callee": "pkg_hash_file"
+        }
+      ]
+    }
+  },
+  "rejected": []
+}

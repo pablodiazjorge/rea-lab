@@ -38,7 +38,7 @@ No hay fechas: cada fase se cierra cuando cumple sus criterios de salida.
 | F3 | Retos con semilla y respuesta conocida, y primeros writeups | hecha |
 | F4 | Banco de pruebas y estudio 1: qué le aporta rea a un agente | hecha |
 | F5 | Mod de Claude Code con un panel de evidencia en directo | hecha |
-| F6 | Segunda ola de contribuciones y skill mejorada | prevista |
+| F6 | Segunda ola de contribuciones y skill mejorada | continua |
 | F7 | Análisis dinámico dentro de Windows Sandbox | opcional |
 
 ## Estado
@@ -50,6 +50,7 @@ No hay fechas: cada fase se cierra cuando cumple sus criterios de salida.
 - [Estudio 2](writeups/2026-10-study-2/README.es.md), prerregistrado: con ocho binarios más grandes, en los que la comprobación real se esconde entre decenas de señuelos, Claude Code resolvió 11 de 24 ejecuciones sin rea y 4 de 24 con rea (McNemar exacto, p = 0,092, no significativo), otra vez con el doble de tiempo y de coste; 45 de los 46 registros de evidencia citados se volvieron a autenticar.
 - [Estudio 3](writeups/2026-10-study-3/README.es.md), prerregistrado: con cuatro programas libres reales publicados después de los datos de entrenamiento del modelo, Claude Code localizó la función o la tabla descrita en 71 de 72 ejecuciones sin rea y en 68 de 72 con rea (McNemar exacto, p = 0,375, no significativo), así que las dos condiciones están en el techo; rea volvió a costar más del doble, y los 144 registros de evidencia citados se autenticaron tras una corrección del calificador (142 en la primera publicación).
 - [Estudio 4](writeups/2026-10-study-4/README.es.md), prerregistrado: las mismas tareas con una segunda familia de modelos, `deepseek-flash` de DeepSeek servido a Claude Code por la API de DeepSeek; localizó la función o la tabla en 20 de 20 ejecuciones sin rea y en 19 de 20 con rea (McNemar exacto, p = 1), el mismo techo, por 2,05 USD en total; el modelo intentó salir a la red o al equipo en 13 ejecuciones, y se denegaron todos los intentos.
+- [Estudio 5](writeups/2026-10-study-5/README.es.md), prerregistrado: la skill de rea y una versión mejorada, inyectadas en el prompt del sistema de Claude Code, en 30 tareas nuevas sobre los mismos programas; la skill mejorada encareció las ejecuciones un 14 % frente a la oficial (cociente de Hodges-Lehmann 1,14, Wilcoxon exacto p = 0,012), y la oficial no cambió nada medible frente a no tener skill; ni los aciertos ni las citas variaron. Se descartó la PR prevista a la skill de rea.
 - [rea-casebook](https://github.com/pablodiazjorge/rea-casebook) 1.0.4, un mod de Claude Code que lleva en directo el expediente de la evidencia que rea entrega al agente: la espera del arranque en frío de Ghidra, las preguntas abiertas, los hallazgos que tienen que citar `evidence_id` reales, un diario por sesión y exportaciones a Markdown o a artifact.
 
 ## Estructura
@@ -59,7 +60,7 @@ No hay fechas: cada fase se cierra cuando cumple sus criterios de salida.
 | `AGENTS.md` | Instrucciones para los agentes (`CLAUDE.md` lo importa) |
 | `docs/adr/` | Registros de decisiones de arquitectura |
 | `docs/guides/` | Guías prácticas, como el [registro MCP portátil y por proyecto](docs/guides/portable-mcp-registration.es.md) |
-| `writeups/` | Investigaciones con su evidencia limpia: [WinHelloCPP](writeups/2026-10-winhellocpp/README.es.md), [Wallace v1 frente a v2](writeups/2026-10-wallace-versions/README.es.md), [c02-xor con -O0 y -O2](writeups/2026-10-own-xor/README.es.md), [estudio 1](writeups/2026-10-study-1/README.es.md), [estudio 2](writeups/2026-10-study-2/README.es.md), [estudio 3](writeups/2026-10-study-3/README.es.md), [estudio 4](writeups/2026-10-study-4/README.es.md) |
+| `writeups/` | Investigaciones con su evidencia limpia: [WinHelloCPP](writeups/2026-10-winhellocpp/README.es.md), [Wallace v1 frente a v2](writeups/2026-10-wallace-versions/README.es.md), [c02-xor con -O0 y -O2](writeups/2026-10-own-xor/README.es.md), [estudio 1](writeups/2026-10-study-1/README.es.md), [estudio 2](writeups/2026-10-study-2/README.es.md), [estudio 3](writeups/2026-10-study-3/README.es.md), [estudio 4](writeups/2026-10-study-4/README.es.md), [estudio 5](writeups/2026-10-study-5/README.es.md) |
 | [`challenges/`](challenges/README.es.md) | Retos de práctica con semilla y respuesta conocida, compilados de forma reproducible |
 | [`bench/`](bench/README.es.md) | Banco de pruebas: ejecuciones aisladas de `claude -p`, calificadores deterministas, el propio código de evaluación de rea y estadística por pares |
 | `tools.json` | Versiones, URL de descarga y SHA-256 de cada herramienta |

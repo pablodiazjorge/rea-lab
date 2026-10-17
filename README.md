@@ -38,7 +38,7 @@ There are no dates: each phase closes when it meets its exit criteria.
 | F3 | Seeded challenges with known answers and first writeups | done |
 | F4 | Benchmark and study 1: what rea adds to an agent | done |
 | F5 | Claude Code mod with a live evidence pane | done |
-| F6 | Second upstream wave and improved skill | planned |
+| F6 | Second upstream wave and improved skill | ongoing |
 | F7 | Dynamic analysis inside Windows Sandbox | optional |
 
 ## Status
@@ -50,6 +50,7 @@ There are no dates: each phase closes when it meets its exit criteria.
 - [Study 2](writeups/2026-10-study-2/README.md), preregistered: on eight larger binaries, where the real check hides among dozens of decoys, Claude Code solved 11 of 24 runs without rea and 4 of 24 with it (exact McNemar, p = 0.092, not significant), again at about twice the time and cost; 45 of 46 cited Evidence records re-authenticated.
 - [Study 3](writeups/2026-10-study-3/README.md), preregistered: on four real open-source programs published after the model's training data, Claude Code located the described function or table in 71 of 72 runs without rea and 68 of 72 with it (exact McNemar, p = 0.375, not significant), so both conditions are at the ceiling; rea again cost more than twice as much, and all 144 cited Evidence records authenticated after a grader correction (142 as first published).
 - [Study 4](writeups/2026-10-study-4/README.md), preregistered: the same tasks with a second model family, DeepSeek's `deepseek-flash` served to Claude Code through DeepSeek's API; it located the function or table in 20 of 20 runs without rea and 19 of 20 with it (exact McNemar, p = 1), the same ceiling, for 2.05 USD in all; the model tried to reach the network or the host in 13 runs, and every attempt was denied.
+- [Study 5](writeups/2026-10-study-5/README.md), preregistered: rea's own skill and an improved version, injected into Claude Code's system prompt, on 30 new tasks in the same programs; the improved skill made runs 14 % more expensive than the official one (Hodges-Lehmann ratio 1.14, exact Wilcoxon p = 0.012), and the official one changed nothing measurable against no skill; accuracy and citations did not differ. The planned pull request to rea's skill was dropped.
 - [rea-casebook](https://github.com/pablodiazjorge/rea-casebook) 1.0.4, a Claude Code mod that keeps a live casebook of the Evidence rea gives the agent: the wait for Ghidra's cold start, open unknowns, findings that must cite real `evidence_id` values, a journal per session and Markdown or artifact exports.
 
 ## Layout
@@ -59,7 +60,7 @@ There are no dates: each phase closes when it meets its exit criteria.
 | `AGENTS.md` | Instructions for coding agents (`CLAUDE.md` imports it) |
 | `docs/adr/` | Architecture decision records |
 | `docs/guides/` | How-to guides, such as the [portable per-project MCP registration](docs/guides/portable-mcp-registration.md) |
-| `writeups/` | Investigations with their sanitised Evidence: [WinHelloCPP](writeups/2026-10-winhellocpp/README.md), [Wallace v1 against v2](writeups/2026-10-wallace-versions/README.md), [c02-xor at -O0 and -O2](writeups/2026-10-own-xor/README.md), [study 1](writeups/2026-10-study-1/README.md), [study 2](writeups/2026-10-study-2/README.md), [study 3](writeups/2026-10-study-3/README.md), [study 4](writeups/2026-10-study-4/README.md) |
+| `writeups/` | Investigations with their sanitised Evidence: [WinHelloCPP](writeups/2026-10-winhellocpp/README.md), [Wallace v1 against v2](writeups/2026-10-wallace-versions/README.md), [c02-xor at -O0 and -O2](writeups/2026-10-own-xor/README.md), [study 1](writeups/2026-10-study-1/README.md), [study 2](writeups/2026-10-study-2/README.md), [study 3](writeups/2026-10-study-3/README.md), [study 4](writeups/2026-10-study-4/README.md), [study 5](writeups/2026-10-study-5/README.md) |
 | [`challenges/`](challenges/README.md) | Seeded practice challenges with known answers, built reproducibly |
 | [`bench/`](bench/README.md) | Benchmark harness: isolated `claude -p` runs, deterministic graders, rea's own evaluation code, paired statistics |
 | `tools.json` | Tool versions, download URLs and SHA-256 hashes |

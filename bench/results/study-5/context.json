@@ -1,0 +1,217 @@
+{
+  "study": "study-5",
+  "note": "Post hoc and exploratory; measured from the saved transcripts, which are not published (ADR 0014).",
+  "runsWithRea": 60,
+  "advertisedReaTools": 153,
+  "savedResults": {
+    "runs": 46,
+    "results": 56,
+    "readAttemptRuns": 28,
+    "readBackRuns": 19,
+    "byTool": {
+      "binary_overview": {
+        "calls": 4,
+        "saved": 0,
+        "bytes": null
+      },
+      "close_binary": {
+        "calls": 59,
+        "saved": 0,
+        "bytes": null
+      },
+      "list_procedures": {
+        "calls": 38,
+        "saved": 38,
+        "bytes": {
+          "min": 51423,
+          "median": 104841,
+          "max": 224135
+        }
+      },
+      "open_binary": {
+        "calls": 60,
+        "saved": 0,
+        "bytes": null
+      },
+      "procedure_assembly": {
+        "calls": 7,
+        "saved": 0,
+        "bytes": null
+      },
+      "procedure_callees": {
+        "calls": 24,
+        "saved": 0,
+        "bytes": null
+      },
+      "procedure_callers": {
+        "calls": 54,
+        "saved": 0,
+        "bytes": null
+      },
+      "procedure_info": {
+        "calls": 7,
+        "saved": 0,
+        "bytes": null
+      },
+      "procedure_pseudo_code": {
+        "calls": 235,
+        "saved": 17,
+        "bytes": {
+          "min": 54175,
+          "median": 168503,
+          "max": 470561
+        }
+      },
+      "read_function_instructions": {
+        "calls": 1,
+        "saved": 0,
+        "bytes": null
+      },
+      "resolve_containing_procedure": {
+        "calls": 19,
+        "saved": 0,
+        "bytes": null
+      },
+      "search_procedures": {
+        "calls": 12,
+        "saved": 1,
+        "bytes": {
+          "min": 108092,
+          "median": 108092,
+          "max": 108092
+        }
+      },
+      "search_strings": {
+        "calls": 96,
+        "saved": 0,
+        "bytes": null
+      },
+      "xrefs": {
+        "calls": 81,
+        "saved": 0,
+        "bytes": null
+      }
+    }
+  },
+  "pagedRoutesUsed": {
+    "analyze_function": 0,
+    "inspect_analysis_view": 0
+  },
+  "toolSearch": {
+    "runs": 60,
+    "medianCalls": 1
+  },
+  "firstRequestInputMedian": {
+    "A": null,
+    "B": 12228.5,
+    "C": null
+  },
+  "perRequestOverhead": null,
+  "overheadShareOfInput": null,
+  "totalInputMedianPerMessage": {
+    "A": null,
+    "B": 339903
+  },
+  "medianRequests": {
+    "A": null,
+    "B": 13
+  },
+  "skillConditions": {
+    "B": {
+      "runs": 60,
+      "firstRequestInputMedian": 12228.5,
+      "firstRequestCache": {
+        "writeMedian": 6024,
+        "readMedian": 6197,
+        "runsWithColdPrefix": 0
+      },
+      "totalInputWithoutFirstCacheWrite": 333879,
+      "totalInputMedianPerMessage": 339903,
+      "medianRequests": 13,
+      "savedResults": {
+        "runs": 46,
+        "results": 56,
+        "readBackRuns": 19
+      },
+      "skillReferenceReads": {
+        "runs": 0,
+        "calls": 0
+      },
+      "reaCalls": {
+        "list_procedures": 38,
+        "search_procedures": 12,
+        "search_strings": 96,
+        "xrefs": 81,
+        "procedure_pseudo_code": 235,
+        "batch_decompile": 0,
+        "resolve_containing_procedure": 19,
+        "procedure_info": 7
+      },
+      "toolSearchMedianCalls": 1
+    },
+    "C1": {
+      "runs": 60,
+      "firstRequestInputMedian": 16820.5,
+      "firstRequestCache": {
+        "writeMedian": 11405.5,
+        "readMedian": 5413,
+        "runsWithColdPrefix": 0
+      },
+      "totalInputWithoutFirstCacheWrite": 382341.5,
+      "totalInputMedianPerMessage": 393747,
+      "medianRequests": 13,
+      "savedResults": {
+        "runs": 34,
+        "results": 39,
+        "readBackRuns": 14
+      },
+      "skillReferenceReads": {
+        "runs": 0,
+        "calls": 0
+      },
+      "reaCalls": {
+        "list_procedures": 20,
+        "search_procedures": 7,
+        "search_strings": 75,
+        "xrefs": 75,
+        "procedure_pseudo_code": 181,
+        "batch_decompile": 0,
+        "resolve_containing_procedure": 3,
+        "procedure_info": 8
+      },
+      "toolSearchMedianCalls": 1
+    },
+    "C2": {
+      "runs": 60,
+      "firstRequestInputMedian": 17407.5,
+      "firstRequestCache": {
+        "writeMedian": 11992.5,
+        "readMedian": 5413,
+        "runsWithColdPrefix": 0
+      },
+      "totalInputWithoutFirstCacheWrite": 397508,
+      "totalInputMedianPerMessage": 409497.5,
+      "medianRequests": 13,
+      "savedResults": {
+        "runs": 26,
+        "results": 34,
+        "readBackRuns": 16
+      },
+      "skillReferenceReads": {
+        "runs": 0,
+        "calls": 0
+      },
+      "reaCalls": {
+        "list_procedures": 7,
+        "search_procedures": 20,
+        "search_strings": 88,
+        "xrefs": 81,
+        "procedure_pseudo_code": 197,
+        "batch_decompile": 11,
+        "resolve_containing_procedure": 20,
+        "procedure_info": 0
+      },
+      "toolSearchMedianCalls": 1
+    }
+  }
+}
