@@ -6,7 +6,7 @@ rea-lab changed `SKILL.md` only, and every line of the original is still there i
 
 ## What changed and where each change comes from
 
-The front matter's version is `37+rea-lab.2`. A pointer from the native route leads to a new section, "Locate code in a native binary", and one sentence after the oversized-result paragraph asks the agent to read a result that the client saved to a file instead of repeating the call. The section's steps and their sources:
+The front matter's version is `37+rea-lab.3`. A pointer from the native route leads to a new section, "Locate code in a native binary", and one sentence after the oversized-result paragraph asks the agent to read a result that the client saved to a file instead of repeating the call. The section's steps and their sources:
 
 | Step | Change | Source |
 |---|---|---|
@@ -14,7 +14,7 @@ The front matter's version is `37+rea-lab.2`. A pointer from the native route le
 | 2 | Read code only for candidates; the argument names `procedure` and `addresses` | Study 3 (306 `procedure_pseudo_code` calls); study 1's input validation failures (`address` for `procedure`, `query` for `pattern`) |
 | 3 | When no anchor fits, try the next cheapest one before the whole inventory | Study 3 (all 21 `list_procedures` results were too large to return inline); SkillsBench ([Li and others, 2026](https://arxiv.org/abs/2602.12670), sections 5.1.3 and 6): focused skills do better than exhaustive ones, and skills that impose one pipeline without applicability boundaries or a lightweight fallback can hurt |
 | 4 | Reuse a result instead of repeating an identical call | Reveree ([Benkraouda and others, 2026](https://arxiv.org/abs/2609.01185), sections 5.2.3 and 5.3.2): failed runs repeat commands and re-analyse, and the strategies that help re-analyse less; ZGCM-1 ([arXiv 2609.13356](https://arxiv.org/abs/2609.13356), section 11.2) gives no credit to non-convergent repeated tool use |
-| 5 | Check whether the question asks for the function or its caller or callee, and cite an Evidence that states the reported start address, calling `procedure_info` only when no earlier result does | Study 3 (three of four misses with rea answered a function one step away in the call graph; the cited Evidence stated the answer in 38 of 72 runs); ZGCM-1, section 11.2 (callers and callees confirm which function owns the behavior) |
+| 5 | Check whether the question asks for the function or its caller or callee, and cite an Evidence about the reported function, its code or a result that gives its start address, rather than a result about another function | Study 3 (three of four misses with rea answered a function one step away in the call graph); the second development round (see below); ZGCM-1, section 11.2 (callers and callees confirm which function owns the behavior) |
 
 The wording follows Anthropic's [skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices): concise steps, one default with an escape hatch, and a verification step. The section names only tools that rea 6.4.0 and rea's main branch both offer, with the same argument names, so it can be proposed to rea as a small addition.
 
@@ -25,3 +25,4 @@ Each round ran the eight public tasks of study 3's pilot 4 ([`real-tasks-pilot-4
 | Round | Skill version | Change after the round |
 |---|---|---|
 | `dev-s5-1` | `37+rea-lab.1` | Step 1 said that `xrefs` returns the code that uses a match. In one run it returned a data address, and the agent passed it to `procedure_pseudo_code`, which failed. Step 1 now says that `xrefs` returns code or data addresses and what `resolve_containing_procedure` reports for a data one (`37+rea-lab.2`) |
+| `dev-s5-2` | `37+rea-lab.2` | Step 5 asked for an Evidence whose result states the reported start address and named the tools whose results do. The rounds showed that the decompiled code of a function names it only with the decompiler's default name, so that wording steered the agent to particular tools rather than to Evidence about the right function; one run had cited the callers of another function. Step 5 now asks for an Evidence about the reported function, its code or a result that gives its start address, rather than one about another function (`37+rea-lab.3`) |

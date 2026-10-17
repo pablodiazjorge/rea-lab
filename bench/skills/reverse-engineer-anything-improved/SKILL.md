@@ -2,7 +2,7 @@
 name: reverse-engineer-anything
 description: Reverse engineer native, managed, Electron/JavaScript, packaged, firmware, and browser targets with REA. Use shipped-artifact or requested runtime evidence to explain features, compare versions, decompile code, or guide a reconstruction. Skip REA for ordinary source-repository architecture analysis.
 metadata:
-  version: "37+rea-lab.2"
+  version: "37+rea-lab.3"
   tool_count: 170
 ---
 
@@ -138,10 +138,9 @@ binary, especially one without symbols, work from anchors to candidates:
    too large for a client to return inline.
 4. Reuse a result instead of repeating an identical call.
 5. Before answering, check whether the question asks for the described
-   function itself or for its caller or callee, and cite an Evidence whose
-   result states the start address you report, such as a `batch_decompile`,
-   `procedure_info` or `resolve_containing_procedure` result for that function.
-   Call `procedure_info` only when no earlier result states it.
+   function itself or for its caller or callee, and cite an Evidence about the
+   function you report, such as its code or a result that gives its start
+   address, rather than a result about another function.
 
 ## Work summary-first
 
