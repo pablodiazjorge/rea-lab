@@ -38,6 +38,10 @@ export const REAL_BUILD_VERSION = 1
 
 const COMPILE_FLAGS = ['-O2', '-g', '-w', '-ffunction-sections', '-fdata-sections', '-DNDEBUG', '-fdebug-compilation-dir=.']
 const LINK_FLAGS = ['-Wl,--icf=none', '-Wl,--gc-sections', '-Wl,-Map=link.map', '-Wl,--no-insert-timestamp', '-Wl,--build-id=none']
+// c5xtools and civetweb print __DATE__, so a build on another day changed their bytes. clang takes the date from
+// SOURCE_DATE_EPOCH instead: 2026-10-14 12:00 UTC, the day study 3's targets were built, so every rebuild of
+// build version 1 matches them byte for byte.
+const SOURCE_DATE_EPOCH = '1791979200'
 
 const args = process.argv.slice(2)
 const flagValue = (name) => {
@@ -52,7 +56,7 @@ if (only && selected.length !== only.length) throw new Error(`Unknown id in --on
 const sha256 = (buffer) => createHash('sha256').update(buffer).digest('hex')
 
 function run(command, commandArgs, options = {}) {
-  const result = spawnSync(command, commandArgs, { encoding: 'utf8', maxBuffer: 1 << 30, ...options })
+  const result = spawnSync(command, commandArgs, { encoding: 'utf8', maxBuffer: 1 << 30, ...options, env: { ...process.env, ...options.env, SOURCE_DATE_EPOCH } })
   if (result.error) throw result.error
   if (result.status !== 0) throw new Error(`${basename(command)} exited with ${result.status}: ${(result.stderr ?? '').slice(0, 2000)}`)
   return result.stdout
