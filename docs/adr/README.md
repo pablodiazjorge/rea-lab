@@ -13,10 +13,10 @@ One short file per decision that is hard to reverse, surprising without context 
 | [0007](0007-jdk-21.md) | Temurin JDK 21 for Ghidra | accepted (F1) |
 | [0008](0008-node-versions.md) | Node 22 for the lab, Node 24 only for the rea fork | accepted |
 | [0009](0009-wsl-for-the-fork.md) | Full rea suite and native addon in WSL, Windows only for lanes | accepted |
-| [0010](0010-target-policy.md) | Target policy and safety boundary | accepted, amended for study 3 |
+| [0010](0010-target-policy.md) | Target policy and safety boundary | accepted, amended for study 3 and for the legal basis |
 | [0011](0011-reproducible-challenges.md) | Seeded, reproducible challenges as ground truth | accepted (F3), amended for study 3 and for study 5 |
 | [0012](0012-writeup-format.md) | Writeup format | accepted (F3), amended for the benchmark studies |
-| [0013](0013-licensing.md) | MIT for code, CC BY 4.0 for text and results | accepted |
+| [0013](0013-licensing.md) | MIT for code, CC BY 4.0 for text and results | accepted, amended for third-party material |
 | [0014](0014-publishing-evidence.md) | Published evidence is sanitised and re-import tested | accepted (F3), amended in F4 and after rea 6.6.0 |
 | [0015](0015-mod-capture.md) | The mod captures evidence from tool calls | accepted (F5), amended for rea-casebook 1.0.4 |
 | [0016](0016-mod-journal-location.md) | The mod journal lives outside the user's repository | accepted (F5), amended for rea-casebook 1.0.4 |
