@@ -86,4 +86,4 @@ Con rea 6.4.0 y Ghidra 12.1.4 los registros coinciden con la evidencia publicada
 
 ## Licencia
 
-Este writeup y sus datos de evidencia se publican con CC BY 4.0. Los fragmentos descompilados proceden de un ejercicio de Ghidra distribuido con la licencia Apache 2.0.
+El texto de este writeup se publica con CC BY 4.0. Los archivos de evidencia y los fragmentos descompilados proceden de un ejercicio que trae Ghidra (National Security Agency) y siguen bajo la [licencia Apache 2.0](../../LICENSE-Apache-2.0). Cambios: descompilación y análisis con rea 6.4.0 y Ghidra 12.1.4; en los archivos de evidencia, las rutas locales se redujeron a `<target>/` más el nombre del archivo.

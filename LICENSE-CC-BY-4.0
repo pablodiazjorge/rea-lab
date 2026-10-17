@@ -1,14 +1,30 @@
 Copyright (c) 2026 pablodiazjorge
 
-The written content of this repository (README files, guides and ADRs under
-docs/, writeups under writeups/) and the published benchmark results are
+The written content of this repository and the published benchmark results are
 licensed under the Creative Commons Attribution 4.0 International License
-(CC BY 4.0), unless a file states otherwise.
+(CC BY 4.0), unless a file states otherwise. This covers README files, guides
+and ADRs under docs/, writeups under writeups/, the preregistrations
+(bench/preregistration-*.md), AGENTS.md and the results under bench/results/.
 
 You are free to share and adapt this material for any purpose, including
 commercially, as long as you give appropriate credit, provide a link to the
 license and indicate if changes were made.
 
+The material is offered as is, without warranties of any kind, as section 5 of
+the legal code (Disclaimer of Warranties and Limitation of Liability) states.
+
 Full legal code: https://creativecommons.org/licenses/by/4.0/legalcode
 
-Source code is licensed separately under the MIT License (see LICENSE).
+Exceptions, which keep their own licence:
+
+- The evidence files (evidence*.json) under writeups/2026-10-winhellocpp/ and
+  writeups/2026-10-wallace-versions/, and the decompiled excerpts quoted in
+  those two writeups, derive from Ghidra exercises (Ghidra, National Security
+  Agency) and remain under the Apache License 2.0 (see LICENSE-Apache-2.0).
+- bench/skills/reverse-engineer-anything-improved/ is a modified copy of rea's
+  skill, copyright morluto, under its own MIT License (see its LICENSE).
+
+Source code, JSON task files, manifests and configuration, including
+provenance.json and session-plan*.json under writeups/, are licensed separately
+under the MIT License (see LICENSE). JSON and JSONL files under bench/results/
+are results and fall under CC BY 4.0.

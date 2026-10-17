@@ -1,8 +1,8 @@
 # Provenance
 
-This folder is a modified copy of the `reverse-engineer-anything` skill shipped in `rea-agents@6.4.0` ([morluto/rea](https://github.com/morluto/rea)), under the MIT licence, copyright (c) 2026 morluto; the licence is in [LICENSE](LICENSE).
+This folder is a modified copy of the `reverse-engineer-anything` skill shipped in `rea-agents@6.4.0` ([morluto/rea](https://github.com/morluto/rea)), under the MIT licence, copyright (c) 2026 morluto; the licence is in [LICENSE](LICENSE). It is not an official rea skill: neither morluto nor the rea project has reviewed or endorsed it.
 
-rea-lab changed `SKILL.md` only, and every line of the original is still there in the same order. The `references/` files are unchanged. Study 5 compares this skill with the original ([ADR 0025](../../../docs/adr/0025-skill-comparison.md)).
+rea-lab changed `SKILL.md` only, and every line of the original is still there in the same order, except the front matter's version field. The `references/` files are unchanged. Study 5 compares this skill with the original ([ADR 0025](../../../docs/adr/0025-skill-comparison.md)).
 
 ## What changed and where each change comes from
 

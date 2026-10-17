@@ -86,4 +86,4 @@ With rea 6.4.0 and Ghidra 12.1.4 the records match the published Evidence; sanit
 
 ## License
 
-This writeup and its evidence data are released under CC BY 4.0. The decompiled excerpts are derived from a Ghidra exercise distributed under the Apache License 2.0.
+The text of this writeup is released under CC BY 4.0. The evidence files and the decompiled excerpts derive from an exercise that ships with Ghidra (National Security Agency) and remain under the [Apache License 2.0](../../LICENSE-Apache-2.0). Changes: decompiled and analysed with rea 6.4.0 and Ghidra 12.1.4; in the evidence files, local paths were reduced to `<target>/` plus the file name.
