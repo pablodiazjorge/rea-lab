@@ -2,7 +2,7 @@
 name: reverse-engineer-anything
 description: Reverse engineer native, managed, Electron/JavaScript, packaged, firmware, and browser targets with REA. Use shipped-artifact or requested runtime evidence to explain features, compare versions, decompile code, or guide a reconstruction. Skip REA for ordinary source-repository architecture analysis.
 metadata:
-  version: "37+rea-lab.1"
+  version: "37+rea-lab.2"
   tool_count: 170
 ---
 
@@ -123,8 +123,10 @@ binary, especially one without symbols, work from anchors to candidates:
 
 1. Start from anchors the behavior implies: strings, imported library calls or
    option names. `search_strings` and `search_procedures` take a `pattern`;
-   `xrefs` takes the `address` of a match and returns the code that uses it, and
-   `resolve_containing_procedure` turns that code address into its function.
+   `xrefs` takes the `address` of a match and returns the addresses that refer
+   to it, in code or in data. `resolve_containing_procedure` turns a code
+   address into its function and reports that a data address, such as a table
+   of pointers, is in no procedure; then try the next anchor, as in step 3.
    When a name search already gives a candidate, go straight to step 2.
 2. Read code only for candidates: `procedure_pseudo_code` for one, or
    `batch_decompile` for a short list of `addresses`. `procedure_callers` and
